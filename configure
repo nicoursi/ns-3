@@ -1,0 +1,3 @@
+#!/bin/bash
+
+CXXFLAGS="-Wall -Wno-error=format-overflow" ./waf configure
