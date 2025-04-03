@@ -11,13 +11,13 @@ def configure(conf):
                                       "-I../../libs/linker/CGAL_4_11/include",
                                       "-I../../libs/linker/mpfr_4_0_1/include",
                                       "-I../../libs/linker/gmp_6_1_2/include",
-                                      "-I../../libs/linker/boost_1_67_0/include"])
+                                      "-I../../libs/linker/boost_1_54_0/include"])
 
 
     conf.env.append_value("LINKFLAGS", ["-L../../libs/linker/CGAL_4_11/lib",
                                        "-L../../libs/linker/gmp_6_1_2/lib",
                                        "-L../../libs/linker/mpfr_4_0_1/lib",
-                                       "-L../../libs/linker/boost_1_67_0/lib",
+                                       "-L../../libs/linker/boost_1_54_0/lib",
                                        "-lboost_system"])
 
     conf.env.append_value("LIB", ["CGAL", "CGAL_Core", "gmp", "mpfr", "boost_thread"])
