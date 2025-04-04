@@ -36,3 +36,5 @@ TAGS
 
 build-dir/
 build/
+
+.idea/
