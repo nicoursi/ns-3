@@ -38,3 +38,5 @@ build-dir/
 build/
 /.cproject
 /.project
+
+.idea/
