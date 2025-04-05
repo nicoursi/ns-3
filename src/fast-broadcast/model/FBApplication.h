@@ -27,7 +27,7 @@
 #include "ns3/application.h"
 #include "ns3/network-module.h"
 #include "ns3/object-vector.h"
-#include "Edge.h"
+#include "ns3/vanets-utils-module.h"
 #include <chrono>
 #include <ctime>
 #include <set>
