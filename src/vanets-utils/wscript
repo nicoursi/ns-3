@@ -1,0 +1,11 @@
+def build(bld):
+    module = bld.create_ns3_module('vanets-utils', ['core'])
+    module.source = [
+        'Edge.cc',
+    ]
+
+    headers = bld(features='ns3header')
+    headers.module = 'vanets-utils'
+    headers.source = [
+        'Edge.h',
+    ]
