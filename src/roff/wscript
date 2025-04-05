@@ -11,7 +11,7 @@ def build(bld):
 
     bld.env.append_value("LIB", ["boost_system", "boost_filesystem", "boost_serialization"])
 
-    module = bld.create_ns3_module('roff', ['core'])
+    module = bld.create_ns3_module('roff', ['core','vanets-utils'])
     module.source = [
     	'helper/roff-helper.cc',
         'model/ROFFNode.cc',
@@ -21,7 +21,6 @@ def build(bld):
         'model/NBTEntry.cc',
         'model/PositionRankingMap.cc',
         'model/PositionRankingKey.cc',
-        'model/Edge.cc'
         ]
 
     module_test = bld.create_ns3_module_test_library('roff')
@@ -39,8 +38,7 @@ def build(bld):
         'model/NeighborTable.h',
         'model/NBTEntry.h',
         'model/PositionRankingMap.h',
-        'model/PositionRankingKey.h',
-        'model/Edge.h'
+        'model/PositionRankingKey.h'
         ]
 
     if bld.env.ENABLE_EXAMPLES:
