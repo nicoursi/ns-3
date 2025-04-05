@@ -10,7 +10,7 @@
 
 #include "ROFFHeader.h"
 #include "ROFFNode.h"
-#include "Edge.h"
+#include "ns3/vanets-utils-module.h"
 #include "ns3/application.h"
 #include "ns3/network-module.h"
 #include "ns3/simulator.h"
