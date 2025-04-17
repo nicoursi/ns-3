@@ -1068,7 +1068,7 @@ int main (int argc, char *argv[])
 		string header;
 
 		if(experiment.GetPrintCoords()) {
-			additionalPath = "/out/scenario-urbano-con-coord/";
+			additionalPath = "/simulations/scenario-urbano-con-coord/";
 			header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
 					"\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
 					"\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting y\","
@@ -1076,21 +1076,21 @@ int main (int argc, char *argv[])
 					"\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission vector\"";
 		}
 		else if (experiment.GetHighBuildings()) {
-			additionalPath = "/out/scenario-droni-high/";
+			additionalPath = "/simulations/scenario-droni-high/";
 			header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
 							 "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
 							 "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached maxDist node\","
 							 "\"Vehicles cover\"";
 		}
 		else if (experiment.GetDroneTest()) {
-			additionalPath = "/out/scenario-droni/";
+			additionalPath = "/simulations/scenario-droni/";
 			header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
 								"\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
 								"\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached maxDist node\","
 					 	 	 	"\"Vehicles cover\"";
 		}
 		else {
-			additionalPath = "/out/scenario-urbano/";
+			additionalPath = "/simulations/scenario-urbano/";
 			header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
 					 "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
 					 "\"Slots\",\"Messages sent\",\"Messages received\"";
@@ -1101,8 +1101,8 @@ int main (int argc, char *argv[])
 //				"\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting y\","
 //				"\"Starting node\", \"Vehicle distance\", \"Received node ids\", "
 //				"\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission vector\"";
-//		additionalPath += "/out/scenario-urbano-con-coord/roff/";
-		boost::filesystem::path path = boost::filesystem::current_path() /= additionalPath;
+//		additionalPath += "/simulations/scenario-urbano-con-coord/roff/";
+		boost::filesystem::path path = boost::filesystem::current_path().parent_path() /= additionalPath;
 		path /= filePath;
 		g_csvData.EnableAlternativeFilename(path);
 		g_csvData.WriteHeader(header);
