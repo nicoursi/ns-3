@@ -35,6 +35,8 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <chrono>  // for timing
+#include <iomanip>  // for put_time
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -334,6 +336,12 @@ public:
 	*/
 	uint32_t GetHighBuildings() const;
 
+    /**
+    * \brief maxRun getter
+    * \return maxRun
+    */
+    uint32_t GetMaxRun() const;
+
 protected:
 	/**
 	 * \brief Process command line arguments
@@ -491,8 +499,10 @@ private:
 	uint32_t								m_forgedCoordRate;
 	uint32_t								m_nVeh;
 	uint32_t								m_droneTest;
+	uint32_t                                m_maxRun;
 	uint32_t								m_highBuildings;
 	std::map<uint32_t, uint64_t>			m_nodeIdToJunctionIdMap;
+
 
 
 };
@@ -535,6 +545,7 @@ FBVanetExperiment::FBVanetExperiment ()
 		m_forgedCoordRate(0),
 		m_nVeh(0),
 		m_droneTest(0),
+		m_maxRun(1),
 		m_highBuildings(0) {
 	srand (time (0));
 
@@ -652,6 +663,10 @@ uint32_t FBVanetExperiment::GetDroneTest() const {
 
 uint32_t FBVanetExperiment::GetHighBuildings() const {
 	return m_highBuildings;
+}
+
+uint32_t FBVanetExperiment::GetMaxRun() const {
+    return m_maxRun;
 }
 
 void
@@ -860,7 +875,7 @@ void FBVanetExperiment::RunSimulation () {
 	NS_LOG_FUNCTION (this);
 	NS_LOG_INFO ("Run simulation.");
 
-	Run ();
+	Run();
 }
 
 void FBVanetExperiment::CommandSetup (int argc, char *argv[]) {
@@ -871,6 +886,7 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[]) {
 
 	// allow command line overrides
 //	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
+    cmd.AddValue ("maxRun", "Maximum number of simulation runs", m_maxRun);
 	cmd.AddValue ("startingNode", "Id of the first node who will start an aler", m_startingNode);
 	cmd.AddValue ("actualRange", "Actual transimision range (meters)", m_actualRange);
 	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500", m_staticProtocol);
@@ -1079,6 +1095,39 @@ FBVanetExperiment::LoadJunctionsMap() {
 //	}
 }
 
+// Prints the start time with a custom label and returns the start time
+std::chrono::system_clock::time_point PrintStartTime(const std::string& label) {
+    auto start = std::chrono::system_clock::now();
+    std::time_t start_time = std::chrono::system_clock::to_time_t(start);
+
+    std::cout << "-----------------------------------------------------------------------------"
+              << std::endl
+              << label << " starting at: "
+              << std::put_time(std::localtime(&start_time), "%Y-%m-%d %H:%M:%S")
+              << std::endl;
+
+    return start;
+}
+
+// Prints the end time with the same label and elapsed time
+void PrintElapsedTime(const std::chrono::system_clock::time_point& start, const std::string& label) {
+    auto end = std::chrono::system_clock::now();
+    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+    std::cout << label << " ending at: "
+              << std::put_time(std::localtime(&end_time), "%Y-%m-%d %H:%M:%S")
+              << std::endl;
+
+    auto duration = end - start;
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration - minutes);
+
+    std::cout << label << " Elapsed wall-clock time: "
+              << minutes.count() << "m "
+              << seconds.count() << "s"
+              << std::endl;
+}
+
 /* -----------------------------------------------------------------------------
 *			MAIN
 * ------------------------------------------------------------------------------
@@ -1086,13 +1135,20 @@ FBVanetExperiment::LoadJunctionsMap() {
 
 int main (int argc, char *argv[])
 {
+    // Call to get and print the start time
+    auto wholeStart = PrintStartTime("Whole simulation");
+
     cout << "Start main urban" << endl;
+
 	NS_LOG_UNCOND ("FB Vanet Experiment URBAN");
-	unsigned int maxRun = RngSeedManager::GetRun();
 
 //	Before launching experiments, calculate output file path
 	FBVanetExperiment experiment;
 	experiment.Configure (argc, argv);
+//	unsigned int maxRun = RngSeedManager::GetRun();
+	unsigned int maxRun = experiment.GetMaxRun();
+	cout << "Max run: " << maxRun << endl;
+
 	if (experiment.GetPrintToFile()) {
 		string filePath = experiment.CalculateOutFilePath();
 		string additionalPath;
@@ -1133,9 +1189,13 @@ int main (int argc, char *argv[])
 		g_csvData.WriteHeader(header);
 	}
 	for(unsigned int i = 0; i < maxRun; i++) {
-		cout << "run = " << i << endl;
+		std::string runLabel = "Simulation Run " + std::to_string(i);
+        auto runStart = PrintStartTime(runLabel);
 		FBVanetExperiment experiment;
 		experiment.RunAndPrintResults(argc, argv);
+		PrintElapsedTime(runStart, runLabel);
 	}
+
+    PrintElapsedTime(wholeStart, "Whole simulation");
 
 }
