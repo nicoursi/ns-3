@@ -54,6 +54,8 @@
 #include "ns3/netanim-module.h"
 #include "ns3/ROFFApplication.h"
 
+#include <random>
+
 using namespace ns3;
 using namespace std;
 
@@ -92,6 +94,12 @@ public:
 	 * \return none
 	 */
 	void WriteHeader(std::string header);
+
+	/**
+	 * \brief generates a random string to append to the csv filename
+	 * \return a random string of 4 characters
+	 */
+    std::string GenerateRandomTag();
 
 	/**
 	 * \brief Create a new filename adding a timestamp to a provided base
@@ -178,6 +186,22 @@ CSVManager::WriteHeader (std::string header)
 	out.close();
 }
 
+// Generate a short random alphanumeric string (4 characters)
+std::string
+CSVManager::GenerateRandomTag() {
+	static const char charset[] =
+		"abcdefghijklmnopqrstuvwxyz"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"0123456789";
+	std::default_random_engine rng(std::random_device{}());
+	std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
+	std::string tag;
+	for (int i = 0; i < 4; ++i) {
+		tag += charset[dist(rng)];
+	}
+	return tag;
+}
+
 void
 CSVManager::EnableAlternativeFilename(boost::filesystem::path path)
 {
@@ -190,7 +214,7 @@ CSVManager::EnableAlternativeFilename(boost::filesystem::path path)
 	gettimeofday(&tp, NULL);
 	long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
-	std::string finalPartOfPath = "-" + to_string(ms) + extension;
+	std::string finalPartOfPath = "-" + to_string(ms) + "-" + GenerateRandomTag() + extension;
 	m_csvFilePath = path += finalPartOfPath;
 	cout << "roffTest= " << m_csvFilePath << endl;
 }
@@ -587,6 +611,7 @@ void ROFFVanetExperiment::ProcessOutputs() {
 	}
 }
 
+
 const std::string ROFFVanetExperiment::CalculateOutFilePath() const {
 	std::string fileName = "";
 //	std::string cwMin = std::to_string(m_cwMin);
@@ -601,23 +626,28 @@ const std::string ROFFVanetExperiment::CalculateOutFilePath() const {
 		errorOrForged = "f" + std::to_string(m_forgedCoordRate);
 	}
 
-	vector<string> strings;
+	std::vector<std::string> strings;
 	boost::split(strings, m_traceFile, boost::is_any_of("/"));
-	std::string scenarioName = strings[strings.size() - 1];
-	int dotPos =scenarioName.find(".");
+	std::string scenarioName = strings.back();
+	int dotPos = scenarioName.find(".");
 	scenarioName = scenarioName.substr(0, dotPos);
 
-
+	// File name building
 	fileName.append(scenarioName + "/b" + buildings + "/" + errorOrForged +  "/r" + actualRange
-			+  "/j" + junctions + "/" + protocol + "/" + scenarioName + "-b" + buildings +
-			"-" + errorOrForged + "-r" + actualRange + "-j" + junctions + "-" + protocol);
-	cout << fileName << endl;
-//	fileName.append("cw-" + cwMin + "-" + cwMax + "/" + m_mapBaseNameWithoutDistance + "/d" + vehicleDistance + "/b" + buildings
-//			+ "/" + protocol + "-" + actualRange + "/" + m_mapBaseName + "-cw-" + cwMin + "-" + cwMax + "-b"
-//			+ buildings + "-" + protocol + "-" + actualRange);
+		+ "/j" + junctions + "/" + protocol + "/" + scenarioName + "-b" + buildings +
+		"-" + errorOrForged + "-r" + actualRange + "-j" + junctions + "-" + protocol);
+
+	std::cout << fileName << std::endl;
+
+	/*
+	fileName.append("cw-" + cwMin + "-" + cwMax + "/" + m_mapBaseNameWithoutDistance + "/d" + vehicleDistance + "/b" + buildings
+		+ "/" + protocol + "-" + actualRange + "/" + m_mapBaseName + "-cw-" + cwMin + "-" + cwMax + "-b"
+		+ buildings + "-" + protocol + "-" + actualRange);
+	*/
 
 	return fileName;
 }
+
 
 void ROFFVanetExperiment::RunAndPrintResults(int argc, char *argv[]) {
 	Configure(argc, argv);
