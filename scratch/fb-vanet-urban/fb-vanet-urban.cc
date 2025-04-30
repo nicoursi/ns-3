@@ -663,14 +663,15 @@ const std::string FBVanetExperiment::CalculateOutFilePath() const {
 	else if (m_staticProtocol == PROTOCOL_STATIC_500) {
 		protocol = "STATIC-500";
 	}
+	else if (m_staticProtocol == PROTOCOL_STATIC_700) {
+		protocol = "STATIC-700";
+	}
 
 	std::vector<std::string> strings;
 	boost::split(strings, m_traceFile, boost::is_any_of("/"));
 	std::string scenarioName = strings.back();
 	int dotPos = scenarioName.find(".");
 	scenarioName = scenarioName.substr(0, dotPos);
-
-
 
 	// File name building
 	fileName.append(scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange + "/j" + junctions
@@ -732,6 +733,8 @@ FBVanetExperiment::ConfigureDefaults ()
 		m_staticProtocol = PROTOCOL_STATIC_300;
 	else if (m_staticProtocol == 4)
 		m_staticProtocol = PROTOCOL_STATIC_500;
+	else if (m_staticProtocol == 5)
+		m_staticProtocol = PROTOCOL_STATIC_700;
 }
 
 void
@@ -811,10 +814,14 @@ FBVanetExperiment::SetupAdhocDevices ()
 		m_txp = -7.0;
 	}
 	else if (m_actualRange == 300) {
-		m_txp = 4.6;
+		m_txp = 4.6; // 11.6 dB gain
 	}
 	else if (m_actualRange == 500) {
-		m_txp = 13.4;
+		m_txp = 13.4; // 8.8 dB gain
+	}
+	else if (m_actualRange == 700) {
+		m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
+		               // (8.8 - (11.6-8.8)) + 13.4
 	}
 
 	WifiMacHelper wifiMac;
@@ -935,7 +942,7 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[]) {
     cmd.AddValue ("maxRun", "Maximum number of simulation runs", m_maxRun);
 	cmd.AddValue ("startingNode", "Id of the first node who will start an aler", m_startingNode);
 	cmd.AddValue ("actualRange", "Actual transimision range (meters)", m_actualRange);
-	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500", m_staticProtocol);
+	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500 5=C700", m_staticProtocol);
 	cmd.AddValue ("flooding", "Enable flooding", m_flooding);
 	cmd.AddValue ("alertGeneration", "Time at which the first Alert Message should be generated.", m_alertGeneration);
 	cmd.AddValue ("area", "Radius of the area of interest", m_areaOfInterest);

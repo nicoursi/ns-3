@@ -776,6 +776,11 @@ ROFFVanetExperiment::SetupAdhocDevices() {
 	else if (m_actualRange == 500) {
 		m_txp = 13.4;
 	}
+	else if (m_actualRange == 700) {
+		m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
+		               // (8.8 - (11.6-8.8)) + 13.4
+	}
+
 
 	WifiMacHelper wifiMac;
 	wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", StringValue(m_phyMode),
@@ -897,7 +902,7 @@ void ROFFVanetExperiment::CommandSetup (int argc, char *argv[]) {
 //	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
     cmd.AddValue ("maxRun", "Maximum number of simulation runs", m_maxRun);
 	cmd.AddValue("startingNode", "Id of the first node who will start an alert", m_startingNode);
-	cmd.AddValue("actualRange", "Actual transimision range (meters) [100, 300, 500]", m_actualRange);
+	cmd.AddValue("actualRange", "Actual transimision range (meters) [100, 300, 500, 700]", m_actualRange);
 //	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500", m_staticProtocol);
 //	cmd.AddValue ("flooding", "Enable flooding", m_flooding);
 //	cmd.AddValue("alertGeneration", "Time at which the first Alert Message should be generated.", m_alertGeneration);

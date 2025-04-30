@@ -106,6 +106,10 @@ void FBApplication::Install(uint32_t protocol, uint32_t broadcastPhaseStart, uin
 		m_estimatedRange = PROTOCOL_STATIC_500;
 		m_staticProtocol = true;
 	}
+	else if (protocol == PROTOCOL_STATIC_700) {
+		m_estimatedRange = PROTOCOL_STATIC_700;
+		m_staticProtocol = true;
+	}
 	else
 		NS_LOG_ERROR ("Protocol not found.");
 
