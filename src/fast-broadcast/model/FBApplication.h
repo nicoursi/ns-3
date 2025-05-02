@@ -246,6 +246,7 @@ private:
 	uint32_t IsMaxDistNodeReached(uint32_t& maxDist) const;
 
 private:
+    std::map<uint32_t, Time>                                                m_messageSentTimes; //  map for tracking message sent times
 	uint32_t																m_nNodes;	// number of nodes
 	vector<Ptr<FBNode>>														m_nodes;	// nodes that run this application
 	map<uint32_t, uint32_t> 												m_id2id;	// map node id with index in m_nodes

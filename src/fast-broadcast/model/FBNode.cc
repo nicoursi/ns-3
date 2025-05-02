@@ -58,7 +58,11 @@
 			m_slot (0),
 			m_received (false),
 			m_sent (false),
-			m_timestamp (0),
+			m_receiveTimestamp (0),
+ 			m_sendTimestamp(0),
+ 			m_receiveTimestampSet (false),
+ 			m_sendTimestampSet (false),
+			m_propTimeUs(0),
 			m_amIaVehicle (true),
 			m_amIInJunction(false),
 			m_junctionId(0),
@@ -156,12 +160,6 @@
 		return m_sent;
 	}
 
-	Time
-	FBNode::GetTimestamp (void) const
-	{
-		NS_LOG_FUNCTION (this);
-		return m_timestamp;
-	}
 
 	bool
 	FBNode::AmIaVehicle (void) const
@@ -190,6 +188,36 @@
 		NS_LOG_FUNCTION (this);
 		return m_stopSending;
 	}
+
+ 	int64_t
+ 	FBNode::GetPropagationTime() const
+	 {
+ 		return m_propTimeUs;
+	 }
+
+ 	Time
+ 	FBNode::GetSendTimestamp() const
+	 {
+ 		return m_sendTimestamp;
+	 }
+
+ 	Time
+ 	FBNode::GetReceiveTimestamp() const
+	 {
+ 		return m_receiveTimestamp;
+	 }
+
+ 	bool
+ 	FBNode::IsSendTimestampSet() const
+ 	{
+ 		return m_sendTimestampSet;
+ 	}
+
+ 	bool
+ 	FBNode::IsReceiveTimestampSet() const
+ 	{
+ 		return m_receiveTimestampSet;
+ 	}
 
 	void
 	FBNode::SetId (uint32_t value)
@@ -299,13 +327,6 @@
 	}
 
 	void
-	FBNode::SetTimestamp (Time value)
-	{
-		NS_LOG_FUNCTION (this << value);
-		m_timestamp = value;
-	}
-
-	void
 	FBNode::SetMeAsVehicle (bool value)
 	{
 		NS_LOG_FUNCTION (this << value);
@@ -332,5 +353,43 @@
 		NS_LOG_FUNCTION (this << stopSending);
 		m_stopSending = stopSending;
 	}
+ 	void
+ 	FBNode::SetPropagationTime(int64_t timeUs)
+ 	{
+ 		m_propTimeUs = timeUs;
+ 	}
+
+ 	void
+ 	FBNode::SetSendTimestamp(Time t)
+ 	{
+ 		if (!m_sendTimestampSet) {
+ 			m_sendTimestamp = t;
+ 			m_sendTimestampSet = true;
+ 		}
+ 	}
+
+
+ 	void
+ 	FBNode::SetReceiveTimestamp(Time t)
+ 	{
+ 		if (!IsReceiveTimestampSet()) {
+ 			m_receiveTimestamp = t;
+ 			SetReceiveTimestampSet(true);
+ 		}
+ 	}
+
+ 	void
+ 	FBNode::SetSendTimestampSet(bool value)
+ 	{
+ 		m_sendTimestampSet = value;
+ 	}
+
+ 	void
+ 	FBNode::SetReceiveTimestampSet(bool value)
+ 	{
+ 		m_receiveTimestampSet = value;
+ 	}
+
+
 
 } // namespace ns3

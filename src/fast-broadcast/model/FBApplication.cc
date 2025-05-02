@@ -55,7 +55,8 @@ FBApplication::GetTypeId (void)
 }
 
 FBApplication::FBApplication ()
-	:	m_nNodes (0),
+	:	m_messageSentTimes(),
+	    m_nNodes (0),
 		m_startingNode (0),
 		m_staticProtocol (false),
 		m_broadcastPhaseStart (0),
@@ -187,8 +188,14 @@ void FBApplication::PrintStats(std::stringstream &dataStream) {
 	long double time_sum = 0;
 	long double hops_sum = 0;
 	long double slots_sum = 0;
+	int valid_time_samples = 0;
+	long double global_time_sum = 0;
+    int valid_global_time_samples = 0;
 
 	stringstream receivedOnCircIds;
+
+//	Time when the first alert message was sent
+	Time firstMessageSentTime = this->GetFBNode(m_startingNode)->GetSendTimestamp();
 
 	for (uint32_t i = 0; i < m_nNodes; i++)	{
 		Ptr<FBNode> current = m_nodes.at (i);
@@ -226,16 +233,31 @@ void FBApplication::PrintStats(std::stringstream &dataStream) {
 			if (current->GetReceived()) {
 				circ++;
 				receivedOnCircIds << current->GetId() << "_";
+                // Per-hop propagation
+                int64_t propTime = current->GetPropagationTime();
+                if (propTime > 0) {  // Only count valid times
+                    time_sum += propTime;
+                    valid_time_samples++;
+                }
+                // Global delay from first sent time
+				int64_t globalDelay = current->GetReceiveTimestamp().GetMicroSeconds() - firstMessageSentTime.GetMicroSeconds();
+                if (globalDelay >= 0) {
+                    global_time_sum += globalDelay;
+                    valid_global_time_samples++;
+                } else {
+//                  NS_LOG_WARN("Negative global delay for node " << current->GetId());
+                    cout << "Negative global delay for node " << current->GetId() << endl;
+                }
+
 				// Update mean time, nums and slots
 //				cout << "current get hop= "  << current->GetHop() << endl;
 				hops_sum += current->GetHop();
 				slots_sum += current->GetSlot();
-				time_sum += current->GetTimestamp().GetMicroSeconds ();
 			}
+
 		}
 	}
-//	Time when the first alert message was sent
-	Time timeref = this->GetFBNode(m_startingNode)->GetTimestamp();
+
 	string receivedNodes = StringifyVector(m_receivedNodes);
 	stringstream nodeIds;
 
@@ -248,10 +270,15 @@ void FBApplication::PrintStats(std::stringstream &dataStream) {
 //		}
 	}
 
+	// Calculate average using valid samples count
+    double avg_global_delay = (valid_global_time_samples > 0) ? (global_time_sum / valid_global_time_samples) : 0;
+    double avg_prop_time = (valid_time_samples > 0) ? (time_sum / valid_time_samples) : 0;
+
 	dataStream << circCont << ","
 			<< cover << ","
 			<< circ << ","
-			<< (time_sum / (double) circ) - timeref.GetMicroSeconds () << ","
+			<< avg_global_delay << ","  // Global delay from first message (Alert received mean time)
+//			<< avg_prop_time << ","     // Last hop propagation time. For the moment it is not printed into file
 			<< (hops_sum / (double) circ) << ","
 			<< (slots_sum / (double) circ) << ","
 //			<< m_nodes[m_nodes.size() - 1]->GetHop() << ","
@@ -260,12 +287,21 @@ void FBApplication::PrintStats(std::stringstream &dataStream) {
 //			<< (slots_sum / (double) circ) << ","
 			<< m_sent << ","
 			<< m_received;
-	NS_LOG_DEBUG("totalCoverage= " << cover << "/" << m_nNodes);
-	cout << "totalCoverage= " << cover << "/" << m_nNodes << endl;
-	cout << "coverageOnCirc= " << circ << "/" << circCont << endl;
-	cout << "m_sent=" << m_sent << endl;
+	NS_LOG_DEBUG("totalCoverage = " << cover << "/" << m_nNodes);
+	cout << "totalCoverage = " << cover << "/" << m_nNodes << endl;
+	cout << "coverageOnCirc = " << circ << "/" << circCont << endl;
+	cout << "m_sent = " << m_sent << endl;
 	cout << "hops= " << (hops_sum / (double) circ) << endl;
 	cout << "slots= " << (slots_sum / (double) circ) << endl;
+	cout << "Alert received mean time = " << avg_global_delay << endl;
+	cout << "Per-hop propagation time = " << avg_prop_time << endl;
+    cout << "First message sent time (firstMessageSentTime): "
+              << firstMessageSentTime.GetMicroSeconds() << " µs" << std::endl;
+    cout << "Starting node timestamp (GetSendTimestamp): "
+              << GetFBNode(m_startingNode)->GetSendTimestamp().GetMicroSeconds() << " µs" << std::endl;
+    cout << "m_startingNode = " << m_startingNode << endl;
+
+
 
 //	cout << "hopssum= " << hops_sum << " circ= "  << circ << " hops= " << (hops_sum / (double) circ) << endl;
 
@@ -463,8 +499,14 @@ void FBApplication::GenerateAlertMessage(Ptr<FBNode> fbNode) {
 	fbNode->SetSent(true);
 	m_sent++;
 
-	// Store current time
-	fbNode->SetTimestamp(Simulator::Now());
+    // Store current time for this sender
+    Time currentTime = Simulator::Now();
+    m_messageSentTimes[fbNode->GetId()] = currentTime;
+
+    // Only the origin node sets the send timestamp
+    if (!fbNode->IsSendTimestampSet()) {
+        fbNode->SetSendTimestamp(currentTime);
+    }
 }
 
 void FBApplication::ReceivePacket(Ptr<Socket> socket) {
@@ -631,7 +673,19 @@ void FBApplication::HandleAlertMessage(Ptr<FBNode> fbNode, FBHeader fbHeader) {
 
 	if (!fbNode->GetReceived() ) {
 		fbNode->SetReceived(true);
-		fbNode->SetTimestamp(Simulator::Now());
+        Time receiveTime = Simulator::Now();
+        fbNode->SetReceiveTimestamp(receiveTime);
+
+        // Calculate propagation time if sender time is available
+        uint32_t senderId = fbHeader.GetSenderId();
+        if (m_messageSentTimes.find(senderId) != m_messageSentTimes.end()) {
+            Time sentTime = m_messageSentTimes[senderId];
+            Time propTime = receiveTime - sentTime;
+            fbNode->SetPropagationTime(propTime.GetMicroSeconds());
+
+            NS_LOG_DEBUG("Message from " << senderId << " to " << fbNode->GetId()
+                      << " took " << propTime.GetMicroSeconds() << " microseconds");
+        }
 		fbNode->SetSlot(fbHeader.GetSlot());
 		fbNode->SetHop(phase + 1);
 		fbNode->SetPhase(phase);
@@ -768,6 +822,9 @@ void FBApplication::ForwardAlertMessage(Ptr<FBNode> fbNode, FBHeader oldFBHeader
 	// Forward
 	fbNode->Send(packet);
 	fbNode->SetSent(true);
+
+    // Store sent time for this forwarded message
+    m_messageSentTimes[fbNode->GetId()] = Simulator::Now();
 
 	m_sent++;
 //	else {

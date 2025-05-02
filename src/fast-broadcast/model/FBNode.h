@@ -104,11 +104,6 @@ public:
 	bool GetSent (void) const;
 
 	/**
-	 * \returns the number of microseconds in the timestamp
-	 */
-	Time GetTimestamp (void) const;
-
-	/**
 	 * \returns true if the node is set as vehicle
 	 */
 	bool AmIaVehicle (void) const;
@@ -125,6 +120,42 @@ public:
 
 
 	bool GetStopSending  (void) const;
+
+	/**
+	 * \brief Get the propagation time in microseconds for this node
+	 * \returns propagation time in microseconds
+	 */
+	int64_t GetPropagationTime() const;
+
+	/**
+	 * \brief Get the timestamp when the alert message was sent
+	 * \returns time value when the message was sent
+	 */
+	Time GetSendTimestamp() const;
+
+	/**
+	 * \brief Get the timestamp when the alert message was received
+	 * \returns time value when the message was received
+	 */
+	Time GetReceiveTimestamp() const;
+
+	/**
+	 * \brief Check if the send timestamp has been set
+	 * \returns true if the send timestamp has been set
+	 */
+	bool IsSendTimestampSet() const;
+
+	/**
+	 * \brief Check if the receive timestamp has been set
+	 * \returns true if the receive timestamp has been set
+	 */
+	bool IsReceiveTimestampSet() const;
+
+	/**
+	 * \brief Set the timestamp when the alert message was received
+	 * \param t time value when the message was received
+	 */
+	void SetReceiveTimestamp(Time t);
 
 	/**
 	 * \brief set the node id
@@ -211,12 +242,6 @@ public:
 	void Send (Ptr<Packet> packet);
 
 	/**
-	 * \brief set the timestamp field
-	 * \param value number of microseconds
-	 */
-	void SetTimestamp (Time value);
-
-	/**
 	 * \brief set the node as a vehicle
 	 * \param value true if the node has to be set as a vehicles
 	 */
@@ -236,6 +261,30 @@ public:
 
 	void SetStopSending (bool stopSending);
 
+	/**
+	 * \brief Set the propagation time in microseconds for this node
+	 * \param timeUs propagation time in microseconds
+	 */
+	void SetPropagationTime(int64_t timeUs);
+
+	/**
+	 * \brief Set the timestamp when the alert message was sent
+	 * \param t time value when the message was sent
+	 */
+	void SetSendTimestamp(Time t);
+
+	/**
+	 * \brief Manually set the send timestamp flag
+	 * \param value true if the send timestamp has been set
+	 */
+	void SetSendTimestampSet(bool value);
+
+	/**
+	 * \brief Manually set the receive timestamp flag
+	 * \param value true if the receive timestamp has been set
+	 */
+	void SetReceiveTimestampSet(bool value);
+
 	uint32_t								m_id;	// node id
 	Ptr<Node>								m_node;	// ns-3 node
 	Ptr<Socket> 							m_socket; // ns-3 socket
@@ -249,7 +298,11 @@ public:
 	uint32_t								m_slot;	// legacy with barichello's code
 	bool 									m_received;	// legacy with barichello's code
 	bool 									m_sent;	// legacy with barichello's code
-	Time									m_timestamp;	// used for statistics
+	Time 									m_sendTimestamp;         // Timestamp when the node sends the message
+	Time 									m_receiveTimestamp;      // Timestamp when the node receives the message
+	bool 									m_receiveTimestampSet;
+	bool 									m_sendTimestampSet;
+	int64_t                                 m_propTimeUs;  // propagation time in microseconds
 	bool									m_amIaVehicle;	// used for statistics
 	bool									m_amIInJunction; // whether the node is inside a junction
 	uint64_t								m_junctionId; // id of the junction where the node is
