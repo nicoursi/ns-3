@@ -239,7 +239,7 @@ void FBApplication::PrintStats(std::stringstream &dataStream) {
                     time_sum += propTime;
                     valid_time_samples++;
                 }
-                // Global delay from first sent time
+                // Global delay tracks in us the time that the alert msg took to reach the node from source to circunference
 				int64_t globalDelay = current->GetReceiveTimestamp().GetMicroSeconds() - firstMessageSentTime.GetMicroSeconds();
                 if (globalDelay >= 0) {
                     global_time_sum += globalDelay;
@@ -270,8 +270,9 @@ void FBApplication::PrintStats(std::stringstream &dataStream) {
 //		}
 	}
 
-	// Calculate average using valid samples count
+//	Alert received mean time: average time the alert took to reach the node on the circunference
     double avg_global_delay = (valid_global_time_samples > 0) ? (global_time_sum / valid_global_time_samples) : 0;
+//  The time the node took to traverse the last hop
     double avg_prop_time = (valid_time_samples > 0) ? (time_sum / valid_time_samples) : 0;
 
 	dataStream << circCont << ","
@@ -507,6 +508,7 @@ void FBApplication::GenerateAlertMessage(Ptr<FBNode> fbNode) {
     if (!fbNode->IsSendTimestampSet()) {
         fbNode->SetSendTimestamp(currentTime);
     }
+    fbNode->SetReceived(true);
 }
 
 void FBApplication::ReceivePacket(Ptr<Socket> socket) {
