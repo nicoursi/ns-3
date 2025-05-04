@@ -76,6 +76,12 @@ public:
 	 */
 	CSVManager ();
 
+    /**
+     * \brief Constructor with runId
+     * \param runId ID of the current run
+     */
+    CSVManager(unsigned int runId);
+
 	/**
 	 * \brief Destructor
 	 * \return none
@@ -160,6 +166,12 @@ CSVManager::CSVManager ()
 :	m_csvFilePath (""), runId(0)
 {
 	NS_LOG_FUNCTION (this);
+}
+
+CSVManager::CSVManager(unsigned int runId)
+: m_csvFilePath(""), runId(runId)
+{
+	NS_LOG_FUNCTION(this);
 }
 
 CSVManager::~CSVManager ()
@@ -281,7 +293,10 @@ CSVManager::CloseRow (void)
 	m_currentRow.str("");
 }
 
-CSVManager			g_csvData; // CSV file manager
+CSVManager			g_csvData(RngSeedManager::GetRun()); // ToDo: add a method to this class and let setting the runId externally.
+//                                                                Also make other scratch applications share CSVManager instead
+//                                                                of dupicating it
+
 
 /**
  * \ingroup obstacle
@@ -571,10 +586,8 @@ FBVanetExperiment::FBVanetExperiment ()
 		m_droneTest(0),
 		m_maxRun(1),
 		m_highBuildings(0) {
-	srand (time (0));
 
-	RngSeedManager::SetSeed (time (0));
-}
+    }
 
 FBVanetExperiment::~FBVanetExperiment ()
 {
@@ -1175,11 +1188,12 @@ int main (int argc, char *argv[])
 
 	NS_LOG_UNCOND ("FB Vanet Experiment URBAN");
 
-//	Before launching experiments, calculate output file path
+//	Before launching experiments, calculate output file path : Todo: the output file path logic should probably be out of this class
 	FBVanetExperiment experiment;
 	experiment.Configure (argc, argv);
-//	unsigned int maxRun = RngSeedManager::GetRun();
 	unsigned int maxRun = experiment.GetMaxRun();
+	unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
+	cout << "start run: " << startRun << endl;
 	cout << "Max run: " << maxRun << endl;
 
 	if (experiment.GetPrintToFile()) {
@@ -1221,13 +1235,21 @@ int main (int argc, char *argv[])
 		g_csvData.EnableAlternativeFilename(path);
 		g_csvData.WriteHeader(header);
 	}
-	for(unsigned int i = 0; i < maxRun; i++) {
-		std::string runLabel = "Simulation Run " + std::to_string(i);
+
+	for (unsigned int i = 0; i < maxRun; i++) {
+        unsigned int thisRun = startRun + i;
+        RngSeedManager::SetRun(thisRun);
+
+        cout << "start run is: " << startRun << endl;
+
+        std::string runLabel = "Simulation Run " + std::to_string(thisRun);
         auto runStart = PrintStartTime(runLabel);
-		FBVanetExperiment experiment;
-		experiment.RunAndPrintResults(argc, argv);
-		PrintElapsedTime(runStart, runLabel);
-	}
+
+        FBVanetExperiment experiment;
+        experiment.RunAndPrintResults(argc, argv);
+
+        PrintElapsedTime(runStart, runLabel);
+    }
 
     PrintElapsedTime(wholeStart, "Whole simulation");
 

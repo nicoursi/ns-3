@@ -75,6 +75,12 @@ public:
 	 */
 	CSVManager ();
 
+    /**
+     * \brief Constructor with runId
+     * \param runId ID of the current run
+     */
+    CSVManager(unsigned int runId);
+
 	/**
 	 * \brief Destructor
 	 * \return none
@@ -159,6 +165,12 @@ CSVManager::CSVManager ()
 :	m_csvFilePath (""), runId(0)
 {
 	NS_LOG_FUNCTION (this);
+}
+
+CSVManager::CSVManager(unsigned int runId)
+: m_csvFilePath(""), runId(runId)
+{
+	NS_LOG_FUNCTION(this);
 }
 
 CSVManager::~CSVManager ()
@@ -275,7 +287,7 @@ CSVManager::CloseRow (void)
 	m_currentRow.str("");
 }
 
-CSVManager			g_csvData; // CSV file manager
+CSVManager			g_csvData(RngSeedManager::GetRun()); // CSV file manager
 
 /**
  * \ingroup obstacle
@@ -565,9 +577,9 @@ ROFFVanetExperiment::ROFFVanetExperiment():
 		m_droneTest(0),
 		m_maxRun(1),
 		m_highBuildings(0) {
-	srand(time(0));
-
-	RngSeedManager::SetSeed(time(0));
+//	srand(time(0));
+//
+//	RngSeedManager::SetSeed(time(0));
 }
 
 ROFFVanetExperiment::~ROFFVanetExperiment() {
@@ -1135,12 +1147,12 @@ int main (int argc, char *argv[])
     auto wholeStart = PrintStartTime("Whole simulation");
     cout << "Start main urban" << endl;
 	NS_LOG_UNCOND ("ROFF Vanet Experiment URBAN");
-//	unsigned int maxRun = RngSeedManager::GetRun();
 
 //	Before launching experiments, calculate output file path
 	ROFFVanetExperiment experiment;
 	experiment.Configure(argc, argv);
 	unsigned int maxRun = experiment.GetMaxRun();
+	unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
 	cout << "Max run: " << maxRun << endl;
 	if (experiment.GetPrintToFile()) {
 		string filePath = experiment.CalculateOutFilePath();
@@ -1188,7 +1200,10 @@ int main (int argc, char *argv[])
 		g_csvData.WriteHeader(header);
 	}
 	for(unsigned int i = 0; i < maxRun; i++) {
-		std::string runLabel = "Simulation Run " + std::to_string(i);
+	    unsigned int thisRun = startRun + i;
+        RngSeedManager::SetRun(thisRun);
+        cout << "start run is: " << startRun << endl;
+		std::string runLabel = "Simulation Run " + std::to_string(thisRun);
         auto runStart = PrintStartTime(runLabel);
 		ROFFVanetExperiment experiment;
 		experiment.RunAndPrintResults(argc, argv);
