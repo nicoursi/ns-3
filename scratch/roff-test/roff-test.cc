@@ -1207,7 +1207,6 @@ int main (int argc, char *argv[])
 	for(unsigned int i = 0; i < maxRun; i++) {
 	    unsigned int thisRun = startRun + i;
         RngSeedManager::SetRun(thisRun);
-        cout << "start run is: " << startRun << endl;
 		std::string runLabel = "Simulation Run " + std::to_string(thisRun);
         auto runStart = PrintStartTime(runLabel);
 		ROFFVanetExperiment experiment;
