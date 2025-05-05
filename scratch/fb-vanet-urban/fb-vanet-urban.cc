@@ -150,6 +150,13 @@ public:
 	 */
 	void AddMultipleValues(std::stringstream& value);
 
+    /**
+     * \brief Set the run ID manually
+     * \param id The run ID to set
+     * \return none
+     */
+    void SetRunId(unsigned int id);
+
 	/**
 	 * \brief Write the current row and initilize a new one
 	 * \return none
@@ -279,6 +286,13 @@ CSVManager::AddMultipleValues(std::stringstream& value)
 }
 
 void
+CSVManager::SetRunId(unsigned int id)
+{
+	NS_LOG_FUNCTION(this << id);
+	runId = id;
+}
+
+void
 CSVManager::CloseRow (void)
 {
 	NS_LOG_FUNCTION (this);
@@ -286,16 +300,13 @@ CSVManager::CloseRow (void)
 	// write current row to file in an atomic way
 	std::ofstream out (m_csvFilePath.c_str (), std::ios::app);
 	out << runId << ","<< m_currentRow.rdbuf() << std::endl;
-	runId++;
 	out.close ();
 //	m_mutex.unlock();
 	// Delete (old) row
 	m_currentRow.str("");
 }
 
-CSVManager			g_csvData(RngSeedManager::GetRun()); // ToDo: add a method to this class and let setting the runId externally.
-//                                                                Also make other scratch applications share CSVManager instead
-//                                                                of dupicating it
+CSVManager			g_csvData;
 
 
 /**
@@ -374,6 +385,12 @@ public:
 	* \return highBuildings
 	*/
 	uint32_t GetHighBuildings() const;
+
+    /**
+    * \brief startRun getter
+    * \return startRun
+    */
+	int32_t GetStartRun() const;
 
     /**
     * \brief maxRun getter
@@ -538,6 +555,7 @@ private:
 	uint32_t								m_forgedCoordRate;
 	uint32_t								m_nVeh;
 	uint32_t								m_droneTest;
+	int32_t                                 m_startRun;
 	uint32_t                                m_maxRun;
 	uint32_t								m_highBuildings;
 	std::map<uint32_t, uint64_t>			m_nodeIdToJunctionIdMap;
@@ -584,8 +602,12 @@ FBVanetExperiment::FBVanetExperiment ()
 		m_forgedCoordRate(0),
 		m_nVeh(0),
 		m_droneTest(0),
+		m_startRun (-1),
 		m_maxRun(1),
 		m_highBuildings(0) {
+
+//	srand(12345);
+//	RngSeedManager::SetSeed(12345);
 
     }
 
@@ -710,6 +732,10 @@ uint32_t FBVanetExperiment::GetDroneTest() const {
 
 uint32_t FBVanetExperiment::GetHighBuildings() const {
 	return m_highBuildings;
+}
+
+int32_t FBVanetExperiment::GetStartRun() const {
+    return m_startRun;
 }
 
 uint32_t FBVanetExperiment::GetMaxRun() const {
@@ -939,6 +965,7 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[]) {
 
 	// allow command line overrides
 //	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
+    cmd.AddValue ("startRun", "Run number the simulations will start from. If set will take precedence over NS_GLOBAL_VALUE=RngRun=n", m_startRun);
     cmd.AddValue ("maxRun", "Maximum number of simulation runs", m_maxRun);
 	cmd.AddValue ("startingNode", "Id of the first node who will start an aler", m_startingNode);
 	cmd.AddValue ("actualRange", "Actual transimision range (meters)", m_actualRange);
@@ -1199,7 +1226,9 @@ int main (int argc, char *argv[])
 	FBVanetExperiment experiment;
 	experiment.Configure (argc, argv);
 	unsigned int maxRun = experiment.GetMaxRun();
-	unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
+//	unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
+	int32_t startRun = experiment.GetStartRun();
+	startRun = (startRun==-1) ? RngSeedManager::GetRun() : startRun;
 	cout << "start run: " << startRun << endl;
 	cout << "Max run: " << maxRun << endl;
 
@@ -1246,8 +1275,9 @@ int main (int argc, char *argv[])
 	for (unsigned int i = 0; i < maxRun; i++) {
         unsigned int thisRun = startRun + i;
         RngSeedManager::SetRun(thisRun);
+        g_csvData.SetRunId(thisRun);
 
-        cout << "start run is: " << startRun << endl;
+        cout << "this run is: " << thisRun << endl;
 
         std::string runLabel = "Simulation Run " + std::to_string(thisRun);
         auto runStart = PrintStartTime(runLabel);

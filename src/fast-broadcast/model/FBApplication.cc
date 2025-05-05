@@ -80,7 +80,9 @@ FBApplication::FBApplication ()
 		m_vehicleDistance(25),
 		m_transmissionList(),
 		m_transmissionVector() {
-		NS_LOG_FUNCTION (this);
+	NS_LOG_FUNCTION (this);
+//	srand(12345);
+//	RngSeedManager::SetSeed(12345);
 }
 
 FBApplication::~FBApplication () {
@@ -737,11 +739,11 @@ void FBApplication::HandleAlertMessage(Ptr<FBNode> fbNode, FBHeader fbHeader) {
 			Simulator::Schedule(MilliSeconds(secondTransmissionTime), &FBApplication::ForwardAlertMessage,
 								this, fbNode, fbHeader, secondTransmissionTime, true);
 			}
-		}
-		else {
-			Simulator::Schedule(MilliSeconds(0),
-								&FBApplication::ForwardAlertMessage, this, fbNode, fbHeader, waitingTime, false);
-		}
+	}
+	else {
+		Simulator::Schedule(MilliSeconds(0),
+							&FBApplication::ForwardAlertMessage, this, fbNode, fbHeader, waitingTime, false);
+	}
 //	}
 }
 
