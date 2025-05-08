@@ -337,6 +337,14 @@ public:
 	 */
 	void Configure (int argc, char *argv[]);
 
+
+	/**
+	 * \brief get command line parameters and set up protocol and scenario info.
+	 * \return none
+	 */
+    void getAndProcessParameters(int argc, char *argv[]);
+
+
 	/**
 	 * \brief Enacts simulation of an ns-3  application
 	 * \return none
@@ -399,13 +407,13 @@ public:
     uint32_t GetMaxRun() const;
 
 protected:
-	/**
-	 * \brief Process command line arguments
-	 * \param argc program arguments count
-	 * \param argv program arguments
-	 * \return none
-	 */
-	void ParseCommandLineArguments (int argc, char *argv[]);
+   /**
+    * \brief Process command line arguments
+    * \param argc program arguments count
+    * \param argv program arguments
+    * \return none
+    */
+   void ParseCommandLineArguments (int argc, char *argv[]);
 
 	/**
 	 * \brief Configure default attributes
@@ -469,7 +477,7 @@ private:
 	void Run ();
 
 	/**
-	 * \brief Run the simulation
+	 * \brief Processes command line parameters
 	 * \return none
 	 */
 	void CommandSetup (int argc, char *argv[]);
@@ -624,6 +632,14 @@ FBVanetExperiment::Configure (int argc, char *argv[])
 
 	ConfigureTracingAndLogging ();
 }
+void
+FBVanetExperiment::getAndProcessParameters(int argc, char *argv[]){
+    NS_LOG_FUNCTION (this);
+	NS_LOG_INFO ("Parsing command line arguments and setting default values.");
+    CommandSetup (argc, argv);
+    ConfigureDefaults ();
+
+}
 
 void
 FBVanetExperiment::Simulate ()
@@ -657,7 +673,6 @@ void FBVanetExperiment::ProcessOutputs () {
 	}
 }
 
-
 const std::string FBVanetExperiment::CalculateOutFilePath() const {
 	std::string fileName = "";
 	std::string cwMin = std::to_string(m_cwMin);
@@ -690,7 +705,7 @@ const std::string FBVanetExperiment::CalculateOutFilePath() const {
 	}
 
 	std::vector<std::string> strings;
-	boost::split(strings, m_traceFile, boost::is_any_of("/"));
+	boost::split(strings, m_mapBasePath, boost::is_any_of("/"));
 	std::string scenarioName = strings.back();
 	int dotPos = scenarioName.find(".");
 	scenarioName = scenarioName.substr(0, dotPos);
@@ -957,58 +972,6 @@ void FBVanetExperiment::RunSimulation () {
 	Run();
 }
 
-void FBVanetExperiment::CommandSetup (int argc, char *argv[]) {
-	NS_LOG_FUNCTION (this);
-	NS_LOG_INFO ("Parsing command line arguments.");
-
-	CommandLine cmd;
-
-	// allow command line overrides
-//	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
-    cmd.AddValue ("startRun", "Run number the simulations will start from. If set will take precedence over NS_GLOBAL_VALUE=RngRun=n", m_startRun);
-    cmd.AddValue ("maxRun", "Maximum number of simulation runs", m_maxRun);
-	cmd.AddValue ("startingNode", "Id of the first node who will start an aler", m_startingNode);
-	cmd.AddValue ("actualRange", "Actual transimision range (meters)", m_actualRange);
-	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500 5=C700", m_staticProtocol);
-	cmd.AddValue ("flooding", "Enable flooding", m_flooding);
-	cmd.AddValue ("alertGeneration", "Time at which the first Alert Message should be generated.", m_alertGeneration);
-	cmd.AddValue ("area", "Radius of the area of interest", m_areaOfInterest);
-	cmd.AddValue("vehicleDistance", "Distance between vehicles", m_vehicleDistance);
-//	cmd.AddValue ("scenario", "1=Padova, 2=Los Angeles", m_scenario);
-	cmd.AddValue ("buildings", "Load building (obstacles)", m_loadBuildings);
-	cmd.AddValue ("poly", "Buildings trace file (poly format)", m_bldgFile);
-	cmd.AddValue ("trace", "Vehicles trace file (ns2mobility format)", m_traceFile);
-	cmd.AddValue ("junctions", "Junction file", m_junctionFile);
-	cmd.AddValue ("totalTime", "Simulation end time", m_TotalSimTime);
-	cmd.AddValue ("cwMin", "Minimum contention window", m_cwMin);
-	cmd.AddValue ("cwMax", "Maximum contention window", m_cwMax);
-
-	cmd.AddValue ("mapBasePath", "Base path of map required for simulation "
-			"(e.g. ../maps/Padova", m_mapBasePath);
-	cmd.AddValue ("printToFile", "Print data to file or not: 0 not print, 1 print ", m_printToFile);
-	cmd.AddValue ("printCoords", "Print coords to file or not: 0 not print, 1 print ", m_printCoords);
-	cmd.AddValue ("createObstacleShadowingLossFile", "Create file which saves obstacle losses (dBm) keyed by "
-			"senderCoord, receiverCoord : 0 not create, 1 create ", m_createObstacleShadowingLossFile);
-	cmd.AddValue ("useObstacleShadowingLossFile", "Use optimization based on file which saves obstacle losses *dBm) "
-			"keyed by senderCoord, receiverCoord:  0 don't use it, 1 use it ", m_useObstacleShadowingLossFile);
-	cmd.AddValue("propagationLoss", "Type of propagation loss model: 0=RangePropagation, 1=TwoRayGround", m_propagationLoss);
-	cmd.AddValue("smartJunctionMode", "Whether to activate smart junction mode: 0=disabled, 1=enabled", m_smartJunctionMode);
-	cmd.AddValue("errorRate", "Probability to incur in an error in transmission schedule (sending 1 slot earlier or later", m_errorRate);
-	cmd.AddValue("forgedCoordTest", "Whether to run the forged hello messages attack test 0=disabled, 1=enabled", m_forgedCoordTest);
-	cmd.AddValue("forgedCoordRate", "Percentage of affected vehicle by forged hello messages attack", m_forgedCoordRate);
-
-	cmd.AddValue("nVehicles", "Number of vehicles (to be used in drones+vehicles scenario", m_nVeh);
-	cmd.AddValue("droneTest", "Whether to read drones from ns2mobilityFile and run test with drones", m_droneTest);
-	cmd.AddValue("highBuildings", "Whether buildings are very high (higher than any drones, e.g. 100m)", m_highBuildings);
-
-	// only one of these tests is possible at a given time
-	if (m_forgedCoordTest) {
-		m_errorRate = 0;
-	}
-
-	cmd.Parse (argc, argv);
-}
-
 void FBVanetExperiment::SetupScenario () {
 	NS_LOG_FUNCTION (this);
 //	NS_LOG_INFO ("Configure current scenario (" << m_scenario << ").");
@@ -1103,6 +1066,58 @@ void FBVanetExperiment::Run() {
 	Simulator::Run ();
 
 	Simulator::Destroy ();
+}
+
+void FBVanetExperiment::CommandSetup (int argc, char *argv[]) {
+	NS_LOG_FUNCTION (this);
+	NS_LOG_INFO ("Parsing command line arguments.");
+
+	CommandLine cmd;
+
+	// allow command line overrides
+//	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
+    cmd.AddValue ("startRun", "Run number the simulations will start from. If set will take precedence over NS_GLOBAL_VALUE=RngRun=n", m_startRun);
+    cmd.AddValue ("maxRun", "Maximum number of simulation runs", m_maxRun);
+	cmd.AddValue ("startingNode", "Id of the first node who will start an aler", m_startingNode);
+	cmd.AddValue ("actualRange", "Actual transimision range (meters)", m_actualRange);
+	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500 5=C700", m_staticProtocol);
+	cmd.AddValue ("flooding", "Enable flooding", m_flooding);
+	cmd.AddValue ("alertGeneration", "Time at which the first Alert Message should be generated.", m_alertGeneration);
+	cmd.AddValue ("area", "Radius of the area of interest", m_areaOfInterest);
+	cmd.AddValue("vehicleDistance", "Distance between vehicles", m_vehicleDistance);
+//	cmd.AddValue ("scenario", "1=Padova, 2=Los Angeles", m_scenario);
+	cmd.AddValue ("buildings", "Load building (obstacles)", m_loadBuildings);
+	cmd.AddValue ("poly", "Buildings trace file (poly format)", m_bldgFile);
+	cmd.AddValue ("trace", "Vehicles trace file (ns2mobility format)", m_traceFile);
+	cmd.AddValue ("junctions", "Junction file", m_junctionFile);
+	cmd.AddValue ("totalTime", "Simulation end time", m_TotalSimTime);
+	cmd.AddValue ("cwMin", "Minimum contention window", m_cwMin);
+	cmd.AddValue ("cwMax", "Maximum contention window", m_cwMax);
+
+	cmd.AddValue ("mapBasePath", "Base path of map required for simulation "
+			"(e.g. ../maps/Padova", m_mapBasePath);
+	cmd.AddValue ("printToFile", "Print data to file or not: 0 not print, 1 print ", m_printToFile);
+	cmd.AddValue ("printCoords", "Print coords to file or not: 0 not print, 1 print ", m_printCoords);
+	cmd.AddValue ("createObstacleShadowingLossFile", "Create file which saves obstacle losses (dBm) keyed by "
+			"senderCoord, receiverCoord : 0 not create, 1 create ", m_createObstacleShadowingLossFile);
+	cmd.AddValue ("useObstacleShadowingLossFile", "Use optimization based on file which saves obstacle losses *dBm) "
+			"keyed by senderCoord, receiverCoord:  0 don't use it, 1 use it ", m_useObstacleShadowingLossFile);
+	cmd.AddValue("propagationLoss", "Type of propagation loss model: 0=RangePropagation, 1=TwoRayGround", m_propagationLoss);
+	cmd.AddValue("smartJunctionMode", "Whether to activate smart junction mode: 0=disabled, 1=enabled", m_smartJunctionMode);
+	cmd.AddValue("errorRate", "Probability to incur in an error in transmission schedule (sending 1 slot earlier or later", m_errorRate);
+	cmd.AddValue("forgedCoordTest", "Whether to run the forged hello messages attack test 0=disabled, 1=enabled", m_forgedCoordTest);
+	cmd.AddValue("forgedCoordRate", "Percentage of affected vehicle by forged hello messages attack", m_forgedCoordRate);
+
+	cmd.AddValue("nVehicles", "Number of vehicles (to be used in drones+vehicles scenario", m_nVeh);
+	cmd.AddValue("droneTest", "Whether to read drones from ns2mobilityFile and run test with drones", m_droneTest);
+	cmd.AddValue("highBuildings", "Whether buildings are very high (higher than any drones, e.g. 100m)", m_highBuildings);
+
+	// only one of these tests is possible at a given time
+	if (m_forgedCoordTest) {
+		m_errorRate = 0;
+	}
+
+	cmd.Parse (argc, argv);
 }
 
 void FBVanetExperiment::CourseChange (std::ostream *os, std::string foo, Ptr<const MobilityModel> mobility) {
@@ -1224,7 +1239,10 @@ int main (int argc, char *argv[])
 
 //	Before launching experiments, calculate output file path : Todo: the output file path logic should probably be out of this class
 	FBVanetExperiment experiment;
-	experiment.Configure (argc, argv);
+//	experiment.Configure (argc, argv);
+//	experiment.CommandSetup(argc, argv);
+	experiment.getAndProcessParameters(argc, argv);
+
 	unsigned int maxRun = experiment.GetMaxRun();
 //	unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
 	int32_t startRun = experiment.GetStartRun();
@@ -1276,8 +1294,6 @@ int main (int argc, char *argv[])
         unsigned int thisRun = startRun + i;
         RngSeedManager::SetRun(thisRun);
         g_csvData.SetRunId(thisRun);
-
-        cout << "this run is: " << thisRun << endl;
 
         std::string runLabel = "Simulation Run " + std::to_string(thisRun);
         auto runStart = PrintStartTime(runLabel);
