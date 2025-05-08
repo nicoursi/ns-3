@@ -318,6 +318,12 @@ public:
 	void Configure(int argc, char *argv[]);
 
 	/**
+	 * \brief get command line parameters and set up protocol and scenario info.
+	 * \return none
+	 */
+    void getAndProcessParameters(int argc, char *argv[]);
+
+	/**
 	 * \brief Enacts simulation of an ns-3  application
 	 * \return none
 	 */
@@ -593,6 +599,15 @@ void ROFFVanetExperiment::Configure(int argc, char *argv[]) {
 	ConfigureTracingAndLogging();
 }
 
+void
+ROFFVanetExperiment::getAndProcessParameters(int argc, char *argv[]){
+    NS_LOG_FUNCTION (this);
+	NS_LOG_INFO ("Parsing command line arguments and setting default values.");
+    CommandSetup (argc, argv);
+    ConfigureDefaults ();
+
+}
+
 void ROFFVanetExperiment::Simulate() {
 	// Configure the network and all the elements in it
 	ConfigureNodes();
@@ -639,7 +654,7 @@ const std::string ROFFVanetExperiment::CalculateOutFilePath() const {
 	}
 
 	std::vector<std::string> strings;
-	boost::split(strings, m_traceFile, boost::is_any_of("/"));
+	boost::split(strings, m_mapBasePath, boost::is_any_of("/"));
 	std::string scenarioName = strings.back();
 	int dotPos = scenarioName.find(".");
 	scenarioName = scenarioName.substr(0, dotPos);
@@ -1155,7 +1170,8 @@ int main (int argc, char *argv[])
 
 //	Before launching experiments, calculate output file path
 	ROFFVanetExperiment experiment;
-	experiment.Configure(argc, argv);
+//	experiment.Configure(argc, argv);
+	experiment.getAndProcessParameters(argc, argv);
 	unsigned int maxRun = experiment.GetMaxRun();
 	unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
 	cout << "Max run: " << maxRun << endl;
