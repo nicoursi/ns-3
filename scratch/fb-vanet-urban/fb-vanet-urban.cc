@@ -855,14 +855,14 @@ FBVanetExperiment::SetupAdhocDevices ()
 		m_txp = -7.0;
 	}
 	else if (m_actualRange == 300) {
-		m_txp = 4.6; // 11.6 dB gain
+		m_txp = 4.6;                  // 11.6 dB gain compared to 100m
 	}
 	else if (m_actualRange == 500) {
-		m_txp = 13.4; // 8.8 dB gain
+		m_txp = 13.4;                 // 8.8 dB gain (2.8 dB less than 300m)
 	}
-	else if (m_actualRange == 700) {
+	else if (m_actualRange == 700) {  // 6 dB gain   (2.8 dB less than 500m)
 		m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
-		               // (8.8 - (11.6-8.8)) + 13.4
+		               // 13.4 + (8.8 - (11.6-8.8))
 	}
 
 	WifiMacHelper wifiMac;
