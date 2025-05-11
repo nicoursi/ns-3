@@ -53,7 +53,7 @@
 #include "ns3/wave-mac-helper.h"
 #include "ns3/netanim-module.h"
 #include "ns3/ROFFApplication.h"
-
+#include "ns3/command-logger.h"
 #include <random>
 
 using namespace ns3;
@@ -1219,6 +1219,13 @@ int main (int argc, char *argv[])
 		path /= filePath;
 		g_csvData.EnableAlternativeFilename(path);
 		g_csvData.WriteHeader(header);
+        // Log command in the same folder, ony if not existent
+        boost::filesystem::path logPath = path;
+        logPath += "-executed-command.txt";
+
+        if (IsFileEmptyOrNotExists(logPath)) {
+            WriteExecutedCommand(logPath, argc, argv);
+        }
 	}
 	for(unsigned int i = 0; i < maxRun; i++) {
 	    unsigned int thisRun = startRun + i;

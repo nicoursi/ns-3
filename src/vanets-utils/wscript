@@ -1,11 +1,17 @@
 def build(bld):
+    # Create the vanets-utils module with dependencies on core module
     module = bld.create_ns3_module('vanets-utils', ['core'])
+
+    # Add the source files for the module
     module.source = [
         'Edge.cc',
+        'command-logger.cc',
     ]
 
+    # Add the header files for the module
     headers = bld(features='ns3header')
     headers.module = 'vanets-utils'
     headers.source = [
         'Edge.h',
+        'command-logger.h',
     ]

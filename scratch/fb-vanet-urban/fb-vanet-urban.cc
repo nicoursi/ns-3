@@ -56,6 +56,7 @@
 #include "ns3/wave-mac-helper.h"
 #include "ns3/netanim-module.h"
 #include "ns3/FBApplication.h"
+#include "ns3/command-logger.h"
 
 using namespace ns3;
 using namespace std;
@@ -1285,9 +1286,17 @@ int main (int argc, char *argv[])
 								"\"Slots\",\"Messages sent\",\"Messages received\"";
 		}
 		boost::filesystem::path path = boost::filesystem::current_path().parent_path() /= additionalPath;
+
 		path /= filePath;
 		g_csvData.EnableAlternativeFilename(path);
 		g_csvData.WriteHeader(header);
+        // Log command in the same folder, ony if not existent
+        boost::filesystem::path logPath = path;
+        logPath += "-executed-command.txt";
+
+        if (IsFileEmptyOrNotExists(logPath)) {
+            WriteExecutedCommand(logPath, argc, argv);
+        }
 	}
 
 	for (unsigned int i = 0; i < maxRun; i++) {
