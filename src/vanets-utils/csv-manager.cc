@@ -59,6 +59,10 @@ CSVManager::WriteHeader (std::string header)
   boost::filesystem::path parentPath = m_csvFilePath.parent_path();
   boost::filesystem::create_directories(parentPath);
   std::ofstream out (m_csvFilePath.string());
+  if (!out.is_open()) {
+    NS_LOG_ERROR("Failed to open file for writing header: " << m_csvFilePath.string());
+    return;
+  }
   out << header.c_str() << std::endl;
   out.close ();
 }
@@ -145,6 +149,10 @@ CSVManager::CloseRow (void)
   NS_LOG_FUNCTION (this);
   // write current row to file in an atomic way
   std::ofstream out (m_csvFilePath.c_str (), std::ios::app);
+  if (!out.is_open()) {
+    NS_LOG_ERROR("Failed to open file for writing row: " << m_csvFilePath.c_str());
+    return;
+  }
   out << runId << "," << m_currentRow.str() << std::endl;
   out.close ();
   // Delete (old) row
