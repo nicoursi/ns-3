@@ -82,7 +82,7 @@ FBApplication::FBApplication ()
 		m_transmissionVector() {
 	NS_LOG_FUNCTION (this);
 //	srand(12345);
-//	RngSeedManager::SetSeed(12345);
+	RngSeedManager::SetSeed(12345);
 }
 
 FBApplication::~FBApplication () {
@@ -411,7 +411,8 @@ void FBApplication::GenerateHelloTraffic(uint32_t count) {
 	{
 		for (uint32_t i = 0; i < hel; i++)
 		{
-			int pos = rand() % m_nNodes;
+//			int pos = rand() % m_nNodes;
+            int pos = m_randomVariable->GetInteger(0, m_nNodes - 1);
 			he.push_back (pos);
 			Ptr<FBNode> fbNode = m_nodes.at(pos);
 			Simulator::ScheduleWithContext (fbNode->GetNode()->GetId(),

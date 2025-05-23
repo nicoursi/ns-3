@@ -317,6 +317,7 @@ private:
 	uint32_t                                m_maxRun;
 	uint32_t								m_highBuildings;
 	std::map<uint32_t, uint64_t>			m_nodeIdToJunctionIdMap;
+	Ptr<UniformRandomVariable>              m_randomVariable;
 
 };
 
@@ -362,9 +363,9 @@ ROFFVanetExperiment::ROFFVanetExperiment():
 		m_droneTest(0),
 		m_maxRun(1),
 		m_highBuildings(0) {
-//	srand(time(0));
-//
-//	RngSeedManager::SetSeed(time(0));
+//	srand(12345);
+	RngSeedManager::SetSeed(12345);
+	m_randomVariable = CreateObject<UniformRandomVariable>();
 }
 
 ROFFVanetExperiment::~ROFFVanetExperiment() {
@@ -780,7 +781,8 @@ void ROFFVanetExperiment::SetupScenario () {
 		}
 		cout << "numNodes = " << m_nNodes << endl;
 		if (m_startingNode == -1) {
-			m_startingNode = rand() % m_nNodes;
+//			m_startingNode = rand() % m_nNodes;
+			m_startingNode = m_randomVariable->GetInteger(0, m_nNodes - 1);
 		}
 		cout << "numNodes = " << m_nNodes << endl;
 		cout << "numVeh = " << m_nVeh << endl;
