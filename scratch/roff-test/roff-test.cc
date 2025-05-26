@@ -912,7 +912,7 @@ std::chrono::system_clock::time_point PrintStartTime(const std::string& label) {
     std::cout << "-----------------------------------------------------------------------------"
               << std::endl
               << label << " starting at: "
-              << std::put_time(std::localtime(&start_time), "%Y-%m-%d %H:%M:%S")
+              << std::put_time(std::localtime(&start_time), "%Y-%m-%d %H:%M:%S %Z")
               << std::endl;
 
     return start;
@@ -924,7 +924,7 @@ void PrintElapsedTime(const std::chrono::system_clock::time_point& start, const 
     std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 
     std::cout << label << " ending at: "
-              << std::put_time(std::localtime(&end_time), "%Y-%m-%d %H:%M:%S")
+              << std::put_time(std::localtime(&end_time), "%Y-%m-%d %H:%M:%S %Z")
               << std::endl;
 
     auto duration = end - start;
