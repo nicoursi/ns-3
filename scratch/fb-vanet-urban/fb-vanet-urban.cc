@@ -937,7 +937,9 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[])
   cmd.AddValue ("vehicleDistance",
                 "Distance between vehicles",
                 m_vehicleDistance);
-//	cmd.AddValue ("scenario", "1=Padova, 2=Los Angeles", m_scenario);
+//	cmd.AddValue ("scenario",
+//                "1=Padova, 2=Los Angeles",
+//                m_scenario);
   cmd.AddValue ("buildings",
                 "Load building (obstacles)",
                 m_loadBuildings);
@@ -958,24 +960,29 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[])
                 m_cwMin);
   cmd.AddValue ("cwMax", "Maximum contention window",
                 m_cwMax);
-
   cmd.AddValue ("mapBasePath",
                 "Base path of map required for simulation "
                 "(e.g. ../maps/Padova",
                 m_mapBasePath);
-  cmd.AddValue ("printToFile", "Print data to file or not: 0 not print, 1 print ",
+  cmd.AddValue ("printToFile",
+                "Print data to file or not: 0 not print, 1 print ",
                 m_printToFile);
-  cmd.AddValue ("printCoords", "Print coords to file or not: 0 not print, 1 print ",
+  cmd.AddValue ("printCoords",
+                "Print coords to file or not: 0 not print, 1 print ",
                 m_printCoords);
-  cmd.AddValue ("createObstacleShadowingLossFile", "Create file which saves obstacle losses (dBm) keyed by "
+  cmd.AddValue ("createObstacleShadowingLossFile",
+                "Create file which saves obstacle losses (dBm) keyed by "
                 "senderCoord, receiverCoord : 0 not create, 1 create ",
                 m_createObstacleShadowingLossFile);
-  cmd.AddValue ("useObstacleShadowingLossFile", "Use optimization based on file which saves obstacle losses *dBm) "
+  cmd.AddValue ("useObstacleShadowingLossFile",
+                "Use optimization based on file which saves obstacle losses *dBm) "
                 "keyed by senderCoord, receiverCoord:  0 don't use it, 1 use it ",
                 m_useObstacleShadowingLossFile);
-  cmd.AddValue ("propagationLoss", "Type of propagation loss model: 0=RangePropagation, 1=TwoRayGround",
+  cmd.AddValue ("propagationLoss",
+                "Type of propagation loss model: 0=RangePropagation, 1=TwoRayGround",
                 m_propagationLoss);
-  cmd.AddValue ("smartJunctionMode", "Whether to activate smart junction mode: 0=disabled, 1=enabled",
+  cmd.AddValue ("smartJunctionMode",
+                "Whether to activate smart junction mode: 0=disabled, 1=enabled",
                 m_smartJunctionMode);
   cmd.AddValue ("errorRate",
                 "Probability to incur in an error in transmission schedule (sending 1 slot earlier or later",
@@ -986,7 +993,6 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[])
   cmd.AddValue ("forgedCoordRate",
                 "Percentage of affected vehicle by forged hello messages attack",
                 m_forgedCoordRate);
-
   cmd.AddValue ("nVehicles",
                 "Number of vehicles (to be used in drones+vehicles scenario",
                 m_nVeh);
@@ -1014,6 +1020,10 @@ void FBVanetExperiment::CourseChange (std::ostream *os, std::string foo, Ptr<con
   Vector vel = mobility->GetVelocity ();       // Get velocity
   int nodeId = mobility->GetObject<Node> ()->GetId ();
 
+  cout << "Changing pos for node " << nodeId << " at " << Simulator::Now ().GetSeconds ()
+                                         << "; POS: (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
+                                         << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ")."
+                                         << endl;
   NS_LOG_DEBUG ("Changing pos for node " << nodeId << " at " << Simulator::Now ().GetSeconds ()
                                          << "; POS: (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
                                          << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ").");
