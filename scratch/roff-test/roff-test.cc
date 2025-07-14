@@ -563,17 +563,21 @@ ROFFVanetExperiment::SetupAdhocDevices() {
 	wifiPhy.SetChannel(wifiChannel.Create());
 	wifiPhy.SetPcapDataLinkType(YansWifiPhyHelper::DLT_IEEE802_11);
 	if (m_actualRange == 100) {
-		m_txp = -7.0;
+//		m_txp = -7.0;
+		m_txp = -5.5;  // after incremental calibration tests
 	}
 	else if (m_actualRange == 300) {
-		m_txp = 4.6;
+//		m_txp = 4.6;
+		m_txp = 3.8;     // after incremental calibration tests
 	}
 	else if (m_actualRange == 500) {
-		m_txp = 13.4;
+//		m_txp = 13.4;
+		m_txp = 10.0;    // after incremental calibration tests
 	}
 	else if (m_actualRange == 700) {
-		m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
-		               // (8.8 - (11.6-8.8)) + 13.4
+//		m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
+		                 // (8.8 - (11.6-8.8)) + 13.4
+	  m_txp = 13.3;    // fist value that seems to work with 700m and keeps stable after tests
 	}
 
 

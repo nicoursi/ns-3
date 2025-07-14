@@ -91,9 +91,19 @@ FBApplication::~FBApplication ()
   NS_LOG_FUNCTION (this);
 }
 
-void FBApplication::Install (uint32_t protocol, uint32_t broadcastPhaseStart, uint32_t actualRange, uint32_t aoi,
-                             uint32_t aoi_error, bool flooding, uint32_t cwMin, uint32_t cwMax, uint32_t printCoords,
-                             uint32_t vehicleDistance, uint32_t errorRate, uint32_t forgedCoordRate, uint32_t droneTest)
+void FBApplication::Install (uint32_t protocol,
+                             uint32_t broadcastPhaseStart,
+                             uint32_t actualRange,
+                             uint32_t aoi,
+                             uint32_t aoi_error,
+                             bool flooding,
+                             uint32_t cwMin,
+                             uint32_t cwMax,
+                             uint32_t printCoords,
+                             uint32_t vehicleDistance,
+                             uint32_t errorRate,
+                             uint32_t forgedCoordRate,
+                             uint32_t droneTest)
 {
 
   if (protocol == PROTOCOL_FB)
