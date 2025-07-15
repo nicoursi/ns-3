@@ -653,21 +653,21 @@ FBVanetExperiment::SetupAdhocDevices ()
     {
 //      m_txp = -8.4;  //first value that sort of works with 500
 //      m_txp = -7.7;  //fist value that seems to work with 100m
-      m_txp = -5.5;  // + 2 after incremental calibration tests
+      m_txp = -5.2;  // + 2.5 after incremental calibration tests
 //      m_txp = -7.0; // original value
     }
   else if (m_actualRange == 300)
     {
 //      m_txp = 0.0;   // first value that sort of works with 300
 //      m_txp = 1.1;   // fist value that seems to work with 300m
-      m_txp = 3.8;     // + 2.7 after incremental calibration tests
+      m_txp = 4.6;     // + 3.5 after incremental calibration tests
 //      m_txp = 4.6;   // 11.6 dB gain compared to 100m
     }
   else if (m_actualRange == 500)
     {
 //      m_txp = 6.3;   // first value that sort of works with 500
 //      m_txp = 7.4;   // fist value that seems to work with 500m
-      m_txp = 10.0;    // + 2.6 after incremental calibration tests
+      m_txp = 11.2;    // + 3.8 after incremental calibration tests
 //      m_txp = 13.4;  // 8.8 dB gain (2.8 dB less than 300m)
 //      m_txp = 16.2;	 // keeping 11.6 gain
     }
