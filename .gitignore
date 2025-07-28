@@ -38,3 +38,4 @@ build-dir/
 build/
 
 .idea/
+.cache/
