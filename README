@@ -1,4 +1,22 @@
-This ns-3 fork adds two protocols for VANETS and it is part of different thesis projects at the University of Padova. Here you can see the applied modifications to the original ns-3.26 repo:
+This NS‑3 fork adds two protocols for VANETs and is part of different thesis projects at the University of Padova.
+The following components have been added or modified:
+
+1) Two VANET protocols added:
+
+    - Fast-Broadcast (FB)
+
+    - ROFF (included mainly for comparison)
+
+2) Integrated obstacle shadowing model for more realistic signal propagation in presence of buildings.
+
+3) Mobility helper updated with full support for 3D coordinates.
+
+4) New vanets-utils module providing utility classes shared across different VANET components.
+
+5) Scratch folder updated with test code for both ROFF and FB under various scenarios.
+
+
+Simplified folder structure reflecting the changes:
 
 src/
 ├── vanets-utils/
