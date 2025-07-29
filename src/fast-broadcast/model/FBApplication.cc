@@ -38,7 +38,8 @@
 using namespace std;
 
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE ("FBApplication");
 
@@ -151,9 +152,10 @@ void FBApplication::Install (uint32_t protocol,
   m_randomVariable = CreateObject<UniformRandomVariable>();
 //	cout << "connect drop" << endl;
 //	Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Mac/MacRxDrop", MakeCallback(&FBApplication::LogCollision, this));
-  Config::Connect ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyRxDrop", MakeCallback (&FBApplication::LogCollision, this));
-//	Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiMac/MacRxDrop", MakeCallback(&FBApplication::LogCollision, this));
-//	Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiPhy/PhyRxDrop", MakeCallback(&FBApplication::LogCollision, this));
+  Config::Connect ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyRxDrop",
+                   MakeCallback (&FBApplication::LogCollision, this));
+  //	Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiMac/MacRxDrop", MakeCallback(&FBApplication::LogCollision, this));
+  //	Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiPhy/PhyRxDrop", MakeCallback(&FBApplication::LogCollision, this));
 }
 
 void FBApplication::LogCollision (std::string context, Ptr<const Packet> p)
@@ -273,8 +275,9 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
                   valid_time_samples++;
                 }
               // Global delay tracks in us the time that the alert msg took to reach the node from source to circunference
-              int64_t globalDelay = current->GetReceiveTimestamp ().GetMicroSeconds () - firstMessageSentTime.GetMicroSeconds ();
-              if (globalDelay >= 0)
+                int64_t globalDelay = current->GetReceiveTimestamp ().GetMicroSeconds () -
+                                      firstMessageSentTime.GetMicroSeconds ();
+                if (globalDelay >= 0)
                 {
                   global_time_sum += globalDelay;
                   valid_global_time_samples++;
@@ -307,43 +310,42 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
 //		}
     }
 
-//	Alert received mean time: average time the alert took to reach the node on the circunference
-  double avg_global_delay = (valid_global_time_samples > 0) ? (global_time_sum / valid_global_time_samples) : 0;
-//  The time the node took to traverse the last hop
-  double avg_prop_time = (valid_time_samples > 0) ? (time_sum / valid_time_samples) : 0;
+    //	Alert received mean time: average time the alert took to reach the node on the circunference
+    double avg_global_delay =
+      (valid_global_time_samples > 0) ? (global_time_sum / valid_global_time_samples) : 0;
+    //  The time the node took to traverse the last hop
+    double avg_prop_time = (valid_time_samples > 0) ? (time_sum / valid_time_samples) : 0;
 
-  dataStream << circCont << ","
-             << cover << ","
-             << circ << ","
-             << avg_global_delay << "," // Global delay from first message (Alert received mean time)
-//			<< avg_prop_time << ","     // Last hop propagation time. For the moment it is not printed into file
-             << (hops_sum / (double) circ) << ","
-             << (slots_sum / (double) circ) << ","
-//			<< m_nodes[m_nodes.size() - 1]->GetHop() << ","
-//			<< m_nodes[m_nodes.size() - 1]->GetSlot() << ","
-//			<< (hops_sum / (double) circ) << ","
-//			<< (slots_sum / (double) circ) << ","
-             << m_sent << ","
-             << m_received;
-  NS_LOG_DEBUG ("totalCoverage = " << cover << "/" << m_nNodes);
-  cout << "totalCoverage = " << cover << "/" << m_nNodes << endl;
-  cout << "coverageOnCirc = " << circ << "/" << circCont << endl;
-  cout << "m_sent = " << m_sent << endl;
-  cout << "hops= " << (hops_sum / (double) circ) << endl;
-  cout << "slots= " << (slots_sum / (double) circ) << endl;
-  cout << "Alert received mean time = " << avg_global_delay << endl;
-  cout << "Per-hop propagation time = " << avg_prop_time << endl;
-  cout << "First message sent time (firstMessageSentTime): "
-       << firstMessageSentTime.GetMicroSeconds () << " µs" << std::endl;
-  cout << "Starting node timestamp (GetSendTimestamp): "
-       << GetFBNode (m_startingNode)->GetSendTimestamp ().GetMicroSeconds () << " µs" << std::endl;
-  cout << "m_startingNode = " << m_startingNode << endl;
+    dataStream
+      << circCont << "," << cover << "," << circ << "," << avg_global_delay
+      << "," // Global delay from first message (Alert received mean time)
+      //			<< avg_prop_time << ","     // Last hop propagation time. For the moment it is not printed into file
+      << (hops_sum / (double)circ) << "," << (slots_sum / (double)circ)
+      << ","
+      //			<< m_nodes[m_nodes.size() - 1]->GetHop() << ","
+      //			<< m_nodes[m_nodes.size() - 1]->GetSlot() << ","
+      //			<< (hops_sum / (double) circ) << ","
+      //			<< (slots_sum / (double) circ) << ","
+      << m_sent << "," << m_received;
+    NS_LOG_DEBUG ("totalCoverage = " << cover << "/" << m_nNodes);
+    cout << "totalCoverage = " << cover << "/" << m_nNodes << endl;
+    cout << "coverageOnCirc = " << circ << "/" << circCont << endl;
+    cout << "m_sent = " << m_sent << endl;
+    cout << "hops= " << (hops_sum / (double)circ) << endl;
+    cout << "slots= " << (slots_sum / (double)circ) << endl;
+    cout << "Alert received mean time = " << avg_global_delay << endl;
+    cout << "Per-hop propagation time = " << avg_prop_time << endl;
+    cout << "First message sent time (firstMessageSentTime): "
+         << firstMessageSentTime.GetMicroSeconds () << " µs" << std::endl;
+    cout << "Starting node timestamp (GetSendTimestamp): "
+         << GetFBNode (m_startingNode)->GetSendTimestamp ().GetMicroSeconds () << " µs"
+         << std::endl;
+    cout << "m_startingNode = " << m_startingNode << endl;
 
 
+    //	cout << "hopssum= " << hops_sum << " circ= "  << circ << " hops= " << (hops_sum / (double) circ) << endl;
 
-//	cout << "hopssum= " << hops_sum << " circ= "  << circ << " hops= " << (hops_sum / (double) circ) << endl;
-
-  if (m_printCoords)
+    if (m_printCoords)
     {
       Ptr<FBNode> startingNode = GetFBNode (m_startingNode);
       string transmissionVector = StringifyVector (m_transmissionVector);
@@ -370,7 +372,7 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
                  << receivedOnCircIds.str () << ","
                  << transmissionVector;
     }
-  if (m_droneTest)
+    if (m_droneTest)
     {
       uint32_t maxDistance = 0;
       uint32_t maxDistanceNodeReached = IsMaxDistNodeReached (maxDistance);
@@ -473,11 +475,13 @@ void FBApplication::GenerateHelloTraffic (uint32_t count)
           Ptr<FBNode> fbNode = m_nodes.at (pos);
           Simulator::ScheduleWithContext (fbNode->GetNode ()->GetId (),
                                           MicroSeconds (i * time_factor),
-                                          &FBApplication::GenerateHelloMessage, this, fbNode);
-//			Ptr<FBNode> fbNode = m_nodes.at(i);
-//			Simulator::ScheduleWithContext (fbNode->GetNode()->GetId(),
-//																			MicroSeconds(i * time_factor),
-//																			&FBApplication::GenerateHelloMessage, this, fbNode);
+                                          &FBApplication::GenerateHelloMessage,
+                                          this,
+                                          fbNode);
+          //			Ptr<FBNode> fbNode = m_nodes.at(i);
+          //			Simulator::ScheduleWithContext (fbNode->GetNode()->GetId(),
+          //																			MicroSeconds(i * time_factor),
+          //																			&FBApplication::GenerateHelloMessage, this, fbNode);
         }
 
       // Other nodes must send Hello messages
@@ -823,7 +827,7 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                waitingTime,
                                false);
         }
-      else
+        else
         {
           uint32_t firstTransmissionTime;
           uint32_t secondTransmissionTime;
@@ -831,7 +835,8 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
           secondTransmissionTime = errorDelay < 0 ? waitingTime : waitingTime + errorDelay;
           Simulator::Schedule (MilliSeconds (firstTransmissionTime),
                                &FBApplication::ForwardAlertMessage,
-                               this, fbNode,
+                               this,
+                               fbNode,
                                fbHeader,
                                firstTransmissionTime,
                                false);
@@ -874,7 +879,11 @@ void FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t w
 //	 }
 }
 
-void FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode, FBHeader oldFBHeader, uint32_t waitingTime, bool forceSend)
+void
+FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
+                                    FBHeader oldFBHeader,
+                                    uint32_t waitingTime,
+                                    bool forceSend)
 {
   NS_LOG_FUNCTION (this << fbNode << oldFBHeader);
   // Get the phase

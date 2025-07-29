@@ -281,58 +281,54 @@ private:
  * \brief Prints actual position and velocity when a course change event occurs
  * \return none
  */
-  static void     CourseChange (std::ostream *os, std::string foo, Ptr<const MobilityModel> mobility);
+  static void CourseChange (std::ostream* os, std::string foo, Ptr<const MobilityModel> mobility);
 
-
-  Ptr<FBApplication>                                              m_fbApplication;
-  uint32_t                                                                m_nNodes;
-  NodeContainer                                                   m_adhocNodes;
-  Ptr<ListPositionAllocator>                              m_adhocPositionAllocator;
-  NetDeviceContainer                                              m_adhocDevices;
-  Ipv4InterfaceContainer                                  m_adhocInterfaces;
-  vector <Ptr<Socket> >                                    m_adhocSources;
-  vector <Ptr<Socket> >                                    m_adhocSinks;
-  string                                                                  m_packetSize;
-  string                                                                  m_rate;
-  string                                                                  m_phyMode;
-  double                                                                  m_txp;
-  uint32_t                                                                m_port;
-  uint32_t                                                                m_actualRange;
-  int32_t                                                                 m_startingNode;
-  uint32_t                                                                m_staticProtocol;
-  uint32_t                                                                m_flooding;
-  uint32_t                                                                m_alertGeneration;
-  uint32_t                                                                m_areaOfInterest;
-  uint32_t                                                                m_vehicleDistance;
-  uint32_t                                                                m_scenario;
-  uint32_t                                                                m_loadBuildings;
-  uint32_t                                                                m_cwMin;
-  uint32_t                                                                m_cwMax;
-  string                                                                  m_traceFile;
-  string                                                                  m_bldgFile;
-  string                                                                  m_junctionFile;
-  string                                                                  m_mapBasePath;
-  string                                                                  m_mapBaseName;
-  double                                                                  m_TotalSimTime;
-  uint32_t                                                                m_printToFile;
-  uint32_t                                                                m_printCoords;
-  uint32_t                                                                m_createObstacleShadowingLossFile;
-  uint32_t                                                                m_useObstacleShadowingLossFile;
-  uint32_t                                                                m_propagationLoss;
-  uint32_t                                                                m_smartJunctionMode;
-  uint32_t                                                                m_errorRate;
-  uint32_t                                                                m_forgedCoordTest;
-  uint32_t                                                                m_forgedCoordRate;
-  uint32_t                                                                m_nVeh;
-  uint32_t                                                                m_droneTest;
-  int32_t                                 m_startRun;
-  uint32_t                                m_maxRun;
-  uint32_t                                                                m_highBuildings;
-  std::map<uint32_t, uint64_t>                    m_nodeIdToJunctionIdMap;
-  Ptr<UniformRandomVariable>              m_randomVariable;
-
-
-
+  Ptr<FBApplication>                         m_fbApplication;
+  uint32_t                                   m_nNodes;
+  NodeContainer                              m_adhocNodes;
+  Ptr<ListPositionAllocator>                 m_adhocPositionAllocator;
+  NetDeviceContainer                         m_adhocDevices;
+  Ipv4InterfaceContainer                     m_adhocInterfaces;
+  vector <Ptr<Socket> >                      m_adhocSources;
+  vector <Ptr<Socket> >                      m_adhocSinks;
+  string                                     m_packetSize;
+  string                                     m_rate;
+  string                                     m_phyMode;
+  double                                     m_txp;
+  uint32_t                                   m_port;
+  uint32_t                                   m_actualRange;
+  int32_t                                    m_startingNode;
+  uint32_t                                   m_staticProtocol;
+  uint32_t                                   m_flooding;
+  uint32_t                                   m_alertGeneration;
+  uint32_t                                   m_areaOfInterest;
+  uint32_t                                   m_vehicleDistance;
+  uint32_t                                   m_scenario;
+  uint32_t                                   m_loadBuildings;
+  uint32_t                                   m_cwMin;
+  uint32_t                                   m_cwMax;
+  string                                     m_traceFile;
+  string                                     m_bldgFile;
+  string                                     m_junctionFile;
+  string                                     m_mapBasePath;
+  string                                     m_mapBaseName;
+  double                                     m_TotalSimTime;
+  uint32_t                                   m_printToFile;
+  uint32_t                                   m_printCoords;
+  uint32_t                                   m_createObstacleShadowingLossFile;
+  uint32_t                                   m_useObstacleShadowingLossFile;
+  uint32_t                                   m_propagationLoss;
+  uint32_t                                   m_smartJunctionMode;
+  uint32_t                                   m_errorRate;
+  uint32_t                                   m_forgedCoordTest;
+  uint32_t                                   m_forgedCoordRate;
+  uint32_t                                   m_nVeh;
+  uint32_t                                   m_droneTest;
+  int32_t                                    m_startRun;
+  uint32_t                                   m_maxRun;
+  uint32_t                                   m_highBuildings;
+  std::map<uint32_t, uint64_t>               m_nodeIdToJunctionIdMap;
+  Ptr<UniformRandomVariable>                 m_randomVariable;
 };
 
 /* -----------------------------------------------------------------------------
@@ -341,7 +337,7 @@ private:
 */
 
 FBVanetExperiment::FBVanetExperiment ()
-  :       m_nNodes (0),         // random value, it will be set later
+  : m_nNodes (0),   // random value, it will be set later
   m_packetSize ("68"),              //added
   m_rate ("2048bps"),
   m_phyMode ("DsssRate11Mbps"),
@@ -676,7 +672,7 @@ FBVanetExperiment::SetupAdhocDevices ()
 //      m_txp = 12.2;  // first value that sort of works with 700m
       m_txp = 13.3;    // fist value that seems to work with 700m and keeps stable after tests
 //      m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
-                       // 13.4 + (8.8 - (11.6-8.8))
+      // 13.4 + (8.8 - (11.6-8.8))
 //      m_txp = 27.8;	 // keeping 11.6 gain
     }
 
@@ -866,8 +862,12 @@ void FBVanetExperiment::SetupScenario ()
   if (m_loadBuildings != 0)
     {
       cout << "Loading buildings file \"" << m_bldgFile << endl;
-      Topology::LoadBuildings (m_bldgFile, m_createObstacleShadowingLossFile, m_useObstacleShadowingLossFile, m_mapBasePath,
-                               m_droneTest, m_highBuildings);
+      Topology::LoadBuildings (m_bldgFile,
+                               m_createObstacleShadowingLossFile,
+                               m_useObstacleShadowingLossFile,
+                               m_mapBasePath,
+                               m_droneTest,
+                               m_highBuildings);
     }
 
   if (m_smartJunctionMode)
@@ -896,7 +896,8 @@ unsigned int FBVanetExperiment::CalculateNumNodes () const
           string str = strings.at (0);
           unsigned int openParensPos = str.find_first_of ("(");
           unsigned int closeParensPos = str.find_first_of (")");
-          unsigned int numNodeCandidate = stoi (str.substr (openParensPos + 1, closeParensPos - openParensPos - 1));
+          unsigned int numNodeCandidate =
+            stoi (str.substr (openParensPos + 1, closeParensPos - openParensPos - 1));
           if (numNodeCandidate > numNodes)
             {
               numNodes = numNodeCandidate;
@@ -1038,12 +1039,12 @@ void FBVanetExperiment::CourseChange (std::ostream *os, std::string foo, Ptr<con
   int nodeId = mobility->GetObject<Node> ()->GetId ();
 
   cout << "Changing pos for node " << nodeId << " at " << Simulator::Now ().GetSeconds ()
-                                         << "; POS: (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
-                                         << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ")."
-                                         << endl;
-  NS_LOG_DEBUG ("Changing pos for node " << nodeId << " at " << Simulator::Now ().GetSeconds ()
-                                         << "; POS: (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
-                                         << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ").");
+       << "; POS: (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
+       << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ")." << endl;
+  NS_LOG_DEBUG ("Changing pos for node "
+                << nodeId << " at " << Simulator::Now ().GetSeconds () << "; POS: (" << pos.x
+                << ", " << pos.y << ", " << pos.z << ")"
+                << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ").");
 }
 
 Ptr<Socket>
@@ -1209,12 +1210,13 @@ int main (int argc, char *argv[])
             "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
             "\"Slots\",\"Messages sent\",\"Messages received\"";
         }
-      boost::filesystem::path path = boost::filesystem::current_path ().parent_path () /= additionalPath;
+      boost::filesystem::path path = boost::filesystem::current_path ().parent_path () /=
+        additionalPath;
 
       path /= filePath;
       g_csvData.EnableAlternativeFilename (path);
       g_csvData.WriteHeader (header);
-//    Log command in the same folder, ony if not existent
+      //    Log command in the same folder, ony if not existent
       boost::filesystem::path logPath = path;
       logPath += "-executed-command.txt";
 
