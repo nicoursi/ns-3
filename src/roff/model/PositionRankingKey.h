@@ -16,35 +16,31 @@ using namespace std;
 
 namespace ns3 {
 
-class PositionRankingKey: public Object {
+class PositionRankingKey : public Object
+{
 
 public:
+  PositionRankingKey ();
 
-	PositionRankingKey();
+  PositionRankingKey (uint32_t low, uint32_t up);
 
-	PositionRankingKey(uint32_t low, uint32_t up);
+  uint32_t GetLowerDistanceLimit () const;
 
-	uint32_t GetLowerDistanceLimit() const;
+  uint32_t GetUpperDistanceLimit () const;
 
-	uint32_t GetUpperDistanceLimit() const;
+  bool operator< (const PositionRankingKey& other) const;
 
-	bool operator <(const PositionRankingKey& other) const;
+  bool IsInRange (const uint32_t distance) const;
 
-	bool IsInRange(const uint32_t distance) const;
-
-	friend std::ostream &operator << (std::ostream &os, const PositionRankingKey& key);
+  friend std::ostream& operator<< (std::ostream& os, const PositionRankingKey& key);
 
 private:
-
-	uint32_t m_lowerDistanceLimit;
-	uint32_t m_upperDistanceLimit;
-
+  uint32_t m_lowerDistanceLimit;
+  uint32_t m_upperDistanceLimit;
 };
 
 
-
-}
-
+} // namespace ns3
 
 
 #endif /* POSITIONRANKINGKEY_H*/

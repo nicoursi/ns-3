@@ -5,18 +5,17 @@
 #include "ns3/vector.h"
 
 
-
 namespace ns3 {
 
-class KeyableVector: public Vector {
+class KeyableVector : public Vector
+{
 
 public:
-	KeyableVector(Vector v);
-	bool operator <(const KeyableVector& v) const;
-	bool operator ==(const KeyableVector& v) const;
-//	bool operator !=(const KeyableVector& v) const;
-
+  KeyableVector (Vector v);
+  bool operator< (const KeyableVector& v) const;
+  bool operator== (const KeyableVector& v) const;
+  //	bool operator !=(const KeyableVector& v) const;
 };
-}
+} // namespace ns3
 
 #endif

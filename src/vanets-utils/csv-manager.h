@@ -49,7 +49,7 @@ public:
    * \brief Constructor with runId
    * \param runId ID of the current run
    */
-  CSVManager(unsigned int runId);
+  CSVManager (unsigned int runId);
 
   /**
    * \brief Destructor
@@ -69,68 +69,68 @@ public:
    * \param header header of the csv
    * \return none
    */
-  void WriteHeader(std::string header);
+  void WriteHeader (std::string header);
 
   /**
    * \brief generates a random string to append to the csv filename
    * \return a random string of 4 characters
    */
-  std::string GenerateRandomTag();
+  std::string GenerateRandomTag ();
 
   /**
    * \brief Create a new filename adding a timestamp to a provided base
    * \param path The path to use as base for the alternative filename
    * \return none
    */
-  void EnableAlternativeFilename(boost::filesystem::path path);
+  void EnableAlternativeFilename (boost::filesystem::path path);
 
   /**
    * \brief Add a value (cell) in the current row
    * \param value int value to be written
    * \return none
    */
-  void AddValue(int value);
+  void AddValue (int value);
 
   /**
    * \brief Add a value (cell) in the current row
    * \param value double value to be written
    * \return none
    */
-  void AddValue(double value);
+  void AddValue (double value);
 
   /**
    * \brief Add a value (cell) in the current row
    * \param value string value to be written
    * \return none
    */
-  void AddValue(std::string value);
+  void AddValue (std::string value);
 
   /**
    * \brief Add a value (cell) in the current row
    * \param value stream value to be written
    * \return none
    */
-  void AddValue(std::stringstream value);
+  void AddValue (std::stringstream value);
 
   /**
    * \brief Add multiple values in the current row
    * \param value stream to be written
    * \return none
    */
-  void AddMultipleValues(std::stringstream& value);
+  void AddMultipleValues (std::stringstream& value);
 
   /**
    * \brief Set the run ID manually
    * \param id The run ID to set
    * \return none
    */
-  void SetRunId(unsigned int id);
+  void SetRunId (unsigned int id);
 
   /**
    * \brief Write the current row and initialize a new one
    * \return none
    */
-  void CloseRow(void);
+  void CloseRow (void);
 
   /**
    * \brief Check if a file is empty or doesn't exist
@@ -138,12 +138,12 @@ public:
    * \param path The Boost path to check.
    * \return true if the file doesn't exist or is empty.
    */
-  static bool IsFileEmptyOrNonexistent(const boost::filesystem::path& path);
+  static bool IsFileEmptyOrNonexistent (const boost::filesystem::path& path);
 
 private:
-  boost::filesystem::path m_csvFilePath;   //!< Path to the CSV file
-  std::stringstream m_currentRow;          //!< Current row being built
-  unsigned int runId;                      //!< ID of the current run
+  boost::filesystem::path m_csvFilePath; //!< Path to the CSV file
+  std::stringstream m_currentRow;        //!< Current row being built
+  unsigned int runId;                    //!< ID of the current run
 };
 
 } // namespace ns3

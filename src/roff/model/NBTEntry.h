@@ -21,29 +21,26 @@ using namespace std;
 
 namespace ns3 {
 
-class NBTEntry {
+class NBTEntry
+{
 public:
+  NBTEntry ();
 
-	NBTEntry();
+  NBTEntry (Vector position, Time timeStamp);
 
-	NBTEntry(Vector position, Time timeStamp);
+  Vector GetPosition () const;
 
-	Vector GetPosition() const;
+  Time GetTimeStamp () const;
 
-	Time GetTimeStamp() const;
+  void SetPosition (Vector position);
 
-	void SetPosition(Vector position);
-
-	void SetTimeStamp(Time timeStamp);
+  void SetTimeStamp (Time timeStamp);
 
 private:
-	Vector									m_position; // node's position
-	Time									m_timeStamp; // last time the entry was updated
-
-
-
+  Vector m_position; // node's position
+  Time m_timeStamp;  // last time the entry was updated
 };
-}
+} // namespace ns3
 
 
 #endif

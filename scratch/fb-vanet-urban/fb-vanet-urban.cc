@@ -36,7 +36,7 @@
 #include <fstream>
 #include <iostream>
 #include <chrono>  // for timing
-#include <iomanip>  // for put_time
+#include <iomanip> // for put_time
 #include <random>
 #include <mutex>
 #include <sstream>
@@ -68,7 +68,7 @@ NS_LOG_COMPONENT_DEFINE ("fb-vanet-urban");
 * ------------------------------------------------------------------------------
 */
 
-CSVManager                      g_csvData;
+CSVManager g_csvData;
 
 
 /**
@@ -97,14 +97,14 @@ public:
    * \param argv program arguments
    * \return none
    */
-  void Configure (int argc, char *argv[]);
+  void Configure (int argc, char* argv[]);
 
 
   /**
    * \brief get command line parameters and set up protocol and scenario info.
    * \return none
    */
-  void getAndProcessParameters (int argc, char *argv[]);
+  void getAndProcessParameters (int argc, char* argv[]);
 
 
   /**
@@ -130,7 +130,7 @@ public:
    * \brief Calculates configure, runs and print results of the experiment
    * \return file path
    */
-  void RunAndPrintResults (int argc, char *argv[]);
+  void RunAndPrintResults (int argc, char* argv[]);
 
   /**
   * \brief printToFile getter
@@ -175,7 +175,7 @@ protected:
    * \param argv program arguments
    * \return none
    */
-  void ParseCommandLineArguments (int argc, char *argv[]);
+  void ParseCommandLineArguments (int argc, char* argv[]);
 
   /**
    * \brief Configure default attributes
@@ -242,7 +242,7 @@ private:
    * \brief Processes command line parameters
    * \return none
    */
-  void CommandSetup (int argc, char *argv[]);
+  void CommandSetup (int argc, char* argv[]);
 
   /**
    * \brief Set up a prescribed scenario
@@ -336,9 +336,9 @@ private:
 * ------------------------------------------------------------------------------
 */
 
-FBVanetExperiment::FBVanetExperiment ()
-  : m_nNodes (0),   // random value, it will be set later
-  m_packetSize ("68"),              //added
+FBVanetExperiment::FBVanetExperiment () :
+  m_nNodes (0),        // random value, it will be set later
+  m_packetSize ("68"), //added
   m_rate ("2048bps"),
   m_phyMode ("DsssRate11Mbps"),
   m_txp (20),
@@ -374,10 +374,9 @@ FBVanetExperiment::FBVanetExperiment ()
   m_highBuildings (0)
 {
 
-//	srand(12345);
+  //	srand(12345);
   RngSeedManager::SetSeed (12345);
-  m_randomVariable = CreateObject<UniformRandomVariable>();
-
+  m_randomVariable = CreateObject<UniformRandomVariable> ();
 }
 
 FBVanetExperiment::~FBVanetExperiment ()
@@ -385,7 +384,7 @@ FBVanetExperiment::~FBVanetExperiment ()
 }
 
 void
-FBVanetExperiment::Configure (int argc, char *argv[])
+FBVanetExperiment::Configure (int argc, char* argv[])
 {
   // Initial configuration and parameters parsing
   ParseCommandLineArguments (argc, argv);
@@ -394,13 +393,12 @@ FBVanetExperiment::Configure (int argc, char *argv[])
   ConfigureTracingAndLogging ();
 }
 void
-FBVanetExperiment::getAndProcessParameters (int argc, char *argv[])
+FBVanetExperiment::getAndProcessParameters (int argc, char* argv[])
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Parsing command line arguments and setting default values.");
   CommandSetup (argc, argv);
   ConfigureDefaults ();
-
 }
 
 void
@@ -418,7 +416,8 @@ FBVanetExperiment::Simulate ()
   RunSimulation ();
 }
 
-void FBVanetExperiment::ProcessOutputs ()
+void
+FBVanetExperiment::ProcessOutputs ()
 {
   NS_LOG_FUNCTION (this);
 
@@ -427,17 +426,18 @@ void FBVanetExperiment::ProcessOutputs ()
   m_fbApplication->PrintStats (dataStream);
   if (m_printToFile)
     {
-      g_csvData.AddValue ((int) m_scenario);
-      g_csvData.AddValue ((int) m_actualRange);
-      g_csvData.AddValue ((int) m_staticProtocol);
-      g_csvData.AddValue ((int) m_loadBuildings);
-      g_csvData.AddValue ((int) m_nNodes);
+      g_csvData.AddValue ((int)m_scenario);
+      g_csvData.AddValue ((int)m_actualRange);
+      g_csvData.AddValue ((int)m_staticProtocol);
+      g_csvData.AddValue ((int)m_loadBuildings);
+      g_csvData.AddValue ((int)m_nNodes);
       g_csvData.AddMultipleValues (dataStream);
       g_csvData.CloseRow ();
     }
 }
 
-const std::string FBVanetExperiment::CalculateOutFilePath () const
+const std::string
+FBVanetExperiment::CalculateOutFilePath () const
 {
   std::string fileName = "";
   std::string cwMin = std::to_string (m_cwMin);
@@ -455,7 +455,7 @@ const std::string FBVanetExperiment::CalculateOutFilePath () const
 
   if (m_staticProtocol == PROTOCOL_FB)
     {
-//		protocol = "Fast-Broadcast[" + std::to_string(m_cwMin) + "-" + std::to_string(m_cwMax) + "]";
+      //		protocol = "Fast-Broadcast[" + std::to_string(m_cwMin) + "-" + std::to_string(m_cwMax) + "]";
       protocol = "Fast-Broadcast";
     }
   else if (m_staticProtocol == PROTOCOL_STATIC_100)
@@ -482,9 +482,11 @@ const std::string FBVanetExperiment::CalculateOutFilePath () const
   scenarioName = scenarioName.substr (0, dotPos);
 
   // File name building
-  fileName.append (scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange + "/j" + junctions
-                   + "/" + "cw[" + std::to_string (m_cwMin) + "-" + std::to_string (m_cwMax) + "]/" + protocol + "/" +
-                   scenarioName + "-b" + buildings + "-" + errorOrForged + "-r" + actualRange + "-j" + junctions + "-" + protocol);
+  fileName.append (scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange +
+                   "/j" + junctions + "/" + "cw[" + std::to_string (m_cwMin) + "-" +
+                   std::to_string (m_cwMax) + "]/" + protocol + "/" + scenarioName + "-b" +
+                   buildings + "-" + errorOrForged + "-r" + actualRange + "-j" + junctions + "-" +
+                   protocol);
 
 
   std::cout << "fileName=" << fileName << std::endl;
@@ -498,39 +500,46 @@ const std::string FBVanetExperiment::CalculateOutFilePath () const
   return fileName;
 }
 
-void FBVanetExperiment::RunAndPrintResults (int argc, char *argv[])
+void
+FBVanetExperiment::RunAndPrintResults (int argc, char* argv[])
 {
   Configure (argc, argv);
   Simulate ();
   ProcessOutputs ();
 }
 
-uint32_t FBVanetExperiment::GetPrintToFile () const
+uint32_t
+FBVanetExperiment::GetPrintToFile () const
 {
   return m_printToFile;
 }
 
-uint32_t FBVanetExperiment::GetPrintCoords () const
+uint32_t
+FBVanetExperiment::GetPrintCoords () const
 {
   return m_printCoords;
 }
 
-uint32_t FBVanetExperiment::GetDroneTest () const
+uint32_t
+FBVanetExperiment::GetDroneTest () const
 {
   return m_droneTest;
 }
 
-uint32_t FBVanetExperiment::GetHighBuildings () const
+uint32_t
+FBVanetExperiment::GetHighBuildings () const
 {
   return m_highBuildings;
 }
 
-int32_t FBVanetExperiment::GetStartRun () const
+int32_t
+FBVanetExperiment::GetStartRun () const
 {
   return m_startRun;
 }
 
-uint32_t FBVanetExperiment::GetMaxRun () const
+uint32_t
+FBVanetExperiment::GetMaxRun () const
 {
   return m_maxRun;
 }
@@ -540,8 +549,8 @@ FBVanetExperiment::ConfigureDefaults ()
 {
   NS_LOG_FUNCTION (this);
 
-  Config::SetDefault ("ns3::OnOffApplication::PacketSize",StringValue (m_packetSize));
-  Config::SetDefault ("ns3::OnOffApplication::DataRate",  StringValue (m_rate));
+  Config::SetDefault ("ns3::OnOffApplication::PacketSize", StringValue (m_packetSize));
+  Config::SetDefault ("ns3::OnOffApplication::DataRate", StringValue (m_rate));
   Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode", StringValue (m_phyMode));
 
   if (m_staticProtocol == 1)
@@ -567,7 +576,7 @@ FBVanetExperiment::ConfigureDefaults ()
 }
 
 void
-FBVanetExperiment::ParseCommandLineArguments (int argc, char *argv[])
+FBVanetExperiment::ParseCommandLineArguments (int argc, char* argv[])
 {
   NS_LOG_FUNCTION (this);
 
@@ -597,7 +606,7 @@ FBVanetExperiment::ConfigureMobility ()
   // Disable node movements
   ns2.DisableNodeMovements ();
 
-  ns2.Install ();      // configure movements for each node, while reading trace file
+  ns2.Install (); // configure movements for each node, while reading trace file
 
   // Configure callback for logging
   std::ofstream m_os;
@@ -611,21 +620,26 @@ FBVanetExperiment::SetupAdhocDevices ()
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Configure channels.");
 
-  double freq = 2.4e9;          // 802.11b 2.4 GHz
+  double freq = 2.4e9; // 802.11b 2.4 GHz
 
   WifiHelper wifi;
   wifi.SetStandard (WIFI_PHY_STANDARD_80211b);
 
-  YansWifiPhyHelper wifiPhy =  YansWifiPhyHelper::Default ();
+  YansWifiPhyHelper wifiPhy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper wifiChannel;
   wifiChannel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
   if (m_propagationLoss == 0)
     {
-      wifiChannel.AddPropagationLoss ("ns3::RangePropagationLossModel", "MaxRange", DoubleValue (m_actualRange));
+      wifiChannel.AddPropagationLoss (
+        "ns3::RangePropagationLossModel", "MaxRange", DoubleValue (m_actualRange));
     }
   else if (m_propagationLoss == 1)
     {
-      wifiChannel.AddPropagationLoss ("ns3::TwoRayGroundPropagationLossModel", "Frequency", DoubleValue (freq), "HeightAboveZ", DoubleValue (2.0));
+      wifiChannel.AddPropagationLoss ("ns3::TwoRayGroundPropagationLossModel",
+                                      "Frequency",
+                                      DoubleValue (freq),
+                                      "HeightAboveZ",
+                                      DoubleValue (2.0));
     }
   else
     {
@@ -634,53 +648,61 @@ FBVanetExperiment::SetupAdhocDevices ()
   if (m_loadBuildings != 0)
     {
       wifiChannel.AddPropagationLoss ("ns3::ObstacleShadowingPropagationLossModel",
-                                      "Radius", DoubleValue (500),
-                                      "CreateFile", IntegerValue (m_createObstacleShadowingLossFile),
-                                      "UseFile", IntegerValue (m_useObstacleShadowingLossFile),
-                                      "MapBasePath", StringValue (m_mapBasePath),
-                                      "DroneTest", IntegerValue (m_droneTest),
-                                      "HighBuildings", IntegerValue (m_highBuildings));
+                                      "Radius",
+                                      DoubleValue (500),
+                                      "CreateFile",
+                                      IntegerValue (m_createObstacleShadowingLossFile),
+                                      "UseFile",
+                                      IntegerValue (m_useObstacleShadowingLossFile),
+                                      "MapBasePath",
+                                      StringValue (m_mapBasePath),
+                                      "DroneTest",
+                                      IntegerValue (m_droneTest),
+                                      "HighBuildings",
+                                      IntegerValue (m_highBuildings));
     }
   wifiPhy.SetChannel (wifiChannel.Create ());
   wifiPhy.SetPcapDataLinkType (YansWifiPhyHelper::DLT_IEEE802_11);
 
-// m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely ignored
+  // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely ignored
   if (m_actualRange == 100)
     {
-//      m_txp = -8.4;  //first value that sort of works with 500
-//      m_txp = -7.7;  //fist value that seems to work with 100m
-      m_txp = -5.2;  // + 2.5 after incremental calibration tests
-//      m_txp = -7.0; // original value
+      //      m_txp = -8.4;  //first value that sort of works with 500
+      //      m_txp = -7.7;  //fist value that seems to work with 100m
+      m_txp = -5.2; // + 2.5 after incremental calibration tests
+                    //      m_txp = -7.0; // original value
     }
   else if (m_actualRange == 300)
     {
-//      m_txp = 0.0;   // first value that sort of works with 300
-//      m_txp = 1.1;   // fist value that seems to work with 300m
-      m_txp = 4.6;     // + 3.5 after incremental calibration tests
-//      m_txp = 4.6;   // 11.6 dB gain compared to 100m
+      //      m_txp = 0.0;   // first value that sort of works with 300
+      //      m_txp = 1.1;   // fist value that seems to work with 300m
+      m_txp = 4.6; // + 3.5 after incremental calibration tests
+                   //      m_txp = 4.6;   // 11.6 dB gain compared to 100m
     }
   else if (m_actualRange == 500)
     {
-//      m_txp = 6.3;   // first value that sort of works with 500
-//      m_txp = 7.4;   // fist value that seems to work with 500m
-      m_txp = 11.2;    // + 3.8 after incremental calibration tests
-//      m_txp = 13.4;  // 8.8 dB gain (2.8 dB less than 300m)
-//      m_txp = 16.2;	 // keeping 11.6 gain
+      //      m_txp = 6.3;   // first value that sort of works with 500
+      //      m_txp = 7.4;   // fist value that seems to work with 500m
+      m_txp = 11.2; // + 3.8 after incremental calibration tests
+                    //      m_txp = 13.4;  // 8.8 dB gain (2.8 dB less than 300m)
+                    //      m_txp = 16.2;	 // keeping 11.6 gain
     }
-  else if (m_actualRange == 700)          // 6 dB gain   (2.8 dB less than 500m)
+  else if (m_actualRange == 700) // 6 dB gain   (2.8 dB less than 500m)
     {
-//      m_txp = 12.2;  // first value that sort of works with 700m
-      m_txp = 13.3;    // fist value that seems to work with 700m and keeps stable after tests
-//      m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
+      //      m_txp = 12.2;  // first value that sort of works with 700m
+      m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
+      //      m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
       // 13.4 + (8.8 - (11.6-8.8))
-//      m_txp = 27.8;	 // keeping 11.6 gain
+      //      m_txp = 27.8;	 // keeping 11.6 gain
     }
 
   WifiMacHelper wifiMac;
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
-                                "DataMode",StringValue (m_phyMode),
-                                "ControlMode",StringValue (m_phyMode));
-  wifiPhy.Set ("TxPowerStart",DoubleValue (m_txp));
+                                "DataMode",
+                                StringValue (m_phyMode),
+                                "ControlMode",
+                                StringValue (m_phyMode));
+  wifiPhy.Set ("TxPowerStart", DoubleValue (m_txp));
   wifiPhy.Set ("TxPowerEnd", DoubleValue (m_txp));
 
   // wifiPhy.Set ("EnergyDetectionThreshold", DoubleValue ());
@@ -717,18 +739,20 @@ FBVanetExperiment::ConfigureConnections ()
   // Set unicast sender (for each node in the application)
   for (uint32_t i = 0; i < m_nNodes; i++)
     {
-      SetupPacketSend (ns3::Ipv4Address ("10.1.255.255"),  m_adhocNodes.Get (i));
+      SetupPacketSend (ns3::Ipv4Address ("10.1.255.255"), m_adhocNodes.Get (i));
     }
 }
 
-void FBVanetExperiment::ConfigureTracingAndLogging ()
+void
+FBVanetExperiment::ConfigureTracingAndLogging ()
 {
   NS_LOG_FUNCTION (this);
 
   Packet::EnablePrinting ();
 }
 
-void FBVanetExperiment::ConfigureFBApplication ()
+void
+FBVanetExperiment::ConfigureFBApplication ()
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Configure FB application.");
@@ -741,7 +765,7 @@ void FBVanetExperiment::ConfigureFBApplication ()
 
   // Create the application and schedule start and end time
   m_fbApplication = CreateObject<FBApplication> ();
-//	m_fbApplication->Install
+  //	m_fbApplication->Install
 
   m_fbApplication->Install (m_staticProtocol,
                             m_alertGeneration,
@@ -755,8 +779,7 @@ void FBVanetExperiment::ConfigureFBApplication ()
                             m_vehicleDistance,
                             m_errorRate,
                             m_forgedCoordRate,
-                            m_droneTest
-                            );
+                            m_droneTest);
   m_fbApplication->SetStartTime (Seconds (1));
   m_fbApplication->SetStopTime (Seconds (m_TotalSimTime));
 
@@ -779,16 +802,21 @@ void FBVanetExperiment::ConfigureFBApplication ()
         {
           isNodeVehicle = false;
         }
-//		cout << "addNode " << i << " " << isNodeVehicle << endl;
-      m_fbApplication->AddNode (m_adhocNodes.Get (i), m_adhocSources.at (i), m_adhocSinks.at (i), isNodeVehicle,
-                                nodeInsideJunction, junctionId);
+      //		cout << "addNode " << i << " " << isNodeVehicle << endl;
+      m_fbApplication->AddNode (m_adhocNodes.Get (i),
+                                m_adhocSources.at (i),
+                                m_adhocSinks.at (i),
+                                isNodeVehicle,
+                                nodeInsideJunction,
+                                junctionId);
     }
 
   // Add the application to a node
   m_adhocNodes.Get (m_startingNode)->AddApplication (m_fbApplication);
 }
 
-void FBVanetExperiment::RunSimulation ()
+void
+FBVanetExperiment::RunSimulation ()
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Run simulation.");
@@ -796,14 +824,15 @@ void FBVanetExperiment::RunSimulation ()
   Run ();
 }
 
-void FBVanetExperiment::SetupScenario ()
+void
+FBVanetExperiment::SetupScenario ()
 {
   NS_LOG_FUNCTION (this);
-//	NS_LOG_INFO ("Configure current scenario (" << m_scenario << ").");
+  //	NS_LOG_INFO ("Configure current scenario (" << m_scenario << ").");
 
-  m_alertGeneration = 9;        // 10 -1 (start time of the application)
+  m_alertGeneration = 9; // 10 -1 (start time of the application)
   m_TotalSimTime = 990000.0;
-//	m_areaOfInterest = 1000;	// meters
+  //	m_areaOfInterest = 1000;	// meters
 
   if (m_bldgFile.empty ())
     {
@@ -851,7 +880,7 @@ void FBVanetExperiment::SetupScenario ()
   cout << "numNodes = " << m_nNodes << endl;
   if (m_startingNode == -1)
     {
-//		m_startingNode = rand() % m_nNodes;
+      //		m_startingNode = rand() % m_nNodes;
       m_startingNode = m_randomVariable->GetInteger (0, m_nNodes - 1);
     }
   cout << "numNodes = " << m_nNodes << endl;
@@ -876,7 +905,8 @@ void FBVanetExperiment::SetupScenario ()
     }
 }
 
-unsigned int FBVanetExperiment::CalculateNumNodes () const
+unsigned int
+FBVanetExperiment::CalculateNumNodes () const
 {
   NS_LOG_FUNCTION (this);
   ifstream ns2mobilityTraceFile;
@@ -907,19 +937,21 @@ unsigned int FBVanetExperiment::CalculateNumNodes () const
   return numNodes + 1;
 }
 
-void FBVanetExperiment::Run ()
+void
+FBVanetExperiment::Run ()
 {
   NS_LOG_FUNCTION (this);
 
   Simulator::Stop (Seconds (m_TotalSimTime));
-//	AnimationInterface anim ("testAnimationWithPacketMetadata.xml");
-//	anim.EnablePacketMetadata (true);
+  //	AnimationInterface anim ("testAnimationWithPacketMetadata.xml");
+  //	anim.EnablePacketMetadata (true);
   Simulator::Run ();
 
   Simulator::Destroy ();
 }
 
-void FBVanetExperiment::CommandSetup (int argc, char *argv[])
+void
+FBVanetExperiment::CommandSetup (int argc, char* argv[])
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Parsing command line arguments.");
@@ -929,7 +961,8 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[])
 //  allow command line overrides
 //	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
   cmd.AddValue ("startRun",
-                "Run number the simulations will start from. If set will take precedence over NS_GLOBAL_VALUE=RngRun=n",
+                "Run number the simulations will start from. If set will take precedence over "
+                "NS_GLOBAL_VALUE=RngRun=n",
                 m_startRun);
   cmd.AddValue ("maxRun",
                 "Maximum number of simulation runs",
@@ -1030,12 +1063,15 @@ void FBVanetExperiment::CommandSetup (int argc, char *argv[])
   cmd.Parse (argc, argv);
 }
 
-void FBVanetExperiment::CourseChange (std::ostream *os, std::string foo, Ptr<const MobilityModel> mobility)
+void
+FBVanetExperiment::CourseChange (std::ostream* os,
+                                 std::string foo,
+                                 Ptr<const MobilityModel> mobility)
 {
-  NS_LOG_FUNCTION ( &os << foo << mobility);            // problem with the argument *os
+  NS_LOG_FUNCTION (&os << foo << mobility); // problem with the argument *os
 
-  Vector pos = mobility->GetPosition ();       // Get position
-  Vector vel = mobility->GetVelocity ();       // Get velocity
+  Vector pos = mobility->GetPosition (); // Get position
+  Vector vel = mobility->GetVelocity (); // Get velocity
   int nodeId = mobility->GetObject<Node> ()->GetId ();
 
   cout << "Changing pos for node " << nodeId << " at " << Simulator::Now ().GetSeconds ()
@@ -1103,14 +1139,15 @@ FBVanetExperiment::LoadJunctionsMap ()
           m_nodeIdToJunctionIdMap[nodeId] = junctionId;
         }
     }
-//	cout << m_nodeIdToJunctionIdMap.size() << endl;
-//	for (auto pair: m_nodeIdToJunctionIdMap) {
-//		cout << "nodeId= " << pair.first << " intId= " << pair.second << endl;
-//	}
+  //	cout << m_nodeIdToJunctionIdMap.size() << endl;
+  //	for (auto pair: m_nodeIdToJunctionIdMap) {
+  //		cout << "nodeId= " << pair.first << " intId= " << pair.second << endl;
+  //	}
 }
 
 // Prints the start time with a custom label and returns the start time
-std::chrono::system_clock::time_point PrintStartTime (const std::string& label)
+std::chrono::system_clock::time_point
+PrintStartTime (const std::string& label)
 {
   auto start = std::chrono::system_clock::now ();
   std::time_t start_time = std::chrono::system_clock::to_time_t (start);
@@ -1118,30 +1155,28 @@ std::chrono::system_clock::time_point PrintStartTime (const std::string& label)
   std::cout << "-----------------------------------------------------------------------------"
             << std::endl
             << label << " starting at: "
-            << std::put_time (std::localtime (&start_time), "%Y-%m-%d %H:%M:%S %Z")
-            << std::endl;
+            << std::put_time (std::localtime (&start_time), "%Y-%m-%d %H:%M:%S %Z") << std::endl;
 
   return start;
 }
 
 // Prints the end time with the same label and elapsed time
-void PrintElapsedTime (const std::chrono::system_clock::time_point& start, const std::string& label)
+void
+PrintElapsedTime (const std::chrono::system_clock::time_point& start, const std::string& label)
 {
   auto end = std::chrono::system_clock::now ();
   std::time_t end_time = std::chrono::system_clock::to_time_t (end);
 
-  std::cout << label << " ending at: "
-            << std::put_time (std::localtime (&end_time), "%Y-%m-%d %H:%M:%S %Z")
+  std::cout << label
+            << " ending at: " << std::put_time (std::localtime (&end_time), "%Y-%m-%d %H:%M:%S %Z")
             << std::endl;
 
   auto duration = end - start;
   auto minutes = std::chrono::duration_cast<std::chrono::minutes> (duration);
   auto seconds = std::chrono::duration_cast<std::chrono::seconds> (duration - minutes);
 
-  std::cout << label << " Elapsed wall-clock time: "
-            << minutes.count () << "m "
-            << seconds.count () << "s"
-            << std::endl;
+  std::cout << label << " Elapsed wall-clock time: " << minutes.count () << "m " << seconds.count ()
+            << "s" << std::endl;
 }
 
 /* -----------------------------------------------------------------------------
@@ -1149,7 +1184,8 @@ void PrintElapsedTime (const std::chrono::system_clock::time_point& start, const
 * ------------------------------------------------------------------------------
 */
 
-int main (int argc, char *argv[])
+int
+main (int argc, char* argv[])
 {
   // Call to get and print the start time
   auto wholeStart = PrintStartTime ("Whole simulation");
@@ -1158,14 +1194,14 @@ int main (int argc, char *argv[])
 
   NS_LOG_UNCOND ("FB Vanet Experiment URBAN");
 
-//	Before launching experiments, calculate output file path : Todo: the output file path logic should probably be out of this class
+  //	Before launching experiments, calculate output file path : Todo: the output file path logic should probably be out of this class
   FBVanetExperiment experiment;
-//	experiment.Configure (argc, argv);
-//	experiment.CommandSetup(argc, argv);
+  //	experiment.Configure (argc, argv);
+  //	experiment.CommandSetup(argc, argv);
   experiment.getAndProcessParameters (argc, argv);
 
   unsigned int maxRun = experiment.GetMaxRun ();
-//unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
+  //unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
   int32_t startRun = experiment.GetStartRun ();
   startRun = (startRun == -1) ? RngSeedManager::GetRun () : startRun;
   cout << "start run: " << startRun << endl;
@@ -1180,8 +1216,10 @@ int main (int argc, char *argv[])
       if (experiment.GetPrintCoords ())
         {
           additionalPath = "/simulations/scenario-urbano-con-coord/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
+          header =
+            "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
+            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
+            "time\",\"Hops\","
             "\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting y\","
             "\"Starting node\", \"Vehicle distance\", \"Received node ids\", "
             "\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission vector\"";
@@ -1190,16 +1228,20 @@ int main (int argc, char *argv[])
         {
           additionalPath = "/simulations/scenario-droni-high/";
           header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached maxDist node\","
+            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
+            "time\",\"Hops\","
+            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached "
+            "maxDist node\","
             "\"Vehicles cover\"";
         }
       else if (experiment.GetDroneTest ())
         {
           additionalPath = "/simulations/scenario-droni/";
           header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached maxDist node\","
+            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
+            "time\",\"Hops\","
+            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached "
+            "maxDist node\","
             "\"Vehicles cover\"";
         }
 
@@ -1207,7 +1249,8 @@ int main (int argc, char *argv[])
         {
           additionalPath = "/simulations/scenario-urbano/";
           header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
+            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
+            "time\",\"Hops\","
             "\"Slots\",\"Messages sent\",\"Messages received\"";
         }
       boost::filesystem::path path = boost::filesystem::current_path ().parent_path () /=
@@ -1237,13 +1280,13 @@ int main (int argc, char *argv[])
 
       FBVanetExperiment experiment;
 
-//    This loop cannot be removed without changing results per run
-      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable>();
-      cout << "Lottery numbers. These should be always the same for any run="
-           << thisRun << ":" << endl;
+      //    This loop cannot be removed without changing results per run
+      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+      cout << "Lottery numbers. These should be always the same for any run=" << thisRun << ":"
+           << endl;
       for (int i = 0; i < 5; ++i)
         {
-//        Never delete this line or this for loop
+          //        Never delete this line or this for loop
           cout << "   " << uv->GetInteger (0, 100);
         }
       cout << endl;
@@ -1254,5 +1297,4 @@ int main (int argc, char *argv[])
     }
 
   PrintElapsedTime (wholeStart, "Whole simulation");
-
 }

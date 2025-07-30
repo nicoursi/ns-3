@@ -10,21 +10,23 @@ using namespace std;
 
 namespace ns3 {
 
-class TransmissionList {
+class TransmissionList
+{
 
 public:
-	TransmissionList() {
-	}
+  TransmissionList ()
+  {
+  }
 
-	void AddEdge(KeyableVector source, KeyableVector destination);
+  void AddEdge (KeyableVector source, KeyableVector destination);
 
-	string ToString() const;
+  string ToString () const;
 
 
 private:
-	std::map<KeyableVector, vector<KeyableVector>> 							transmissions; //Map to identify outgoing transmission from node (ley) to all other nodes
-
+  std::map<KeyableVector, vector<KeyableVector> >
+  transmissions;   //Map to identify outgoing transmission from node (ley) to all other nodes
 };
-}
+} // namespace ns3
 
 #endif

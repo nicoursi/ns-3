@@ -10,31 +10,32 @@ using namespace std;
 
 namespace ns3 {
 
-class Edge: public Object {
+class Edge : public Object
+{
 
 public:
+  Edge (uint32_t source, uint32_t destination, uint32_t phase);
 
-	Edge(uint32_t source, uint32_t destination, uint32_t phase);
+  uint32_t GetSource () const;
 
-	uint32_t GetSource() const;
+  uint32_t GetDestination () const;
 
-	uint32_t GetDestination() const;
+  uint32_t GetPhase () const;
 
-	uint32_t GetPhase() const;
+  void SetSource (uint32_t source);
 
-	void SetSource(uint32_t source);
+  void SetDestination (uint32_t source);
 
-	void SetDestination(uint32_t source);
-
-	void SetPhase(uint32_t source);
+  void SetPhase (uint32_t source);
 
 private:
-	uint32_t								m_source; //id of source
-	uint32_t								m_destination; //id of destination
-	uint32_t								m_phase; //number of hops of transmission
+  uint32_t m_source;      //id of source
+  uint32_t m_destination; //id of destination
+  uint32_t m_phase;       //number of hops of transmission
 };
 
-ostream& operator<< (std::ostream& stream, const Edge& matrix);
-}
+ostream&
+operator<< (std::ostream& stream, const Edge& matrix);
+} // namespace ns3
 
 #endif

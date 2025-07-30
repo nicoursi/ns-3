@@ -18,34 +18,31 @@ using namespace std;
 
 namespace ns3 {
 
-class PositionRankingMap: public Object {
+class PositionRankingMap : public Object
+{
 
 public:
+  PositionRankingMap (uint32_t distRange);
 
-	PositionRankingMap(uint32_t distRange);
+  PositionRankingMap (uint32_t distRange, boost::dynamic_bitset<> esdBitmap);
 
-	PositionRankingMap(uint32_t distRange, boost::dynamic_bitset<> esdBitmap);
+  // index is calculated as esdBitmap.size - i - 1
+  void AddEntry (uint32_t index, uint32_t priority);
 
-	// index is calculated as esdBitmap.size - i - 1
-	void AddEntry(uint32_t index, uint32_t priority);
+  uint32_t GetPriority (uint32_t distance);
 
-	uint32_t GetPriority(uint32_t distance);
+  uint32_t GetUpperDistanceLimit (uint32_t priority);
 
-	uint32_t GetUpperDistanceLimit(uint32_t priority);
+  PositionRankingKey GetRange (uint32_t priority);
 
-	PositionRankingKey GetRange(uint32_t priority);
-
-	friend std::ostream &operator << (std::ostream &os, const PositionRankingMap& map);
+  friend std::ostream& operator<< (std::ostream& os, const PositionRankingMap& map);
 
 private:
-
-	uint32_t 									m_distanceRange;
-	map<PositionRankingKey, uint32_t> 			m_positionRanking;
-
+  uint32_t m_distanceRange;
+  map<PositionRankingKey, uint32_t> m_positionRanking;
 };
 
-}
-
+} // namespace ns3
 
 
 #endif /* POSITIONRANKINGMAP_H*/

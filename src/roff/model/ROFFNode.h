@@ -29,128 +29,129 @@ using namespace std::chrono;
 
 namespace ns3 {
 
-class ROFFNode: public Object {
+class ROFFNode : public Object
+{
 
 public:
-
-	ROFFNode();
-
-
-	ROFFNode(Ptr<Node> node, Ptr<Socket> socket, bool isNodeInJunction = false,
-			uint64_t junctionId = 0, bool amIaVehicle = true);
-
-	//	Getters
-	Ptr<Node> GetNode() const;
-
-	Ptr<Socket> GetSocket() const;
-
-	bool GetReceived() const;
-
-	bool GetSent() const;
-
-	bool GetScheduled() const;
-
-	uint32_t GetId() const;
-
-	const Vector GetPosition() const;
-
-	int32_t GetPhase() const;
-
-	uint32_t GetSlot() const;
-
-	uint32_t GetHop() const;
-
-	Time GetTimestamp() const;
-
-	bool AmIAVehicle() const;
-
-	/**
-	 * \returns true if the node is inside an junction
-	 */
-	bool AmIInJunction() const;
-
-	/**
-	 * \returns the id of the junction the node is in
-	 */
-	uint64_t GetJunctionId () const;
+  ROFFNode ();
 
 
-	bool GetStopSending  (void) const;
+  ROFFNode (Ptr<Node> node,
+            Ptr<Socket> socket,
+            bool isNodeInJunction = false,
+            uint64_t junctionId = 0,
+            bool amIaVehicle = true);
+
+  //	Getters
+  Ptr<Node> GetNode () const;
+
+  Ptr<Socket> GetSocket () const;
+
+  bool GetReceived () const;
+
+  bool GetSent () const;
+
+  bool GetScheduled () const;
+
+  uint32_t GetId () const;
+
+  const Vector GetPosition () const;
+
+  int32_t GetPhase () const;
+
+  uint32_t GetSlot () const;
+
+  uint32_t GetHop () const;
+
+  Time GetTimestamp () const;
+
+  bool AmIAVehicle () const;
+
+  /**
+         * \returns true if the node is inside an junction
+         */
+  bool AmIInJunction () const;
+
+  /**
+         * \returns the id of the junction the node is in
+         */
+  uint64_t GetJunctionId () const;
 
 
+  bool GetStopSending (void) const;
 
-//	Setters
-	void SetNode(Ptr<Node> node);
 
-	void SetSocket(Ptr<Socket> socket);
+  //	Setters
+  void SetNode (Ptr<Node> node);
 
-	void SetReceived(bool received);
+  void SetSocket (Ptr<Socket> socket);
 
-	void SetSent(bool sent);
+  void SetReceived (bool received);
 
-	void SetScheduled(bool scheduled);
+  void SetSent (bool sent);
 
-	void SetPhase(int32_t phase);
+  void SetScheduled (bool scheduled);
 
-	void SetSlot(uint32_t m_slot);
+  void SetPhase (int32_t phase);
 
-	void SetHop(uint32_t m_hop);
+  void SetSlot (uint32_t m_slot);
 
-	void SetTimestamp(Time timestamp);
+  void SetHop (uint32_t m_hop);
 
-	/**
-	 * \brief set the node in junction
-	 * \param value true if the node is in an junction
-	 */
-	void SetMeInJunction (bool value);
+  void SetTimestamp (Time timestamp);
 
-	/**
-	 * \brief set the id of the junction the node is in
-	 * \param JunctionId id of the junction the node is in
-	 */
-	void SetJunctionId (uint64_t junctionId);
+  /**
+         * \brief set the node in junction
+         * \param value true if the node is in an junction
+         */
+  void SetMeInJunction (bool value);
 
-	void SetStopSending (bool stopSending);
+  /**
+         * \brief set the id of the junction the node is in
+         * \param JunctionId id of the junction the node is in
+         */
+  void SetJunctionId (uint64_t junctionId);
 
-	void SetMeAsVehicle(bool vehicle);
+  void SetStopSending (bool stopSending);
 
-//	Methods
-	void Send(Ptr<Packet> packet);
+  void SetMeAsVehicle (bool vehicle);
 
-	void AddOrUpdateNeighbor(uint32_t nodeId, Vector pos, Time timeStamp = Simulator::Now());
+  //	Methods
+  void Send (Ptr<Packet> packet);
 
-	uint32_t GetNBTSize() const;
+  void AddOrUpdateNeighbor (uint32_t nodeId, Vector pos, Time timeStamp = Simulator::Now ());
 
-	boost::dynamic_bitset<> GetESDBitmap(uint32_t distanceRange) const;
+  uint32_t GetNBTSize () const;
 
-	Vector GetCoordsOfVehicleInRange(PositionRankingKey range, Vector senderCoords, int32_t& dist) const;
+  boost::dynamic_bitset<> GetESDBitmap (uint32_t distanceRange) const;
 
-	bool IsNodeWinnerInContention(uint32_t dist, Vector pos) const;
+  Vector
+  GetCoordsOfVehicleInRange (PositionRankingKey range, Vector senderCoords, int32_t& dist) const;
 
-	const Vector UpdatePosition();
+  bool IsNodeWinnerInContention (uint32_t dist, Vector pos) const;
+
+  const Vector UpdatePosition ();
 
 
 private:
-
-	Ptr<Node>			m_node; // ns-3 node
-	Ptr<Socket> 		m_socket; // ns-3 socket
-	NeighborTable		m_neighborTable;
-	bool				m_received; // whether the node has received an alert message
-	bool				m_sent; // whether the node has sent an alert message
-	bool				m_scheduled; // whether the node has already scheduled a forward of an alert message
-	int32_t				m_phase; // latest phase heard by the node
-	Vector				m_position; // position of node
-	uint32_t			m_slot; // number of slots waited before the node has received the alert message
-	uint32_t			m_hop; // number of hops before the alert message reached this node
-	Time				m_timestamp; // time of reception of alert message
-	bool				m_amIaVehicle;	// used for statistics
-	bool				m_amIInJunction; // whether the node is inside a junction
-	uint64_t			m_junctionId; // id of the junction where the node is
-	bool				m_stopSending;
+  Ptr<Node> m_node;     // ns-3 node
+  Ptr<Socket> m_socket; // ns-3 socket
+  NeighborTable m_neighborTable;
+  bool m_received;       // whether the node has received an alert message
+  bool m_sent;           // whether the node has sent an alert message
+  bool m_scheduled;      // whether the node has already scheduled a forward of an alert message
+  int32_t m_phase;       // latest phase heard by the node
+  Vector m_position;     // position of node
+  uint32_t m_slot;       // number of slots waited before the node has received the alert message
+  uint32_t m_hop;        // number of hops before the alert message reached this node
+  Time m_timestamp;      // time of reception of alert message
+  bool m_amIaVehicle;    // used for statistics
+  bool m_amIInJunction;  // whether the node is inside a junction
+  uint64_t m_junctionId; // id of the junction where the node is
+  bool m_stopSending;
 };
 
-}
-
+} // namespace ns3
 
 
 #endif /* ROFFNODE_H*/
