@@ -164,10 +164,11 @@ ROFFApplication::PrintStats (std::stringstream& dataStream)
 
   dataStream << circCont << "," << cover << "," << circ << ","
              << (time_sum / (double)circ) - timeref.GetMicroSeconds () << ","
-             << (hops_sum / (double)circ) << "," << (slots_sum / (double)circ) << ","
-            //  << m_nodes[m_nodes.size () - 1]->GetHop () << ","
-            //  << m_nodes[m_nodes.size () - 1]->GetSlot () << "," << m_sent << ","
-             << m_received;
+             << (hops_sum / (double)circ) << "," << (slots_sum / (double)circ)
+             << ","
+             //  << m_nodes[m_nodes.size () - 1]->GetHop () << ","
+             //  << m_nodes[m_nodes.size () - 1]->GetSlot () << ","
+             << m_sent << "," << m_received;
   cout << "totalCoverage= " << cover << "/" << m_nodes.size () << endl;
   cout << "coverageOnCirc= " << circ << "/" << circCont << endl;
   cout << "m_sent=" << m_sent << endl;
@@ -353,18 +354,19 @@ ROFFApplication::GenerateAlertMessage (Ptr<ROFFNode> node)
   uint32_t nodeId = node->GetId ();
   Vector position = node->UpdatePosition ();
   boost::dynamic_bitset<> esdBitmap = node->GetESDBitmap (m_distanceRange);
+
   // cout << "ROFFApplication::GenerateAlertMessage esdBitmap = " << esdBitmap
-  //      << " size=
-  //         " << 			esdBitmap.size() << endl;
-    ROFFHeader header (headerType,
-                       position,
-                       nodeId,
-                       position,
-                       esdBitmap,
-                       0,
-                       0,
-                       node->AmIInJunction (),
-                       node->GetJunctionId ());
+  //      << " size=" << esdBitmap.size () << endl;
+
+  ROFFHeader header (headerType,
+                     position,
+                     nodeId,
+                     position,
+                     esdBitmap,
+                     0,
+                     0,
+                     node->AmIInJunction (),
+                     node->GetJunctionId ());
 
   Ptr<Packet> packet = Create<Packet> (m_packetPayload);
   //	cout << "add " << node->GetPosition() << endl;
@@ -384,8 +386,10 @@ ROFFApplication::ReceivePacket (Ptr<Socket> socket)
   NS_LOG_FUNCTION (this << socket);
   Ptr<Node> node = socket->GetNode ();
   Ptr<ROFFNode> roffNode = m_nodes.at (node->GetId ());
-  //	NS_LOG_INFO("ROFFApplication::ReceivePacket received packet by node " <<
-  //node->GetId() << " at time=" << 			Simulator::Now().GetSeconds());
+
+  // NS_LOG_INFO ("ROFFApplication::ReceivePacket received packet by node "
+  //              << node->GetId () << " at time=" << Simulator::Now ().GetSeconds ());
+
   Address senderAddress;
   Ptr<Packet> packet;
 
@@ -698,16 +702,16 @@ uint32_t
 ROFFApplication::ComputeMinDiff (uint32_t distSenderToNode,
                                  uint32_t distSenderToAnotherNode)
 {
-  //	cout << "ROFFApplication::ComputeMinDiff distSenderToNode = " << distSenderToNode <<
-  //			" distSenderToAnotherNode= " << distSenderToAnotherNode << endl;
+  // cout << "ROFFApplication::ComputeMinDiff distSenderToNode = " << distSenderToNode
+  //      << " distSenderToAnotherNode= " << distSenderToAnotherNode << endl;
   uint32_t rxTx = 2;
   uint32_t ccaTime = 8;
   uint32_t c = 299792458; // speed of light
   uint32_t maxDist = distSenderToNode + distSenderToAnotherNode;
   uint32_t propagationDelay =
     ceil ((((double)maxDist) / ((double)c)) * 1000 * 1000); // in microseconds
-  //	cout << "ROFFApplication::ComputeMinDiff maxDist= " << maxDist <<
-  //			" propagationDelay= " << propagationDelay << endl;
+  // cout << "ROFFApplication::ComputeMinDiff maxDist= " << maxDist
+  //      << " propagationDelay= " << propagationDelay << endl;
   return propagationDelay + rxTx + ccaTime;
 }
 
@@ -717,8 +721,8 @@ ROFFApplication::ComputeWaitingTimeArmir (Ptr<ROFFNode> node,
                                           PositionRankingMap rankingMap,
                                           uint32_t priority)
 {
-  //	cout << "ROFFApplication::ComputeWaitingTimeArmir node= " << node->GetId() <<
-  //				" senderCoords= " << senderCoords << " priority= " << priority << endl;
+  // cout << "ROFFApplication::ComputeWaitingTimeArmir node= " << node->GetId ()
+  //      << " senderCoords= " << senderCoords << " priority= " << priority << endl;
 
   return priority;
 
@@ -774,7 +778,7 @@ ROFFApplication::ComputeMinDiffArmir (Vector fwdCoords,
                                       Vector higherPriorityNodeCoords)
 {
   uint32_t rxTx = 0; // 2
-                     //	uint32_t ccaTime = 269000;
+  // uint32_t ccaTime = 269000;
   double ccaTime = 269;
   double pdFwdToHigherPriority =
     ComputePropagationDelay (fwdCoords, higherPriorityNodeCoords);
