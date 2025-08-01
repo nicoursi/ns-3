@@ -1,7 +1,6 @@
 #ifndef COMMAND_LOGGER_H
 #define COMMAND_LOGGER_H
 
-#include <string>
 #include <boost/filesystem.hpp>
 
 /**

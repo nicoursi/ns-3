@@ -20,9 +20,9 @@
  */
 
 /* -----------------------------------------------------------------------------
-*			HEADERS
-* ------------------------------------------------------------------------------
-*/
+ *			HEADERS
+ * ------------------------------------------------------------------------------
+ */
 
 #include <bits/stdint-uintn.h>
 #include <bits/types/struct_timeval.h>
@@ -30,19 +30,15 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/algorithm/string.hpp>
 #include <sys/time.h>
-#include <cstddef>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
 #include <chrono>  // for timing
 #include <iomanip> // for put_time
-#include <random>
-#include <mutex>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <thread>
 
 #include "ns3/core-module.h"
 #include "ns3/node-list.h"
@@ -52,8 +48,6 @@
 #include "ns3/wifi-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/topology.h"
-#include "ns3/wifi-80211p-helper.h"
-#include "ns3/wave-mac-helper.h"
 #include "ns3/netanim-module.h"
 #include "ns3/FBApplication.h"
 #include "ns3/command-logger.h"
@@ -64,17 +58,16 @@ using namespace std;
 NS_LOG_COMPONENT_DEFINE ("fb-vanet-urban");
 
 /* -----------------------------------------------------------------------------
-*			CLASS AND METHODS PROTOTIPES
-* ------------------------------------------------------------------------------
-*/
+ *			CLASS AND METHODS PROTOTIPES
+ * ------------------------------------------------------------------------------
+ */
 
 CSVManager g_csvData;
 
-
 /**
  * \ingroup obstacle
- * \brief The VanetRoutingExperiment class implements an application that
- * allows this VANET experiment to be simulated
+ * \brief The VanetRoutingExperiment class implements an application that allows this
+ * VANET experiment to be simulated
  */
 class FBVanetExperiment
 {
@@ -99,13 +92,11 @@ public:
    */
   void Configure (int argc, char* argv[]);
 
-
   /**
    * \brief get command line parameters and set up protocol and scenario info.
    * \return none
    */
   void getAndProcessParameters (int argc, char* argv[]);
-
 
   /**
    * \brief Enacts simulation of an ns-3  application
@@ -120,11 +111,11 @@ public:
   void ProcessOutputs ();
 
   /**
-   * \brief Calculates the filepath where the output of the experiment will be saved (depends on input parameters)
+   * \brief Calculates the filepath where the output of the experiment will be saved
+   * (depends on input parameters)
    * \return file path
    */
   const std::string CalculateOutFilePath () const;
-
 
   /**
    * \brief Calculates configure, runs and print results of the experiment
@@ -133,39 +124,39 @@ public:
   void RunAndPrintResults (int argc, char* argv[]);
 
   /**
-  * \brief printToFile getter
-  * \return printToFile
-  */
+   * \brief printToFile getter
+   * \return printToFile
+   */
   uint32_t GetPrintToFile () const;
 
   /**
-  * \brief printCoords getter
-  * \return printCoords
-  */
+   * \brief printCoords getter
+   * \return printCoords
+   */
   uint32_t GetPrintCoords () const;
 
   /**
-  * \brief droneTest getter
-  * \return droneTest
-  */
+   * \brief droneTest getter
+   * \return droneTest
+   */
   uint32_t GetDroneTest () const;
 
   /**
-  * \brief highBuildings getter
-  * \return highBuildings
-  */
+   * \brief highBuildings getter
+   * \return highBuildings
+   */
   uint32_t GetHighBuildings () const;
 
   /**
-  * \brief startRun getter
-  * \return startRun
-  */
+   * \brief startRun getter
+   * \return startRun
+   */
   int32_t GetStartRun () const;
 
   /**
-  * \brief maxRun getter
-  * \return maxRun
-  */
+   * \brief maxRun getter
+   * \return maxRun
+   */
   uint32_t GetMaxRun () const;
 
 protected:
@@ -266,23 +257,25 @@ private:
   Ptr<Socket> SetupPacketSend (Ipv4Address addr, Ptr<Node> node);
 
   /**
-  * \brief Calculates number of nodes based on .ns2mobility filepath
-  * \return Number of nodes (vehicles) in simulation
-  */
+   * \brief Calculates number of nodes based on .ns2mobility filepath
+   * \return Number of nodes (vehicles) in simulation
+   */
   unsigned int CalculateNumNodes () const;
 
   /**
-  * \brief Loads .junction file in m_nodeIdToJunctionIdMap
-  * \return none
-  */
+   * \brief Loads .junction file in m_nodeIdToJunctionIdMap
+   * \return none
+   */
   void LoadJunctionsMap ();
 
   /**
- * \brief Prints actual position and velocity when a course change event occurs
- * \return none
- */
-  static void CourseChange (std::ostream* os, std::string foo, Ptr<const MobilityModel> mobility);
+   * \brief Prints actual position and velocity when a course change event occurs
+   * \return none
+   */
+  static void
+  CourseChange (std::ostream* os, std::string foo, Ptr<const MobilityModel> mobility);
 
+  // clang-format off
   Ptr<FBApplication>                         m_fbApplication;
   uint32_t                                   m_nNodes;
   NodeContainer                              m_adhocNodes;
@@ -330,15 +323,16 @@ private:
   std::map<uint32_t, uint64_t>               m_nodeIdToJunctionIdMap;
   Ptr<UniformRandomVariable>                 m_randomVariable;
 };
+// clang-format on
 
 /* -----------------------------------------------------------------------------
-*			METHOD DEFINITIONS
-* ------------------------------------------------------------------------------
-*/
+ *			METHOD DEFINITIONS
+ * ------------------------------------------------------------------------------
+ */
 
 FBVanetExperiment::FBVanetExperiment () :
   m_nNodes (0),        // random value, it will be set later
-  m_packetSize ("68"), //added
+  m_packetSize ("68"), // added
   m_rate ("2048bps"),
   m_phyMode ("DsssRate11Mbps"),
   m_txp (20),
@@ -374,7 +368,7 @@ FBVanetExperiment::FBVanetExperiment () :
   m_highBuildings (0)
 {
 
-  //	srand(12345);
+  // srand (12345);
   RngSeedManager::SetSeed (12345);
   m_randomVariable = CreateObject<UniformRandomVariable> ();
 }
@@ -392,6 +386,7 @@ FBVanetExperiment::Configure (int argc, char* argv[])
 
   ConfigureTracingAndLogging ();
 }
+
 void
 FBVanetExperiment::getAndProcessParameters (int argc, char* argv[])
 {
@@ -455,7 +450,10 @@ FBVanetExperiment::CalculateOutFilePath () const
 
   if (m_staticProtocol == PROTOCOL_FB)
     {
-      //		protocol = "Fast-Broadcast[" + std::to_string(m_cwMin) + "-" + std::to_string(m_cwMax) + "]";
+
+      // protocol = "Fast-Broadcast[" + std::to_string (m_cwMin) + "-" +
+      //             std::to_string (m_cwMax) + "]";
+
       protocol = "Fast-Broadcast";
     }
   else if (m_staticProtocol == PROTOCOL_STATIC_100)
@@ -482,20 +480,21 @@ FBVanetExperiment::CalculateOutFilePath () const
   scenarioName = scenarioName.substr (0, dotPos);
 
   // File name building
-  fileName.append (scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange +
-                   "/j" + junctions + "/" + "cw[" + std::to_string (m_cwMin) + "-" +
-                   std::to_string (m_cwMax) + "]/" + protocol + "/" + scenarioName + "-b" +
-                   buildings + "-" + errorOrForged + "-r" + actualRange + "-j" + junctions + "-" +
-                   protocol);
+  fileName.append (
+    scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange + "/j" +
+    junctions + "/" + "cw[" + std::to_string (m_cwMin) + "-" + std::to_string (m_cwMax) +
+    "]/" + protocol + "/" + scenarioName + "-b" + buildings + "-" + errorOrForged + "-r" +
+    actualRange + "-j" + junctions + "-" + protocol);
 
 
   std::cout << "fileName=" << fileName << std::endl;
 
-  /*
-  fileName.append("cw-" + cwMin + "-" + cwMax + "/" + m_mapBaseNameWithoutDistance + "/d" + vehicleDistance + "/b" + buildings
-                + "/" + protocol + "-" + actualRange + "/" + m_mapBaseName + "-cw-" + cwMin + "-" + cwMax + "-b"
-                + buildings + "-" + protocol + "-" + actualRange);
-  */
+
+  // fileName.append ("cw-" + cwMin + "-" + cwMax + "/" + m_mapBaseNameWithoutDistance +
+  //                  "/d" + vehicleDistance + "/b" + buildings + "/" + protocol + "-" +
+  //                  actualRange + "/" + m_mapBaseName + "-cw-" + cwMin + "-" + cwMax +
+  //                  "-b" + buildings + "-" + protocol + "-" + actualRange);
+
 
   return fileName;
 }
@@ -551,7 +550,8 @@ FBVanetExperiment::ConfigureDefaults ()
 
   Config::SetDefault ("ns3::OnOffApplication::PacketSize", StringValue (m_packetSize));
   Config::SetDefault ("ns3::OnOffApplication::DataRate", StringValue (m_rate));
-  Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode", StringValue (m_phyMode));
+  Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode",
+                      StringValue (m_phyMode));
 
   if (m_staticProtocol == 1)
     {
@@ -664,37 +664,40 @@ FBVanetExperiment::SetupAdhocDevices ()
   wifiPhy.SetChannel (wifiChannel.Create ());
   wifiPhy.SetPcapDataLinkType (YansWifiPhyHelper::DLT_IEEE802_11);
 
-  // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely ignored
+  // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely
+  // ignored
   if (m_actualRange == 100)
     {
-      //      m_txp = -8.4;  //first value that sort of works with 500
-      //      m_txp = -7.7;  //fist value that seems to work with 100m
+      // m_txp = -8.4; // first value that sort of works with 500
+      // m_txp = -7.7; // fist value that seems to work with 100m
       m_txp = -5.2; // + 2.5 after incremental calibration tests
-                    //      m_txp = -7.0; // original value
+      // m_txp = -7.0; // original value
     }
   else if (m_actualRange == 300)
     {
-      //      m_txp = 0.0;   // first value that sort of works with 300
-      //      m_txp = 1.1;   // fist value that seems to work with 300m
+      // m_txp = 0.0; // first value that sort of works with 300
+      // m_txp = 1.1; // fist value that seems to work with 300m
       m_txp = 4.6; // + 3.5 after incremental calibration tests
-                   //      m_txp = 4.6;   // 11.6 dB gain compared to 100m
+      // m_txp = 4.6; // 11.6 dB gain compared to 100m
     }
   else if (m_actualRange == 500)
     {
-      //      m_txp = 6.3;   // first value that sort of works with 500
-      //      m_txp = 7.4;   // fist value that seems to work with 500m
+      // m_txp = 6.3;  // first value that sort of works with 500
+      // m_txp = 7.4;  // fist value that seems to work with 500m
       m_txp = 11.2; // + 3.8 after incremental calibration tests
-                    //      m_txp = 13.4;  // 8.8 dB gain (2.8 dB less than 300m)
-                    //      m_txp = 16.2;	 // keeping 11.6 gain
+      // m_txp = 13.4; // 8.8 dB gain (2.8 dB less than 300m)
+      // m_txp = 16.2; // keeping 11.6 gain
     }
+  // clang-format off
   else if (m_actualRange == 700) // 6 dB gain   (2.8 dB less than 500m)
-    {
-      //      m_txp = 12.2;  // first value that sort of works with 700m
+    { 
+      // m_txp = 12.2; // first value that sort of works with 700m
       m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
-      //      m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
-      // 13.4 + (8.8 - (11.6-8.8))
-      //      m_txp = 27.8;	 // keeping 11.6 gain
+      // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
+                      //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
+      // m_txp = 27.8; // keeping 11.6 gain
     }
+  // clang-format on
 
   WifiMacHelper wifiMac;
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
@@ -725,14 +728,17 @@ FBVanetExperiment::ConfigureConnections ()
   m_adhocInterfaces = ipv4.Assign (m_adhocDevices);
 
   OnOffHelper onoff1 ("ns3::UdpSocketFactory", Address ());
-  onoff1.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
-  onoff1.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
+  onoff1.SetAttribute ("OnTime",
+                       StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
+  onoff1.SetAttribute ("OffTime",
+                       StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
 
   // Set receiver (for each node in the application)
   for (uint32_t i = 0; i < m_nNodes; i++)
     {
       SetupPacketReceive (m_adhocNodes.Get (i));
-      AddressValue remoteAddress (InetSocketAddress (ns3::Ipv4Address::GetAny (), m_port));
+      AddressValue remoteAddress (
+        InetSocketAddress (ns3::Ipv4Address::GetAny (), m_port));
       onoff1.SetAttribute ("Remote", remoteAddress);
     }
 
@@ -802,7 +808,7 @@ FBVanetExperiment::ConfigureFBApplication ()
         {
           isNodeVehicle = false;
         }
-      //		cout << "addNode " << i << " " << isNodeVehicle << endl;
+      // cout << "addNode " << i << " " << isNodeVehicle << endl;
       m_fbApplication->AddNode (m_adhocNodes.Get (i),
                                 m_adhocSources.at (i),
                                 m_adhocSinks.at (i),
@@ -880,7 +886,7 @@ FBVanetExperiment::SetupScenario ()
   cout << "numNodes = " << m_nNodes << endl;
   if (m_startingNode == -1)
     {
-      //		m_startingNode = rand() % m_nNodes;
+      // m_startingNode = rand () % m_nNodes;
       m_startingNode = m_randomVariable->GetInteger (0, m_nNodes - 1);
     }
   cout << "numNodes = " << m_nNodes << endl;
@@ -958,11 +964,13 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
 
   CommandLine cmd;
 
-//  allow command line overrides
-//	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
+  //  allow command line overrides
+  //	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
+
+  // clang-format off
   cmd.AddValue ("startRun",
-                "Run number the simulations will start from. If set will take precedence over "
-                "NS_GLOBAL_VALUE=RngRun=n",
+                "Run number the simulations will start from. If set will take precedence "
+                "over NS_GLOBAL_VALUE=RngRun=n",
                 m_startRun);
   cmd.AddValue ("maxRun",
                 "Maximum number of simulation runs",
@@ -988,9 +996,9 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("vehicleDistance",
                 "Distance between vehicles",
                 m_vehicleDistance);
-//	cmd.AddValue ("scenario",
-//                "1=Padova, 2=Los Angeles",
-//                m_scenario);
+  //	cmd.AddValue ("scenario",
+  //                "1=Padova, 2=Los Angeles",
+  //                m_scenario);
   cmd.AddValue ("buildings",
                 "Load building (obstacles)",
                 m_loadBuildings);
@@ -1009,7 +1017,8 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("cwMin",
                 "Minimum contention window",
                 m_cwMin);
-  cmd.AddValue ("cwMax", "Maximum contention window",
+  cmd.AddValue ("cwMax",
+                "Maximum contention window",
                 m_cwMax);
   cmd.AddValue ("mapBasePath",
                 "Base path of map required for simulation "
@@ -1036,7 +1045,8 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
                 "Whether to activate smart junction mode: 0=disabled, 1=enabled",
                 m_smartJunctionMode);
   cmd.AddValue ("errorRate",
-                "Probability to incur in an error in transmission schedule (sending 1 slot earlier or later",
+                "Probability to incur in an error in transmission schedule"
+                "(sending 1 slot earlier or later",
                 m_errorRate);
   cmd.AddValue ("forgedCoordTest",
                 "Whether to run the forged hello messages attack test 0=disabled, 1=enabled",
@@ -1053,6 +1063,8 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("highBuildings",
                 "Whether buildings are very high (higher than any drones, e.g. 100m)",
                 m_highBuildings);
+
+  // clang-format on
 
   // only one of these tests is possible at a given time
   if (m_forgedCoordTest)
@@ -1078,8 +1090,8 @@ FBVanetExperiment::CourseChange (std::ostream* os,
        << "; POS: (" << pos.x << ", " << pos.y << ", " << pos.z << ")"
        << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ")." << endl;
   NS_LOG_DEBUG ("Changing pos for node "
-                << nodeId << " at " << Simulator::Now ().GetSeconds () << "; POS: (" << pos.x
-                << ", " << pos.y << ", " << pos.z << ")"
+                << nodeId << " at " << Simulator::Now ().GetSeconds () << "; POS: ("
+                << pos.x << ", " << pos.y << ", " << pos.z << ")"
                 << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ").");
 }
 
@@ -1139,10 +1151,13 @@ FBVanetExperiment::LoadJunctionsMap ()
           m_nodeIdToJunctionIdMap[nodeId] = junctionId;
         }
     }
-  //	cout << m_nodeIdToJunctionIdMap.size() << endl;
-  //	for (auto pair: m_nodeIdToJunctionIdMap) {
-  //		cout << "nodeId= " << pair.first << " intId= " << pair.second << endl;
-  //	}
+  /*
+    cout << m_nodeIdToJunctionIdMap.size () << endl;
+    for (auto pair : m_nodeIdToJunctionIdMap)
+      {
+        cout << "nodeId= " << pair.first << " intId= " << pair.second << endl;
+      }
+   */
 }
 
 // Prints the start time with a custom label and returns the start time
@@ -1152,37 +1167,39 @@ PrintStartTime (const std::string& label)
   auto start = std::chrono::system_clock::now ();
   std::time_t start_time = std::chrono::system_clock::to_time_t (start);
 
-  std::cout << "-----------------------------------------------------------------------------"
-            << std::endl
-            << label << " starting at: "
-            << std::put_time (std::localtime (&start_time), "%Y-%m-%d %H:%M:%S %Z") << std::endl;
+  std::cout
+    << "-----------------------------------------------------------------------------"
+    << std::endl
+    << label << " starting at: "
+    << std::put_time (std::localtime (&start_time), "%Y-%m-%d %H:%M:%S %Z") << std::endl;
 
   return start;
 }
 
 // Prints the end time with the same label and elapsed time
 void
-PrintElapsedTime (const std::chrono::system_clock::time_point& start, const std::string& label)
+PrintElapsedTime (const std::chrono::system_clock::time_point& start,
+                  const std::string& label)
 {
   auto end = std::chrono::system_clock::now ();
   std::time_t end_time = std::chrono::system_clock::to_time_t (end);
 
-  std::cout << label
-            << " ending at: " << std::put_time (std::localtime (&end_time), "%Y-%m-%d %H:%M:%S %Z")
+  std::cout << label << " ending at: "
+            << std::put_time (std::localtime (&end_time), "%Y-%m-%d %H:%M:%S %Z")
             << std::endl;
 
   auto duration = end - start;
   auto minutes = std::chrono::duration_cast<std::chrono::minutes> (duration);
   auto seconds = std::chrono::duration_cast<std::chrono::seconds> (duration - minutes);
 
-  std::cout << label << " Elapsed wall-clock time: " << minutes.count () << "m " << seconds.count ()
-            << "s" << std::endl;
+  std::cout << label << " Elapsed wall-clock time: " << minutes.count () << "m "
+            << seconds.count () << "s" << std::endl;
 }
 
 /* -----------------------------------------------------------------------------
-*			MAIN
-* ------------------------------------------------------------------------------
-*/
+ *			MAIN
+ * ------------------------------------------------------------------------------
+ */
 
 int
 main (int argc, char* argv[])
@@ -1194,14 +1211,16 @@ main (int argc, char* argv[])
 
   NS_LOG_UNCOND ("FB Vanet Experiment URBAN");
 
-  //	Before launching experiments, calculate output file path : Todo: the output file path logic should probably be out of this class
+  // Before launching experiments, calculate output file path: Todo: the output file path
+  // logic should probably be out of this class
   FBVanetExperiment experiment;
-  //	experiment.Configure (argc, argv);
-  //	experiment.CommandSetup(argc, argv);
+  // experiment.Configure (argc, argv);
+  // experiment.CommandSetup (argc, argv);
   experiment.getAndProcessParameters (argc, argv);
 
   unsigned int maxRun = experiment.GetMaxRun ();
-  //unsigned int startRun = RngSeedManager::GetRun();  // Grab from NS_GLOBAL_VALUE=RngRun=X
+  // unsigned int startRun = RngSeedManager::GetRun();  // Grab from
+  // NS_GLOBAL_VALUE=RngRun=X
   int32_t startRun = experiment.GetStartRun ();
   startRun = (startRun == -1) ? RngSeedManager::GetRun () : startRun;
   cout << "start run: " << startRun << endl;
@@ -1216,42 +1235,43 @@ main (int argc, char* argv[])
       if (experiment.GetPrintCoords ())
         {
           additionalPath = "/simulations/scenario-urbano-con-coord/";
-          header =
-            "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting y\","
-            "\"Starting node\", \"Vehicle distance\", \"Received node ids\", "
-            "\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission vector\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\",\"Starting x\","
+                   "\"Starting y\",\"Starting node\",\"Vehicle distance\","
+                   "\"Received node ids\",\"Node ids\",\"Transmission map\","
+                   "\"Received on circ nodes\",\"Transmission vector\"";
         }
       else if (experiment.GetHighBuildings ())
         {
           additionalPath = "/simulations/scenario-droni-high/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached "
-            "maxDist node\","
-            "\"Vehicles cover\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\",\"Max distance\","
+                   "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else if (experiment.GetDroneTest ())
         {
           additionalPath = "/simulations/scenario-droni/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached "
-            "maxDist node\","
-            "\"Vehicles cover\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\",\"Max distance\","
+                   "\"Reached maxDist node\",\"Vehicles cover\"";
         }
-
       else
         {
           additionalPath = "/simulations/scenario-urbano/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\"";
         }
       boost::filesystem::path path = boost::filesystem::current_path ().parent_path () /=
         additionalPath;
@@ -1259,7 +1279,7 @@ main (int argc, char* argv[])
       path /= filePath;
       g_csvData.EnableAlternativeFilename (path);
       g_csvData.WriteHeader (header);
-      //    Log command in the same folder, ony if not existent
+      // Log command in the same folder, ony if not existent
       boost::filesystem::path logPath = path;
       logPath += "-executed-command.txt";
 
@@ -1280,13 +1300,13 @@ main (int argc, char* argv[])
 
       FBVanetExperiment experiment;
 
-      //    This loop cannot be removed without changing results per run
+      // This loop cannot be removed without changing results per run
       Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-      cout << "Lottery numbers. These should be always the same for any run=" << thisRun << ":"
-           << endl;
+      cout << "Lottery numbers. These should be always the same for any run=" << thisRun
+           << ":" << endl;
       for (int i = 0; i < 5; ++i)
         {
-          //        Never delete this line or this for loop
+          // Never delete this line or this for loop
           cout << "   " << uv->GetInteger (0, 100);
         }
       cout << endl;

@@ -8,13 +8,14 @@
 #ifndef POSITIONRANKINGKEY_H
 #define POSITIONRANKINGKEY_H
 
-#include "ns3/log.h"
 #include "ns3/object.h"
 #include <iostream>
 #include <climits>
+
 using namespace std;
 
-namespace ns3 {
+namespace ns3
+{
 
 class PositionRankingKey : public Object
 {

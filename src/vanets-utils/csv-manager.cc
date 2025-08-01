@@ -20,20 +20,23 @@
 #include "ns3/log.h"
 #include <sys/time.h>
 #include <iostream>
+#include <random>
+#include <fstream>
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE ("CSVManager");
 
-CSVManager::CSVManager ()
-  : m_csvFilePath (""),
+CSVManager::CSVManager () :
+  m_csvFilePath (""),
   runId (0)
 {
   NS_LOG_FUNCTION (this);
 }
 
-CSVManager::CSVManager (unsigned int runId)
-  : m_csvFilePath (""),
+CSVManager::CSVManager (unsigned int runId) :
+  m_csvFilePath (""),
   runId (runId)
 {
   NS_LOG_FUNCTION (this);
@@ -61,7 +64,8 @@ CSVManager::WriteHeader (std::string header)
   std::ofstream out (m_csvFilePath.string ());
   if (!out.is_open ())
     {
-      NS_LOG_ERROR ("Failed to open file for writing header: " << m_csvFilePath.string ());
+      NS_LOG_ERROR (
+        "Failed to open file for writing header: " << m_csvFilePath.string ());
       return;
     }
   out << header.c_str () << std::endl;
@@ -72,9 +76,9 @@ std::string
 CSVManager::GenerateRandomTag ()
 {
   static const char charset[] = "abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "0123456789";
-  std::default_random_engine rng (std::random_device{} ());
+                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                "0123456789";
+  std::default_random_engine rng (std::random_device{}());
   std::uniform_int_distribution<> dist (0, sizeof (charset) - 2);
   std::string tag;
   for (int i = 0; i < 4; ++i)
@@ -96,7 +100,8 @@ CSVManager::EnableAlternativeFilename (boost::filesystem::path path)
   long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
   // Create the new filename
-  std::string finalPartOfPath = "-" + std::to_string (ms) + "-" + GenerateRandomTag () + extension;
+  std::string finalPartOfPath =
+    "-" + std::to_string (ms) + "-" + GenerateRandomTag () + extension;
   m_csvFilePath = path;
   m_csvFilePath += finalPartOfPath;
   std::cout << "CSV File Path = " << m_csvFilePath << std::endl;

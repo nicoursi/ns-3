@@ -8,15 +8,16 @@
 #ifndef POSITIONRANKINGMAP_H
 #define POSITIONRANKINGMAP_H
 
-#include "ns3/log.h"
 #include "ns3/object.h"
 #include "PositionRankingKey.h"
 #include <iostream>
 #include <boost/dynamic_bitset.hpp>
+#include <map>
 
 using namespace std;
 
-namespace ns3 {
+namespace ns3
+{
 
 class PositionRankingMap : public Object
 {

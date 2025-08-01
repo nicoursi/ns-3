@@ -14,20 +14,17 @@
 #include "ns3/vector.h"
 #include "ns3/socket.h"
 #include "ns3/packet.h"
-#include "ns3/log.h"
-#include "ns3/mobility-model.h"
-#include "ns3/constant-velocity-mobility-model.h"
-
 #include "NeighborTable.h"
 #include "PositionRankingKey.h"
-#include <iostream>
 #include <boost/dynamic_bitset.hpp>
+// #include <chrono>
 
 
 using namespace std;
-using namespace std::chrono;
+// using namespace std::chrono;
 
-namespace ns3 {
+namespace ns3
+{
 
 class ROFFNode : public Object
 {
@@ -68,13 +65,13 @@ public:
   bool AmIAVehicle () const;
 
   /**
-         * \returns true if the node is inside an junction
-         */
+   * \returns true if the node is inside an junction
+   */
   bool AmIInJunction () const;
 
   /**
-         * \returns the id of the junction the node is in
-         */
+   * \returns the id of the junction the node is in
+   */
   uint64_t GetJunctionId () const;
 
 
@@ -101,15 +98,15 @@ public:
   void SetTimestamp (Time timestamp);
 
   /**
-         * \brief set the node in junction
-         * \param value true if the node is in an junction
-         */
+   * \brief set the node in junction
+   * \param value true if the node is in an junction
+   */
   void SetMeInJunction (bool value);
 
   /**
-         * \brief set the id of the junction the node is in
-         * \param JunctionId id of the junction the node is in
-         */
+   * \brief set the id of the junction the node is in
+   * \param JunctionId id of the junction the node is in
+   */
   void SetJunctionId (uint64_t junctionId);
 
   void SetStopSending (bool stopSending);
@@ -119,14 +116,16 @@ public:
   //	Methods
   void Send (Ptr<Packet> packet);
 
-  void AddOrUpdateNeighbor (uint32_t nodeId, Vector pos, Time timeStamp = Simulator::Now ());
+  void
+  AddOrUpdateNeighbor (uint32_t nodeId, Vector pos, Time timeStamp = Simulator::Now ());
 
   uint32_t GetNBTSize () const;
 
   boost::dynamic_bitset<> GetESDBitmap (uint32_t distanceRange) const;
 
-  Vector
-  GetCoordsOfVehicleInRange (PositionRankingKey range, Vector senderCoords, int32_t& dist) const;
+  Vector GetCoordsOfVehicleInRange (PositionRankingKey range,
+                                    Vector senderCoords,
+                                    int32_t& dist) const;
 
   bool IsNodeWinnerInContention (uint32_t dist, Vector pos) const;
 
@@ -137,13 +136,15 @@ private:
   Ptr<Node> m_node;     // ns-3 node
   Ptr<Socket> m_socket; // ns-3 socket
   NeighborTable m_neighborTable;
-  bool m_received;       // whether the node has received an alert message
-  bool m_sent;           // whether the node has sent an alert message
-  bool m_scheduled;      // whether the node has already scheduled a forward of an alert message
-  int32_t m_phase;       // latest phase heard by the node
-  Vector m_position;     // position of node
-  uint32_t m_slot;       // number of slots waited before the node has received the alert message
-  uint32_t m_hop;        // number of hops before the alert message reached this node
+  bool m_received; // whether the node has received an alert message
+  bool m_sent;     // whether the node has sent an alert message
+  bool
+    m_scheduled;   // whether the node has already scheduled a forward of an alert message
+  int32_t m_phase; // latest phase heard by the node
+  Vector m_position; // position of node
+  uint32_t
+    m_slot;       // number of slots waited before the node has received the alert message
+  uint32_t m_hop; // number of hops before the alert message reached this node
   Time m_timestamp;      // time of reception of alert message
   bool m_amIaVehicle;    // used for statistics
   bool m_amIInJunction;  // whether the node is inside a junction

@@ -7,9 +7,10 @@
 
 
 #include "ROFFHeader.h"
+#include "ns3/log.h"
 
-
-namespace ns3 {
+namespace ns3
+{
 NS_LOG_COMPONENT_DEFINE ("ROFFHeader");
 
 NS_OBJECT_ENSURE_REGISTERED (ROFFHeader);
@@ -18,8 +19,8 @@ NS_OBJECT_ENSURE_REGISTERED (ROFFHeader);
 
 ROFFHeader::ROFFHeader () :
   m_type (HELLO_MESSAGE),
-  m_senderId (0),
   m_position (Vector (0, 0, 0)),
+  m_senderId (0),
   m_starterPosition (Vector (0, 0, 0)),
   m_phase (0),
   m_slot (0),
@@ -41,11 +42,11 @@ ROFFHeader::ROFFHeader (uint32_t type,
   m_position (position),
   m_senderId (sender),
   m_starterPosition (starterPosition),
-  m_esdBitmap (esdBitmap),
   m_phase (phase),
   m_slot (slot),
   m_senderInJunction (senderInJunction),
-  m_junctionId (junctionId)
+  m_junctionId (junctionId),
+  m_esdBitmap (esdBitmap)
 {
 }
 
@@ -189,13 +190,14 @@ ROFFHeader::GetSerializedSize () const
 {
   uint32_t bitmapSize = GetESDBitmapRoundedSizeInBytes (m_esdBitmap.size ());
   //		cout << "ROFFHeader::GetSerializedSize bitmapSize = " << bitmapSize << endl;
-  uint32_t serializedSize = 4 * 4   //m_type, m_senderId, m_phase, m_slot
-    + 8 * 6                         // m_position, m_starterPosition
-    + 1                             // m_senderInJunction
-    + 8                             // m_junctionId
-    + 4                             // m_esdBitmap.size
-    + bitmapSize;
-  //		cout << "ROFFHeader::GetSerializedSize serializedSize = " << serializedSize << endl;
+  uint32_t serializedSize = 4 * 4   // m_type, m_senderId, m_phase, m_slot
+                            + 8 * 6 // m_position, m_starterPosition
+                            + 1     // m_senderInJunction
+                            + 8     // m_junctionId
+                            + 4     // m_esdBitmap.size
+                            + bitmapSize;
+  //		cout << "ROFFHeader::GetSerializedSize serializedSize = " << serializedSize <<
+  //endl;
   return serializedSize;
 }
 
@@ -230,8 +232,8 @@ ROFFHeader::WriteESDBitmap (Buffer::Iterator* iter) const
         }
     }
   //				esdBitmapToExtend.to_ulong();
-  //				cout << "ROFFHeader::WriteESDBitmapToExtend after size= " << esdBitmapToExtend.size() <<
-  //						" " << esdBitmapToExtend << endl;
+  //				cout << "ROFFHeader::WriteESDBitmapToExtend after size= " <<
+  //esdBitmapToExtend.size() << 						" " << esdBitmapToExtend << endl;
   // Writes bitset to buffer chunk by chunk (8 bytes chunk)
   //
   //				boost::dynamic_bitset<> chunk;
@@ -260,7 +262,8 @@ ROFFHeader::WriteESDBitmap (Buffer::Iterator* iter) const
       for (int j = 0; j < 8; j++)
         {
           chunk[j] = esdBitmapToExtend[i + j];
-          //						cout << "esdBitmapToExtend[i+j= " << esdBitmapToExtend[i + j] << endl;
+          //						cout << "esdBitmapToExtend[i+j= " << esdBitmapToExtend[i + j] <<
+          //endl;
         }
       unsigned long ulong = chunk.to_ulong ();
       //					uint8_t * ptr = reinterpret_cast<uint8_t*>(&ulong);
@@ -345,14 +348,16 @@ ROFFHeader::ReadESDBitmap (Buffer::Iterator* iter, uint32_t bitmapSize)
   //		bitmapSize is a multiple of 8
 
   uint32_t bytesToRead = bitmapSize / 8;
-  //		cout << "ROFFHeader::ReadESDBitmap bitmapSize= " << bitmapSize << " bytesToRead= " << bytesToRead << endl;
+  //		cout << "ROFFHeader::ReadESDBitmap bitmapSize= " << bitmapSize << " bytesToRead= "
+  //<< bytesToRead << endl;
   for (int i = 0; i < bytesToRead; i++)
     {
       uint8_t value = iter->ReadU8 ();
       //			iter->ReadU8();
       //			cout << "value = " << value << endl;
       boost::dynamic_bitset<> b (8, value);
-      //			cout << "ROFFHeader::readEsdBitmap i= " << i << " esdBitmapBefore " << m_esdBitmap;
+      //			cout << "ROFFHeader::readEsdBitmap i= " << i << " esdBitmapBefore " <<
+      //m_esdBitmap;
       //								<< " b= "<< b << endl;
       ConcatBitsets (m_esdBitmap, b);
 
@@ -393,7 +398,8 @@ ROFFHeader::Deserialize (Buffer::Iterator start)
   m_junctionId = start.ReadU64 ();
   uint32_t esdBitmapSize = start.ReadU32 ();
   ReadESDBitmap (&start, esdBitmapSize);
-  //		cout << "Deserialize m_type = " << m_type << " m_senderId " << m_senderId << "coord= "
+  //		cout << "Deserialize m_type = " << m_type << " m_senderId " << m_senderId <<
+  //"coord= "
   //				<< m_position << endl;
   return GetSerializedSize ();
 }

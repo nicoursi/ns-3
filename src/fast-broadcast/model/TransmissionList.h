@@ -1,14 +1,14 @@
 #ifndef TRANSMISSIONLIST_H
 #define TRANSMISSIONLIST_H
 
-#include <iostream>
 #include <vector>
 #include <map>
 #include "KeyableVector.h"
 
 using namespace std;
 
-namespace ns3 {
+namespace ns3
+{
 
 class TransmissionList
 {
@@ -24,8 +24,8 @@ public:
 
 
 private:
-  std::map<KeyableVector, vector<KeyableVector> >
-  transmissions;   //Map to identify outgoing transmission from node (ley) to all other nodes
+  // Map to identify outgoing transmission from node (ley) to all other nodes
+  std::map<KeyableVector, vector<KeyableVector>> transmissions;
 };
 } // namespace ns3
 

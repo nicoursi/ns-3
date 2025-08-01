@@ -8,18 +8,13 @@
 #ifndef NBTENTRY
 #define NBTENTRY
 
-#include "ns3/header.h"
-#include "ns3/object-vector.h"
 #include "ns3/vector.h"
-#include "ns3/log.h"
 #include "ns3/nstime.h"
-
-#include <iostream>
-#include <chrono>
 
 using namespace std;
 
-namespace ns3 {
+namespace ns3
+{
 
 class NBTEntry
 {

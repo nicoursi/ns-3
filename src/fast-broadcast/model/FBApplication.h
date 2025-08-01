@@ -26,11 +26,8 @@
 #include "FBNode.h"
 #include "ns3/application.h"
 #include "ns3/network-module.h"
-#include "ns3/object-vector.h"
 #include "ns3/vanets-utils-module.h"
-#include <chrono>
 #include <ctime>
-#include <set>
 
 using namespace std;
 
@@ -52,31 +49,32 @@ class FBApplication : public Application
 {
 public:
   /**
- * \brief Get the type ID.
- * \return the object TypeId
- */
+   * \brief Get the type ID.
+   * \return the object TypeId
+   */
   static TypeId GetTypeId (void);
 
   FBApplication ();
   virtual ~FBApplication ();
 
   /**
-  * \brief Set up some application parameters
-  * \param protocol fb or static protocol
-  * \param broadcastPhaseStart time after which broadcast phase will start (seconds)
-  * \param actualRange actual transmission range (meters)
-  * \param aoi radius of area of interest (meters)
-  * \param aoi_error distance +/- with respect to the radius (meters)
-  * \param flooding enable or disable flooding
-  * \param cwMin minumum size of the contention window (slots)
-  * \param cwMin maximum size of the contention window (slots)
-  * \param printCoords whether to print coordinates on file (1=true, 0=false)
-  * \param vehicleDistance distance between vehicles
-  * \param errorRate Probability to incur in an error in transmission schedule (sending 1 slot earlier or later)
-  * \param forgedCoordRate % of vehicles affected by forging
-  * \param droneTest whether drones are present in the simulation
-  * \return none
-  */
+   * \brief Set up some application parameters
+   * \param protocol fb or static protocol
+   * \param broadcastPhaseStart time after which broadcast phase will start (seconds)
+   * \param actualRange actual transmission range (meters)
+   * \param aoi radius of area of interest (meters)
+   * \param aoi_error distance +/- with respect to the radius (meters)
+   * \param flooding enable or disable flooding
+   * \param cwMin minumum size of the contention window (slots)
+   * \param cwMin maximum size of the contention window (slots)
+   * \param printCoords whether to print coordinates on file (1=true, 0=false)
+   * \param vehicleDistance distance between vehicles
+   * \param errorRate Probability to incur in an error in transmission schedule (sending 1
+   * slot earlier or later)
+   * \param forgedCoordRate % of vehicles affected by forging
+   * \param droneTest whether drones are present in the simulation
+   * \return none
+   */
   virtual void Install (uint32_t protocol,
                         uint32_t broadcastPhaseStart,
                         uint32_t actualRange,
@@ -168,10 +166,10 @@ private:
   void GenerateAlertMessage (Ptr<FBNode> fbNode);
 
   /**
- * \brief Process a received packet
- * \param socket the receiving socket
- * \return none
- */
+   * \brief Process a received packet
+   * \param socket the receiving socket
+   * \return none
+   */
   void ReceivePacket (Ptr<Socket> socket);
 
   /**
@@ -245,56 +243,62 @@ private:
   int32_t ComputeErrorDelay ();
 
   /**
-  * \brief Returns a string from a vector
-  * \return the string with the content of the vector
+   * \brief Returns a string from a vector
+   * \return the string with the content of the vector
    */
   template <typename T>
   string StringifyVector (const vector<T>& v);
 
   /**
-  * \brief Returns a string representation of m_transmissionMap
-  * \return  a string representation of m_transmissionMap	 */
+   * \brief Returns a string representation of m_transmissionMap
+   * \return  a string representation of m_transmissionMap	 */
   string StringifyTransmissionMap () const;
 
   /**
-  * \brief Returns whether the most distant node from m_startingNode has been reached and also calculates maxDist
-  * \param maxDist max distance between a node and m_startingNode)
-  * \return  whether the most distant node from m_startingNode has been reached	 */
+   * \brief Returns whether the most distant node from m_startingNode has been reached and
+   * also calculates maxDist
+   * \param maxDist max distance between a node and m_startingNode)
+   * \return  whether the most distant node from m_startingNode has been reached	 */
   uint32_t IsMaxDistNodeReached (uint32_t& maxDist) const;
 
 private:
-  std::map<uint32_t,Time>         m_messageSentTimes;    //  map for tracking message sent times
-  uint32_t                        m_nNodes;              // number of nodes
-  vector<Ptr<FBNode>>             m_nodes;               // nodes that run this application
-  map<uint32_t, uint32_t>         m_id2id;               // map node id with index in m_nodes
-  uint32_t                        m_startingNode;        // index of the node that will generate the Alert Message
-  bool                            m_staticProtocol;      // true if static protocol is used
-  uint32_t                        m_broadcastPhaseStart; // broadcast phase start time (seconds)
-  uint32_t                        m_cwMin;               // min size of the contention window (in slot)
-  uint32_t                        m_cwMax;               // max size of the contention window (in slot)
-  bool                            m_flooding;            // used for control the flooding of the Alert messages
-  uint32_t                        m_actualRange;         // real transmission range
-  uint32_t                        m_estimatedRange;      // range of transmission to be estimated
-  uint32_t                        m_aoi;                 // radius of the area of interest (meters)
-  uint32_t                        m_aoi_error;           // meters +/- with respect to the radius
-  uint32_t                        m_packetPayload;       // size of the packet payload
-  uint32_t                        m_received;            // number of hello messages sent
-  uint32_t                        m_sent;                // number of alert messages sent
-  uint32_t                        m_cwndSum;
-  uint32_t                        m_cwndCount;
-  uint32_t                        m_errorRate;           //probability to incur in an error in transmission schedule (sending 1 slot earlier or later)
-  Ptr<UniformRandomVariable>      m_randomVariable;
-  uint32_t                        m_forgedCoordRate;     // % of nodes which receive forged hello messages with fake coords
-  uint32_t                        m_droneTest;
-  uint32_t                        m_collisions;          // number of collisions
-  vector<uint32_t>                m_receivedNodes;       // ids of nodes which have received alert messages, duplicates allowed
-  uint32_t                        m_printCoords;         // 1 to print coordinates, 0 otherwise
-  uint32_t                        m_vehicleDistance;     // distance between vehicles
-  map<uint32_t, vector<uint32_t>> m_transmissionList;    // list to discover path of alert messages
-  vector<Edge>                    m_transmissionVector;  // vector to discover paths of alert messages (single broadcasts ordered by time of reception)
+  std::map<uint32_t, Time> m_messageSentTimes; //  map for tracking message sent times
+  uint32_t m_nNodes;                           // number of nodes
+  vector<Ptr<FBNode>> m_nodes;                 // nodes that run this application
+  map<uint32_t, uint32_t> m_id2id;             // map node id with index in m_nodes
+  uint32_t m_startingNode; // index of the node that will generate the Alert Message
+  bool m_staticProtocol;   // true if static protocol is used
+  uint32_t m_broadcastPhaseStart; // broadcast phase start time (seconds)
+  uint32_t m_cwMin;               // min size of the contention window (in slot)
+  uint32_t m_cwMax;               // max size of the contention window (in slot)
+  bool m_flooding;                // used for control the flooding of the Alert messages
+  uint32_t m_actualRange;         // real transmission range
+  uint32_t m_estimatedRange;      // range of transmission to be estimated
+  uint32_t m_aoi;                 // radius of the area of interest (meters)
+  uint32_t m_aoi_error;           // meters +/- with respect to the radius
+  uint32_t m_packetPayload;       // size of the packet payload
+  uint32_t m_received;            // number of hello messages sent
+  uint32_t m_sent;                // number of alert messages sent
+  uint32_t m_cwndSum;
+  uint32_t m_cwndCount;
+  uint32_t m_errorRate; // probability to incur in an error in transmission schedule
+                        // (sending 1 slot earlier or later)
+  Ptr<UniformRandomVariable> m_randomVariable;
+  uint32_t
+    m_forgedCoordRate; // % of nodes which receive forged hello messages with fake coords
+  uint32_t m_droneTest;
+  uint32_t m_collisions;            // number of collisions
+  vector<uint32_t> m_receivedNodes; // ids of nodes which have received alert messages,
+                                    // duplicates allowed
+  uint32_t m_printCoords;           // 1 to print coordinates, 0 otherwise
+  uint32_t m_vehicleDistance;       // distance between vehicles
+  map<uint32_t, vector<uint32_t>>
+    m_transmissionList;              // list to discover path of alert messages
+  vector<Edge> m_transmissionVector; // vector to discover paths of alert messages (single
+                                     // broadcasts ordered by time of reception)
 
-  //	TransmissionList						m_transmissionList; //list to discover path of alert messages
-  //	int													counter = 0;
+  //	TransmissionList						m_transmissionList; //list to discover path of alert
+  //messages 	int													counter = 0;
 };
 
 } // namespace ns3

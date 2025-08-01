@@ -5,7 +5,8 @@
 #include "ns3/vector.h"
 
 
-namespace ns3 {
+namespace ns3
+{
 
 class KeyableVector : public Vector
 {

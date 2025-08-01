@@ -22,11 +22,10 @@
 #include "ns3/core-module.h"
 #include <string>
 #include <sstream>
-#include <fstream>
 #include <boost/filesystem.hpp>
-#include <random>
 
-namespace ns3 {
+namespace ns3
+{
 
 /**
  * \ingroup vanets-utils

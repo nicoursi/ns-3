@@ -22,10 +22,10 @@
 #define FBHEADER_H
 
 #include "ns3/header.h"
-#include "ns3/object-vector.h"
 #include "ns3/vector.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 static const uint32_t HELLO_MESSAGE = 0;
 static const uint32_t ALERT_MESSAGE = 1;
@@ -99,7 +99,6 @@ public:
   void SetJunctionId (uint64_t junctionId);
 
 
-
   /**
    * \returns the spatial location (gps) of the sender
    */
@@ -146,15 +145,15 @@ public:
   uint64_t GetJunctionId (void) const;
 
   /**
- * Get the most derived TypeId for this Object.
- *
- * This method is typically implemented by ns3::Object::GetInstanceTypeId
- * but some classes which derive from ns3::ObjectBase directly
- * have to implement it themselves.
- *
- * \return The TypeId associated to the most-derived type
- *          of this instance.
- */
+   * Get the most derived TypeId for this Object.
+   *
+   * This method is typically implemented by ns3::Object::GetInstanceTypeId
+   * but some classes which derive from ns3::ObjectBase directly
+   * have to implement it themselves.
+   *
+   * \return The TypeId associated to the most-derived type
+   *          of this instance.
+   */
   virtual TypeId GetInstanceTypeId (void) const;
 
   /**
@@ -180,49 +179,49 @@ public:
   virtual void Serialize (Buffer::Iterator start) const;
 
   /**
- * \param start an iterator which points to where the header should
- *        read from.
- * \returns the number of bytes read.
- *
- * This method is used by Packet::RemoveHeader to
- * re-create a header from the byte buffer of a packet.
- * The data read is expected to
- * match bit-for-bit the representation of this header in real
- * networks.
- *
- * Note that data is not actually removed from the buffer to
- * which the iterator points.  Both Packet::RemoveHeader() and
- * Packet::PeekHeader() call Deserialize(), but only the RemoveHeader()
- * has additional statements to remove the header bytes from the
- * underlying buffer and associated metadata.
- */
+   * \param start an iterator which points to where the header should
+   *        read from.
+   * \returns the number of bytes read.
+   *
+   * This method is used by Packet::RemoveHeader to
+   * re-create a header from the byte buffer of a packet.
+   * The data read is expected to
+   * match bit-for-bit the representation of this header in real
+   * networks.
+   *
+   * Note that data is not actually removed from the buffer to
+   * which the iterator points.  Both Packet::RemoveHeader() and
+   * Packet::PeekHeader() call Deserialize(), but only the RemoveHeader()
+   * has additional statements to remove the header bytes from the
+   * underlying buffer and associated metadata.
+   */
   virtual uint32_t Deserialize (Buffer::Iterator start);
 
   /**
- * \param os output stream
- * This method is used by Packet::Print to print the
- * content of a header as ascii data to a c++ output stream.
- * Although the header is free to format its output as it
- * wishes, it is recommended to follow a few rules to integrate
- * with the packet pretty printer: start with flags, small field
- * values located between a pair of parens. Values should be separated
- * by whitespace. Follow the parens with the important fields,
- * separated by whitespace.
- * i.e.: (field1 val1 field2 val2 field3 val3) field4 val4 field5 val5
- */
-  virtual void Print (std::ostream &os) const;
+   * \param os output stream
+   * This method is used by Packet::Print to print the
+   * content of a header as ascii data to a c++ output stream.
+   * Although the header is free to format its output as it
+   * wishes, it is recommended to follow a few rules to integrate
+   * with the packet pretty printer: start with flags, small field
+   * values located between a pair of parens. Values should be separated
+   * by whitespace. Follow the parens with the important fields,
+   * separated by whitespace.
+   * i.e.: (field1 val1 field2 val2 field3 val3) field4 val4 field5 val5
+   */
+  virtual void Print (std::ostream& os) const;
 
 private:
-  Vector                          m_position;
-  Vector                          m_starterPosition;
-  uint32_t                        m_maxRange;
-  uint32_t                        m_type;
-  uint32_t                        m_slot;
-  uint32_t                        m_phase;
+  Vector m_position;
+  Vector m_starterPosition;
+  uint32_t m_maxRange;
+  uint32_t m_type;
+  uint32_t m_slot;
+  uint32_t m_phase;
 
-  uint32_t                        m_senderId;
-  uint8_t                         m_senderInJunction;
-  uint64_t                        m_junctionId;
+  uint32_t m_senderId;
+  uint8_t m_senderInJunction;
+  uint64_t m_junctionId;
 };
 
 } // namespace ns3

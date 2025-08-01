@@ -7,8 +7,10 @@
 
 
 #include "NeighborTable.h"
+#include "ns3/log.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE ("NeighborTable");
 
@@ -18,7 +20,8 @@ NS_OBJECT_ENSURE_REGISTERED (NeighborTable);
 TypeId
 NeighborTable::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::NeighborTable").SetParent<Object> ().SetGroupName ("Network");
+  static TypeId tid =
+    TypeId ("ns3::NeighborTable").SetParent<Object> ().SetGroupName ("Network");
   return tid;
 }
 
@@ -53,14 +56,15 @@ NeighborTable::GetESDBitmap (Vector pos, uint32_t distanceRange) const
   //	cout << "NeighborTable::GetESDBitmap bitmapSize= " << esdBitmapSize << endl;
   for (uint32_t i = 0; i < esdBitmapSize; i++)
     {
-      // Because boost::dynamic_bitset operator[] goes from less significant to more significant bits
+      // Because boost::dynamic_bitset operator[] goes from less significant to more
+      // significant bits
       uint32_t index = esdBitmapSize - i - 1;
       //		cout << "NeighborTable::GetESDBitmap index= " << index << endl;
       //		cout << "NeighborTable::GetESDBitmap before exists" << endl;
       if (ExistsNodeAtDistance (i, distanceRange, pos))
         {
-          //			cout << "NeighborTable::GetESDBitmap before assign 1, distance= " << i << "index= " << index << endl;
-          //			cout << esdBitmap << endl;
+          //			cout << "NeighborTable::GetESDBitmap before assign 1, distance= " << i
+          //<< "index= " << index << endl; 			cout << esdBitmap << endl;
           esdBitmap[index] = 1;
           //			cout << esdBitmap << endl;
         }
@@ -93,10 +97,12 @@ NeighborTable::GetMaxDistance (Vector pos) const
 }
 
 uint32_t
-NeighborTable::ExistsNodeAtDistance (uint32_t dist, uint32_t distanceRange, Vector pos) const
+NeighborTable::ExistsNodeAtDistance (uint32_t dist,
+                                     uint32_t distanceRange,
+                                     Vector pos) const
 {
-  //	cout << "NeighborTable:: ExistsNodeAtDistance dist= " << dist << " distanceRange= " <<distanceRange <<
-  //			" pos= " << pos
+  //	cout << "NeighborTable:: ExistsNodeAtDistance dist= " << dist << " distanceRange= "
+  //<<distanceRange << 			" pos= " << pos
   //			<< endl;
   //	cout << m_table.size() << endl;
   for (auto entry : m_table)
@@ -104,7 +110,8 @@ NeighborTable::ExistsNodeAtDistance (uint32_t dist, uint32_t distanceRange, Vect
       //		cout << "a" << endl;
       //		NS_LOG_FUNCTION(this << pos << distanceRange << pos);
       //		cout << entry.first << endl;
-      uint32_t distance = rint (ns3::CalculateDistance (pos, entry.second.GetPosition ()));
+      uint32_t distance =
+        rint (ns3::CalculateDistance (pos, entry.second.GetPosition ()));
       //		cout << distance << endl;
       if (distance >= distanceRange * dist && distance <= distanceRange * (dist + 1) - 1)
         {
@@ -125,10 +132,13 @@ NeighborTable::GetCoordsOfVehicleInRange (PositionRankingKey range,
   for (auto entry : m_table)
     {
       Vector otherNodePosition = entry.second.GetPosition ();
-      //		cout << "NeighborTable::GetCoordsOfVehicleInRange otherNodePosition= " << otherNodePosition << endl;
+      //		cout << "NeighborTable::GetCoordsOfVehicleInRange otherNodePosition= " <<
+      //otherNodePosition << endl;
       uint32_t distance = rint (ns3::CalculateDistance (nodePosition, otherNodePosition));
       //		cout << distance << endl;
-      for (uint32_t d = range.GetLowerDistanceLimit (); d <= range.GetUpperDistanceLimit (); d++)
+      for (uint32_t d = range.GetLowerDistanceLimit ();
+           d <= range.GetUpperDistanceLimit ();
+           d++)
         {
           //			cout << distance << " " << d << endl;
           if (distance == d)
@@ -156,7 +166,8 @@ NeighborTable::IsNodeWinnerInContention (uint32_t id, uint32_t dist, Vector pos)
       //		NS_LOG_FUNCTION(this << pos << distanceRange << pos);
       //		cout << entry.first << endl;
       uint32_t otherNodeId = entry.first;
-      uint32_t distance = rint (ns3::CalculateDistance (pos, entry.second.GetPosition ()));
+      uint32_t distance =
+        rint (ns3::CalculateDistance (pos, entry.second.GetPosition ()));
       //		cout << distance << endl;
       if (distance == dist && otherNodeId > id)
         {

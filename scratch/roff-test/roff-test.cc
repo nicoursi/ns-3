@@ -20,9 +20,9 @@
  */
 
 /* -----------------------------------------------------------------------------
-*			HEADERS
-* ------------------------------------------------------------------------------
-*/
+ *			HEADERS
+ * ------------------------------------------------------------------------------
+ */
 
 #include <bits/stdint-uintn.h>
 #include <bits/types/struct_timeval.h>
@@ -30,17 +30,13 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/algorithm/string.hpp>
 #include <sys/time.h>
-#include <cstddef>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <mutex>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <thread>
-
 #include "ns3/core-module.h"
 #include "ns3/node-list.h"
 #include "ns3/network-module.h"
@@ -49,12 +45,10 @@
 #include "ns3/wifi-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/topology.h"
-#include "ns3/wifi-80211p-helper.h"
-#include "ns3/wave-mac-helper.h"
 #include "ns3/netanim-module.h"
 #include "ns3/ROFFApplication.h"
 #include "ns3/command-logger.h"
-#include <random>
+#include <chrono>
 
 using namespace ns3;
 using namespace std;
@@ -62,9 +56,9 @@ using namespace std;
 NS_LOG_COMPONENT_DEFINE ("roff-test");
 
 /* -----------------------------------------------------------------------------
-*			CLASS AND METHODS PROTOTIPES
-* ------------------------------------------------------------------------------
-*/
+ *			CLASS AND METHODS PROTOTIPES
+ * ------------------------------------------------------------------------------
+ */
 
 CSVManager g_csvData (RngSeedManager::GetRun ()); // CSV file manager
 
@@ -115,7 +109,8 @@ public:
   void ProcessOutputs ();
 
   /**
-   * \brief Calculates the filepath where the output of the experiment will be saved (depends on input parameters)
+   * \brief Calculates the filepath where the output of the experiment will be saved
+   * (depends on input parameters)
    * \return file path
    */
   const std::string CalculateOutFilePath () const;
@@ -128,33 +123,33 @@ public:
   void RunAndPrintResults (int argc, char* argv[]);
 
   /**
-  * \brief printToFile getter
-  * \return printToFile
-  */
+   * \brief printToFile getter
+   * \return printToFile
+   */
   uint32_t GetPrintToFile () const;
 
   /**
-  * \brief printCoords getter
-  * \return printCoords
-  */
+   * \brief printCoords getter
+   * \return printCoords
+   */
   uint32_t GetPrintCoords () const;
 
   /**
-  * \brief droneTest getter
-  * \return droneTest
-  */
+   * \brief droneTest getter
+   * \return droneTest
+   */
   uint32_t GetDroneTest () const;
 
   /**
-  * \brief highBuildings getter
-  * \return highBuildings
-  */
+   * \brief highBuildings getter
+   * \return highBuildings
+   */
   uint32_t GetHighBuildings () const;
 
   /**
-  * \brief maxRun getter
-  * \return maxRun
-  */
+   * \brief maxRun getter
+   * \return maxRun
+   */
   uint32_t GetMaxRun () const;
 
 protected:
@@ -255,23 +250,25 @@ private:
   Ptr<Socket> SetupPacketSend (Ipv4Address addr, Ptr<Node> node);
 
   /**
-  * \brief Calculates number of nodes based on .ns2mobility filepath
-  * \return Number of nodes (vehicles) in simulation
-  */
+   * \brief Calculates number of nodes based on .ns2mobility filepath
+   * \return Number of nodes (vehicles) in simulation
+   */
   unsigned int CalculateNumNodes () const;
 
   /**
-  * \brief Loads .junction file in m_nodeIdToJunctionIdMap
-  * \return none
-  */
+   * \brief Loads .junction file in m_nodeIdToJunctionIdMap
+   * \return none
+   */
   void LoadJunctionsMap ();
 
   /**
- * \brief Prints actual position and velocity when a course change event occurs
- * \return none
- */
-  static void CourseChange (std::ostream* os, std::string foo, Ptr<const MobilityModel> mobility);
+   * \brief Prints actual position and velocity when a course change event occurs
+   * \return none
+   */
+  static void
+  CourseChange (std::ostream* os, std::string foo, Ptr<const MobilityModel> mobility);
 
+  // clang-format off
   Ptr<ROFFApplication>           m_roffApplication;
   uint32_t                       m_nNodes;
   NodeContainer                  m_adhocNodes;
@@ -319,10 +316,12 @@ private:
   Ptr<UniformRandomVariable>     m_randomVariable;
 };
 
+// clang-format on
+
 /* -----------------------------------------------------------------------------
-*			METHOD DEFINITIONS
-* ------------------------------------------------------------------------------
-*/
+ *			METHOD DEFINITIONS
+ * ------------------------------------------------------------------------------
+ */
 
 ROFFVanetExperiment::ROFFVanetExperiment () :
   m_nNodes (0),        // random value, it will be set later
@@ -333,15 +332,15 @@ ROFFVanetExperiment::ROFFVanetExperiment () :
   m_port (9),
   m_actualRange (300),
   m_startingNode (-1),
-  //		m_staticProtocol(1),
-  //		m_flooding(0),
+  // m_staticProtocol (1),
+  // m_flooding (0),
   m_alertGeneration (20),
   m_areaOfInterest (1000),
   m_vehicleDistance (25),
-  //		m_scenario(1),
+  // m_scenario (1),
   m_loadBuildings (1),
-  //		m_cwMin(32),
-  //		m_cwMax(1024),
+  // m_cwMin (32),
+  // m_cwMax (1024),
   m_traceFile (""),
   m_bldgFile (""),
   m_junctionFile (""),
@@ -362,7 +361,7 @@ ROFFVanetExperiment::ROFFVanetExperiment () :
   m_maxRun (1),
   m_highBuildings (0)
 {
-  //	srand(12345);
+  // srand (12345);
   RngSeedManager::SetSeed (12345);
   m_randomVariable = CreateObject<UniformRandomVariable> ();
 }
@@ -415,9 +414,9 @@ ROFFVanetExperiment::ProcessOutputs ()
   m_roffApplication->PrintStats (dataStream);
   if (m_printToFile)
     {
-      g_csvData.AddValue ((int)0); //scenario
+      g_csvData.AddValue ((int)0); // scenario
       g_csvData.AddValue ((int)m_actualRange);
-      g_csvData.AddValue ((int)0); //staticProtocol
+      g_csvData.AddValue ((int)0); // staticProtocol
       g_csvData.AddValue ((int)m_loadBuildings);
       g_csvData.AddValue ((int)m_nNodes);
       g_csvData.AddMultipleValues (dataStream);
@@ -450,17 +449,19 @@ ROFFVanetExperiment::CalculateOutFilePath () const
   scenarioName = scenarioName.substr (0, dotPos);
 
   // File name building
-  fileName.append (scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange +
-                   "/j" + junctions + "/" + protocol + "/" + scenarioName + "-b" + buildings + "-" +
-                   errorOrForged + "-r" + actualRange + "-j" + junctions + "-" + protocol);
+  fileName.append (scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" +
+                   actualRange + "/j" + junctions + "/" + protocol + "/" + scenarioName +
+                   "-b" + buildings + "-" + errorOrForged + "-r" + actualRange + "-j" +
+                   junctions + "-" + protocol);
 
   std::cout << fileName << std::endl;
 
-  /*
-  fileName.append("cw-" + cwMin + "-" + cwMax + "/" + m_mapBaseNameWithoutDistance + "/d" + vehicleDistance + "/b" + buildings
-        + "/" + protocol + "-" + actualRange + "/" + m_mapBaseName + "-cw-" + cwMin + "-" + cwMax + "-b"
-        + buildings + "-" + protocol + "-" + actualRange);
-  */
+
+  // fileName.append ("cw-" + cwMin + "-" + cwMax + "/" + m_mapBaseNameWithoutDistance +
+  //                  "/d" + vehicleDistance + "/b" + buildings + "/" + protocol + "-" +
+  //                  actualRange + "/" + m_mapBaseName + "-cw-" + cwMin + "-" + cwMax +
+  //                  "-b" + buildings + "-" + protocol + "-" + actualRange);
+
 
   return fileName;
 }
@@ -511,7 +512,8 @@ ROFFVanetExperiment::ConfigureDefaults ()
 
   Config::SetDefault ("ns3::OnOffApplication::PacketSize", StringValue (m_packetSize));
   Config::SetDefault ("ns3::OnOffApplication::DataRate", StringValue (m_rate));
-  Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode", StringValue (m_phyMode));
+  Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode",
+                      StringValue (m_phyMode));
 }
 
 void
@@ -567,8 +569,10 @@ ROFFVanetExperiment::SetupAdhocDevices ()
   YansWifiPhyHelper wifiPhy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper wifiChannel;
   wifiChannel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
-  /*   wifiChannel.AddPropagationLoss (
-    "ns3::RangePropagationLossModel", "MaxRange", DoubleValue (m_actualRange)); */
+
+  // wifiChannel.AddPropagationLoss (
+  //   "ns3::RangePropagationLossModel", "MaxRange", DoubleValue (m_actualRange));
+
   if (m_propagationLoss == 0)
     {
       cout << "11 " << endl;
@@ -623,11 +627,14 @@ ROFFVanetExperiment::SetupAdhocDevices ()
     }
   else if (m_actualRange == 700)
     {
-      //		m_txp = 19.4;  // 13.4 + 6.0: Extrapolated from pattern where power gain decreases by 2.8 dB each step:
-      // (8.8 - (11.6-8.8)) + 13.4
-      m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
+      //clang-format off
+      // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
+                      //decreases by 2.8 dB each step:
+                      // (8.8 - (11.6-8.8)) + 13.4
+      // clang-format on
+      m_txp =
+        13.3; // fist value that seems to work with 700m and keeps stable after tests
     }
-
 
   WifiMacHelper wifiMac;
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
@@ -658,14 +665,17 @@ ROFFVanetExperiment::ConfigureConnections ()
   m_adhocInterfaces = ipv4.Assign (m_adhocDevices);
 
   OnOffHelper onoff1 ("ns3::UdpSocketFactory", Address ());
-  onoff1.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
-  onoff1.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
+  onoff1.SetAttribute ("OnTime",
+                       StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"));
+  onoff1.SetAttribute ("OffTime",
+                       StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"));
 
   // Set receiver (for each node in the application)
   for (uint32_t i = 0; i < m_nNodes; i++)
     {
       SetupPacketReceive (m_adhocNodes.Get (i));
-      AddressValue remoteAddress (InetSocketAddress (ns3::Ipv4Address::GetAny (), m_port));
+      AddressValue remoteAddress (
+        InetSocketAddress (ns3::Ipv4Address::GetAny (), m_port));
       onoff1.SetAttribute ("Remote", remoteAddress);
     }
 
@@ -769,7 +779,13 @@ ROFFVanetExperiment::CommandSetup (int argc, char* argv[])
   CommandLine cmd;
 
   // allow command line overrides
-  //	cmd.AddValue ("nnodes", "Number of nodes (i.e. vehicles)", m_nNodes);
+
+  // clang-format off
+
+  // cmd.AddValue ("nnodes",
+  //               "Number of nodes (i.e. vehicles)",
+  //               m_nNodes);
+
   cmd.AddValue ("maxRun",
                 "Maximum number of simulation runs",
                 m_maxRun);
@@ -779,16 +795,26 @@ ROFFVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("actualRange",
                 "Actual transimision range (meters) [100, 300, 500, 700]",
                 m_actualRange);
-  //	cmd.AddValue ("protocol", "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500", m_staticProtocol);
-  //	cmd.AddValue ("flooding", "Enable flooding", m_flooding);
-  //	cmd.AddValue("alertGeneration", "Time at which the first Alert Message should be generated.", m_alertGeneration);
+
+  // cmd.AddValue ("protocol",
+  //               "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500",
+  //               m_staticProtocol);
+  // cmd.AddValue ("flooding",
+  //               "Enable flooding",
+  //               m_flooding);
+  // cmd.AddValue ("alertGeneration",
+  //               "Time at which the first Alert Message should be generated.",
+  //               m_alertGeneration);
+
   cmd.AddValue ("area",
                 "Radius of the area of interest",
                 m_areaOfInterest);
-  cmd.AddValue ("vehicleDistance",
-                "Distance between vehicles",
-                m_vehicleDistance);
-  //	cmd.AddValue ("scenario", "1=Padova, 2=Los Angeles", m_scenario);
+  cmd.AddValue ("vehicleDistance", "Distance between vehicles", m_vehicleDistance);
+
+  // cmd.AddValue ("scenario",
+  //               "1=Padova, 2=Los Angeles",
+  //               m_scenario);
+
   cmd.AddValue ("buildings",
                 "Load building (obstacles)",
                 m_loadBuildings);
@@ -799,9 +825,16 @@ ROFFVanetExperiment::CommandSetup (int argc, char* argv[])
                 "Vehicles trace file (ns2mobility format)",
                 m_traceFile);
   cmd.AddValue ("junctions", "Junction file", m_junctionFile);
-  //	cmd.AddValue("totalTime", "Simulation end time", m_TotalSimTime);
-  //	cmd.AddValue ("cwMin", "Minimum contention window", m_cwMin);
-  //	cmd.AddValue ("cwMax", "Maximum contention window", m_cwMax);
+
+  // cmd.AddValue ("totalTime",
+  //               "Simulation end time",
+  //               m_TotalSimTime);
+  // cmd.AddValue ("cwMin",
+  //               "Minimum contention window",
+  //               m_cwMin);
+  // cmd.AddValue ("cwMax",
+  //               "Maximum contention window",
+  //               m_cwMax);
 
   cmd.AddValue ("mapBasePath",
                 "Base path of map required for simulation "
@@ -852,6 +885,7 @@ ROFFVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("highBuildings",
                 "Whether buildings are very high (higher than any drones, e.g. 100m)",
                 m_highBuildings);
+  // clang-format on
 
   // only one of these tests is possible at a given time
   if (m_forgedCoordTest)
@@ -918,7 +952,7 @@ ROFFVanetExperiment::SetupScenario ()
   cout << "numNodes = " << m_nNodes << endl;
   if (m_startingNode == -1)
     {
-      //			m_startingNode = rand() % m_nNodes;
+      // m_startingNode = rand () % m_nNodes;
       m_startingNode = m_randomVariable->GetInteger (0, m_nNodes - 1);
     }
   cout << "numNodes = " << m_nNodes << endl;
@@ -1000,8 +1034,8 @@ ROFFVanetExperiment::CourseChange (std::ostream* os,
   int nodeId = mobility->GetObject<Node> ()->GetId ();
 
   NS_LOG_DEBUG ("Changing pos for node "
-                << nodeId << " at " << Simulator::Now ().GetSeconds () << "; POS: (" << pos.x
-                << ", " << pos.y << ", " << pos.z << ")"
+                << nodeId << " at " << Simulator::Now ().GetSeconds () << "; POS: ("
+                << pos.x << ", " << pos.y << ", " << pos.z << ")"
                 << "; VEL: (" << vel.x << ", " << vel.y << ", " << vel.z << ").");
 }
 
@@ -1075,37 +1109,39 @@ PrintStartTime (const std::string& label)
   auto start = std::chrono::system_clock::now ();
   std::time_t start_time = std::chrono::system_clock::to_time_t (start);
 
-  std::cout << "-----------------------------------------------------------------------------"
-            << std::endl
-            << label << " starting at: "
-            << std::put_time (std::localtime (&start_time), "%Y-%m-%d %H:%M:%S %Z") << std::endl;
+  std::cout
+    << "-----------------------------------------------------------------------------"
+    << std::endl
+    << label << " starting at: "
+    << std::put_time (std::localtime (&start_time), "%Y-%m-%d %H:%M:%S %Z") << std::endl;
 
   return start;
 }
 
 // Prints the end time with the same label and elapsed time
 void
-PrintElapsedTime (const std::chrono::system_clock::time_point& start, const std::string& label)
+PrintElapsedTime (const std::chrono::system_clock::time_point& start,
+                  const std::string& label)
 {
   auto end = std::chrono::system_clock::now ();
   std::time_t end_time = std::chrono::system_clock::to_time_t (end);
 
-  std::cout << label
-            << " ending at: " << std::put_time (std::localtime (&end_time), "%Y-%m-%d %H:%M:%S %Z")
+  std::cout << label << " ending at: "
+            << std::put_time (std::localtime (&end_time), "%Y-%m-%d %H:%M:%S %Z")
             << std::endl;
 
   auto duration = end - start;
   auto minutes = std::chrono::duration_cast<std::chrono::minutes> (duration);
   auto seconds = std::chrono::duration_cast<std::chrono::seconds> (duration - minutes);
 
-  std::cout << label << " Elapsed wall-clock time: " << minutes.count () << "m " << seconds.count ()
-            << "s" << std::endl;
+  std::cout << label << " Elapsed wall-clock time: " << minutes.count () << "m "
+            << seconds.count () << "s" << std::endl;
 }
 
 /* -----------------------------------------------------------------------------
-*			MAIN
-* ------------------------------------------------------------------------------
-*/
+ *			MAIN
+ * ------------------------------------------------------------------------------
+ */
 
 int
 main (int argc, char* argv[])
@@ -1131,49 +1167,57 @@ main (int argc, char* argv[])
       if (experiment.GetPrintCoords ())
         {
           additionalPath = "/simulations/scenario-urbano-con-coord/";
-          header =
-            "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting y\","
-            "\"Starting node\", \"Vehicle distance\", \"Received node ids\", "
-            "\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission vector\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\",\"Starting x\","
+                   "\"Starting y\",\"Starting node\",\"Vehicle distance\","
+                   "\"Received node ids\",\"Node ids\",\"Transmission map\","
+                   "\"Received on circ nodes\",\"Transmission vector\"";
         }
       else if (experiment.GetHighBuildings ())
         {
           additionalPath = "/simulations/scenario-droni-high/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached "
-            "maxDist node\","
-            "\"Vehicles cover\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\",\"Max distance\","
+                   "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else if (experiment.GetDroneTest ())
         {
           additionalPath = "/simulations/scenario-droni/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\", \"Max distance\", \"Reached "
-            "maxDist node\","
-            "\"Vehicles cover\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\",\"Max distance\","
+                   "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else
         {
           additionalPath = "/simulations/scenario-urbano/";
-          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-            "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean "
-            "time\",\"Hops\","
-            "\"Slots\",\"Messages sent\",\"Messages received\"";
+          header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
+                   "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                   "\"Total coverage\",\"Coverage on circ\","
+                   "\"Alert received mean time\",\"Hops\",\"Slots\","
+                   "\"Messages sent\",\"Messages received\"";
         }
 
-      //		header = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total nodes\","
-      //				"\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received mean time\",\"Hops\","
-      //				"\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting y\","
-      //				"\"Starting node\", \"Vehicle distance\", \"Received node ids\", "
-      //				"\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission vector\"";
-      //		additionalPath += "/simulations/scenario-urbano-con-coord/roff/";
+      // header =
+      //   "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\",\"Buildings\",\"Total
+      //   nodes\","
+      //   "\"Nodes on circ\",\"Total coverage\",\"Coverage on circ\",\"Alert received
+      //   mean " "time\",\"Hops\","
+      //   "\"Slots\",\"Messages sent\",\"Messages received\", \"Starting x\", \"Starting
+      //   " "y\","
+      //   "\"Starting node\", \"Vehicle distance\", \"Received node ids\", "
+      //   "\"Node ids\", \"Transmission map\", \"Received on circ nodes\", \"Transmission
+      //   " "vector\"";
+      // additionalPath += "/simulations/scenario-urbano-con-coord/roff/";
+
       boost::filesystem::path path = boost::filesystem::current_path ().parent_path () /=
         additionalPath;
       path /= filePath;

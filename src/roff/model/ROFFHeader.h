@@ -9,11 +9,7 @@
 #define ROFFHEADER_H_
 
 #include "ns3/header.h"
-#include "ns3/object-vector.h"
 #include "ns3/vector.h"
-#include "ns3/double.h"
-#include "ns3/log.h"
-#include <bitset>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/dynamic_bitset/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -21,7 +17,8 @@
 
 using namespace std;
 
-namespace ns3 {
+namespace ns3
+{
 
 static const uint32_t HELLO_MESSAGE = 0;
 static const uint32_t ALERT_MESSAGE = 1;
@@ -52,13 +49,13 @@ public:
   uint32_t GetSenderId () const;
 
   /**
-         * \returns whether the header has been sent by a node inside a junction
-         */
+   * \returns whether the header has been sent by a node inside a junction
+   */
   uint8_t IsSenderInJunction () const;
 
   /**
-         * \returns whether the id of the junction the sender is in
-         */
+   * \returns whether the id of the junction the sender is in
+   */
   uint64_t GetJunctionId () const;
 
   boost::dynamic_bitset<> GetESDBitmap () const;
@@ -84,15 +81,15 @@ public:
   void SetSlot (uint32_t slot);
 
   /**
-         * \brief set the sender inside a junction
-         * \param value whether the sender is in a junction
-         */
+   * \brief set the sender inside a junction
+   * \param value whether the sender is in a junction
+   */
   void SetSenderInJunction (uint8_t value);
 
   /**
-         * \brief set the id of the junction the sender is in
-         * \param junctionId the id of the junction the sender is in
-         */
+   * \brief set the id of the junction the sender is in
+   * \param junctionId the id of the junction the sender is in
+   */
   void SetJunctionId (uint64_t junctionId);
 
 

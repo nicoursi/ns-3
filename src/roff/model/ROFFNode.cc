@@ -6,14 +6,17 @@
  */
 
 #include "ROFFNode.h"
+#include "ns3/log.h"
+#include "ns3/mobility-model.h"
 
-namespace ns3 {
+namespace ns3
+{
 NS_LOG_COMPONENT_DEFINE ("ROFFNode");
 
 NS_OBJECT_ENSURE_REGISTERED (ROFFNode);
 
-ROFFNode::ROFFNode ()
-  : m_received (false),
+ROFFNode::ROFFNode () :
+  m_received (false),
   m_sent (false),
   m_scheduled (false),
   m_phase (0),
@@ -27,13 +30,13 @@ ROFFNode::ROFFNode ()
   NS_LOG_FUNCTION (this);
 }
 
-ROFFNode::ROFFNode (
-  Ptr<Node> node, Ptr<Socket> socket, bool isNodeInJunction, uint64_t junctionId, bool amIaVehicle)
-  : m_node (node),
+ROFFNode::ROFFNode (Ptr<Node> node,
+                    Ptr<Socket> socket,
+                    bool isNodeInJunction,
+                    uint64_t junctionId,
+                    bool amIaVehicle) :
+  m_node (node),
   m_socket (socket),
-  m_amIInJunction (isNodeInJunction),
-  m_junctionId (junctionId),
-  m_amIaVehicle (amIaVehicle),
   m_neighborTable (),
   m_received (false),
   m_sent (false),
@@ -41,6 +44,9 @@ ROFFNode::ROFFNode (
   m_phase (-1),
   m_slot (0),
   m_hop (0),
+  m_amIaVehicle (amIaVehicle),
+  m_amIInJunction (isNodeInJunction),
+  m_junctionId (junctionId),
   m_stopSending (false)
 {
   NS_LOG_FUNCTION (this);

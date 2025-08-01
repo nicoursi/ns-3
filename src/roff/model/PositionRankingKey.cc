@@ -6,20 +6,22 @@
  */
 
 #include "PositionRankingKey.h"
+#include "ns3/log.h"
 
-namespace ns3 {
+namespace ns3
+{
 NS_LOG_COMPONENT_DEFINE ("PositionRankingKey");
 //
 NS_OBJECT_ENSURE_REGISTERED (PositionRankingKey);
 
-PositionRankingKey::PositionRankingKey ()
-  : m_lowerDistanceLimit (0),
+PositionRankingKey::PositionRankingKey () :
+  m_lowerDistanceLimit (0),
   m_upperDistanceLimit (0)
 {
 }
 
-PositionRankingKey::PositionRankingKey (uint32_t low, uint32_t up)
-  : m_lowerDistanceLimit (low),
+PositionRankingKey::PositionRankingKey (uint32_t low, uint32_t up) :
+  m_lowerDistanceLimit (low),
   m_upperDistanceLimit (up)
 {
 }
@@ -51,8 +53,8 @@ PositionRankingKey::IsInRange (const uint32_t distance) const
 std::ostream&
 operator<< (std::ostream& os, const PositionRankingKey& key)
 {
-  os << "PositionRankingKey( " << key.m_lowerDistanceLimit << "," << key.m_upperDistanceLimit << ")"
-     << std::endl;
+  os << "PositionRankingKey( " << key.m_lowerDistanceLimit << ","
+     << key.m_upperDistanceLimit << ")" << std::endl;
   return os;
 }
 

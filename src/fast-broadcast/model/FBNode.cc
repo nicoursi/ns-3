@@ -18,30 +18,30 @@
  * Authors: Marco Romanelli <marco.romanelli.1@studenti.unipd.it>
  */
 
- #include "FBNode.h"
+#include "FBNode.h"
 
 #include "ns3/core-module.h"
- #include "ns3/log.h"
- #include "ns3/uinteger.h"
- #include "ns3/object-vector.h"
- #include "ns3/node-list.h"
- #include "ns3/mobility-model.h"
- #include "ns3/socket.h"
- #include "ns3/packet.h"
+#include "ns3/log.h"
+#include "ns3/node-list.h"
+#include "ns3/mobility-model.h"
+#include "ns3/socket.h"
+#include "ns3/packet.h"
 
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE ("FBNode");
 
 NS_OBJECT_ENSURE_REGISTERED (FBNode);
 
-TypeId FBNode::GetTypeId (void)
+TypeId
+FBNode::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::FBNode")
-    .SetParent<Object> ()
-    .SetGroupName ("Network")
-    .AddConstructor<FBNode> ();
+                        .SetParent<Object> ()
+                        .SetGroupName ("Network")
+                        .AddConstructor<FBNode> ();
 
   return tid;
 }
@@ -58,8 +58,8 @@ FBNode::FBNode () :
   m_slot (0),
   m_received (false),
   m_sent (false),
-  m_receiveTimestamp (0),
   m_sendTimestamp (0),
+  m_receiveTimestamp (0),
   m_receiveTimestampSet (false),
   m_sendTimestampSet (false),
   m_propTimeUs (0),
@@ -272,7 +272,7 @@ Vector
 FBNode::UpdatePosition (void)
 {
   NS_LOG_FUNCTION (this);
-  Ptr<MobilityModel> positionmodel = m_node->GetObject<MobilityModel>();
+  Ptr<MobilityModel> positionmodel = m_node->GetObject<MobilityModel> ();
 
   // Check if a mobility model exists
   if (positionmodel != 0)
@@ -391,7 +391,6 @@ FBNode::SetReceiveTimestampSet (bool value)
 {
   m_receiveTimestampSet = value;
 }
-
 
 
 } // namespace ns3

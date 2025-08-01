@@ -19,12 +19,10 @@
  */
 
 #include "FBHeader.h"
-
 #include "ns3/log.h"
-#include "ns3/uinteger.h"
-#include "ns3/object-vector.h"
 
-namespace ns3 {
+namespace ns3
+{
 NS_LOG_COMPONENT_DEFINE ("FBHeader");
 
 NS_OBJECT_ENSURE_REGISTERED (FBHeader);
@@ -32,7 +30,8 @@ NS_OBJECT_ENSURE_REGISTERED (FBHeader);
 TypeId
 FBHeader::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::FBHeader").SetParent<Header> ().SetGroupName ("Network");
+  static TypeId tid =
+    TypeId ("ns3::FBHeader").SetParent<Header> ().SetGroupName ("Network");
 
   return tid;
 }
