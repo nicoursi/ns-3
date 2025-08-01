@@ -8,6 +8,7 @@
 #include "ns3/simulator.h"
 #include "ns3/log.h"
 #include "ns3/nstime.h"
+#include <cstddef>
 #include <set>
 
 
@@ -260,7 +261,7 @@ ROFFApplication::GenerateHelloTraffic (uint32_t count)
     }
   Ptr<ROFFNode> roffNode = m_nodes.at (0);
   cout << "nodes size = " << m_nodes.size () << endl;
-  int toSend = m_nodes.size () * 0.4;
+  size_t toSend = m_nodes.size () * 0.4;
   cout << "toSend= " << toSend << endl;
   map<uint32_t, bool> sentMap;
 

@@ -8,6 +8,8 @@
 
 #include "ROFFHeader.h"
 #include "ns3/log.h"
+#include <cstddef>
+#include <cstdint>
 
 namespace ns3
 {
@@ -225,7 +227,7 @@ ROFFHeader::WriteESDBitmap (Buffer::Iterator* iter) const
       uint32_t posToShift = 8 - (size % 8);
       if (posToShift < 8)
         {
-          for (int i = 0; i < posToShift; i++)
+          for (uint32_t i = 0; i < posToShift; i++)
             {
               esdBitmapToExtend.push_back (0);
             }
@@ -255,7 +257,7 @@ ROFFHeader::WriteESDBitmap (Buffer::Iterator* iter) const
   //				cout << "byte= " << x << endl;
 
 
-  for (int i = 0; i < esdBitmapToExtend.size (); i += 8)
+  for (size_t i = 0; i < esdBitmapToExtend.size (); i += 8)
     {
       //					cout << "for bitmapToExtend i=" << i << endl;
       boost::dynamic_bitset<> chunk (8);
@@ -336,7 +338,7 @@ ROFFHeader::ConcatBitsets (boost::dynamic_bitset<>& a,
                            const boost::dynamic_bitset<>& b,
                            uint32_t count) const
 {
-  for (int i = 0; i < count; i++)
+  for (uint32_t i = 0; i < count; i++)
     {
       a.push_back (b[i]);
     }
@@ -350,7 +352,7 @@ ROFFHeader::ReadESDBitmap (Buffer::Iterator* iter, uint32_t bitmapSize)
   uint32_t bytesToRead = bitmapSize / 8;
   //		cout << "ROFFHeader::ReadESDBitmap bitmapSize= " << bitmapSize << " bytesToRead= "
   //<< bytesToRead << endl;
-  for (int i = 0; i < bytesToRead; i++)
+  for (uint32_t i = 0; i < bytesToRead; i++)
     {
       uint8_t value = iter->ReadU8 ();
       //			iter->ReadU8();
