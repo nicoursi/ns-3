@@ -2,13 +2,13 @@
 #define KEYABLEVECTOR_H
 
 
-#include "ns3/vector.h"
 #include "ns3/object.h"
 #include <iostream>
+
 using namespace std;
 
-
-namespace ns3 {
+namespace ns3
+{
 
 class Edge : public Object
 {
@@ -29,9 +29,9 @@ public:
   void SetPhase (uint32_t source);
 
 private:
-  uint32_t m_source;      //id of source
-  uint32_t m_destination; //id of destination
-  uint32_t m_phase;       //number of hops of transmission
+  uint32_t m_source;      // id of source
+  uint32_t m_destination; // id of destination
+  uint32_t m_phase;       // number of hops of transmission
 };
 
 ostream&

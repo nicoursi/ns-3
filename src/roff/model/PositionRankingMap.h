@@ -8,10 +8,10 @@
 #ifndef POSITIONRANKINGMAP_H
 #define POSITIONRANKINGMAP_H
 
-#include "ns3/object.h"
 #include "PositionRankingKey.h"
-#include <iostream>
+#include "ns3/object.h"
 #include <boost/dynamic_bitset.hpp>
+#include <iostream>
 #include <map>
 
 using namespace std;
@@ -39,7 +39,7 @@ public:
   friend std::ostream& operator<< (std::ostream& os, const PositionRankingMap& map);
 
 private:
-  uint32_t m_distanceRange;
+  uint32_t                          m_distanceRange;
   map<PositionRankingKey, uint32_t> m_positionRanking;
 };
 

@@ -19,23 +19,24 @@
  *
  */
 
+#include "FBApplication.h"
 #include "FBHeader.h"
 #include "FBNode.h"
-#include "FBApplication.h"
 
-#include <math.h>
-#include "ns3/log.h"
-#include "ns3/core-module.h"
-#include "ns3/network-module.h"
 #include "ns3/constant-velocity-mobility-model.h"
+#include "ns3/core-module.h"
+#include "ns3/log.h"
 #include "ns3/mobility-module.h"
+#include "ns3/network-module.h"
 #include <chrono>
+#include <math.h>
 
 
 using namespace std;
 
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE ("FBApplication");
 
@@ -44,9 +45,8 @@ NS_OBJECT_ENSURE_REGISTERED (FBApplication);
 TypeId
 FBApplication::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::FBApplication")
-    .SetParent<Application>()
-    .SetGroupName ("Network");
+  static TypeId tid =
+    TypeId ("ns3::FBApplication").SetParent<Application> ().SetGroupName ("Network");
 
   return tid;
 }
@@ -88,19 +88,20 @@ FBApplication::~FBApplication ()
   NS_LOG_FUNCTION (this);
 }
 
-void FBApplication::Install (uint32_t protocol,
-                             uint32_t broadcastPhaseStart,
-                             uint32_t actualRange,
-                             uint32_t aoi,
-                             uint32_t aoi_error,
-                             bool flooding,
-                             uint32_t cwMin,
-                             uint32_t cwMax,
-                             uint32_t printCoords,
-                             uint32_t vehicleDistance,
-                             uint32_t errorRate,
-                             uint32_t forgedCoordRate,
-                             uint32_t droneTest)
+void
+FBApplication::Install (uint32_t protocol,
+                        uint32_t broadcastPhaseStart,
+                        uint32_t actualRange,
+                        uint32_t aoi,
+                        uint32_t aoi_error,
+                        bool     flooding,
+                        uint32_t cwMin,
+                        uint32_t cwMax,
+                        uint32_t printCoords,
+                        uint32_t vehicleDistance,
+                        uint32_t errorRate,
+                        uint32_t forgedCoordRate,
+                        uint32_t droneTest)
 {
 
   if (protocol == PROTOCOL_FB)
@@ -134,19 +135,19 @@ void FBApplication::Install (uint32_t protocol,
     }
 
   m_broadcastPhaseStart = broadcastPhaseStart;
-  m_aoi = aoi;
-  m_aoi_error = aoi_error;
-  m_actualRange = actualRange;
-  m_flooding = flooding;
-  m_cwMin = cwMin;
-  m_cwMax = cwMax;
-  m_printCoords = printCoords;
-  m_vehicleDistance = vehicleDistance;
-  m_errorRate = errorRate;
-  m_forgedCoordRate = forgedCoordRate;
-  m_droneTest = droneTest;
-  m_randomVariable = CreateObject<UniformRandomVariable>();
-//	cout << "connect drop" << endl;
+  m_aoi                 = aoi;
+  m_aoi_error           = aoi_error;
+  m_actualRange         = actualRange;
+  m_flooding            = flooding;
+  m_cwMin               = cwMin;
+  m_cwMax               = cwMax;
+  m_printCoords         = printCoords;
+  m_vehicleDistance     = vehicleDistance;
+  m_errorRate           = errorRate;
+  m_forgedCoordRate     = forgedCoordRate;
+  m_droneTest           = droneTest;
+  m_randomVariable      = CreateObject<UniformRandomVariable> ();
+  // cout << "connect drop" << endl;
   // Config::Connect ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Mac/MacRxDrop",
   //                  MakeCallback (&FBApplication::LogCollision, this));
   Config::Connect ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyRxDrop",
@@ -158,17 +159,23 @@ void FBApplication::Install (uint32_t protocol,
   //                  MakeCallback (&FBApplication::LogCollision, this));
 }
 
-void FBApplication::LogCollision (std::string context, Ptr<const Packet> p)
+void
+FBApplication::LogCollision (std::string context, Ptr<const Packet> p)
 {
   m_collisions++;
 }
 
-void FBApplication::AddNode (Ptr<Node> node, Ptr<Socket> source, Ptr<Socket> sink, bool onstats,
-                             bool isNodeInJunction, uint64_t junctionId)
+void
+FBApplication::AddNode (Ptr<Node>   node,
+                        Ptr<Socket> source,
+                        Ptr<Socket> sink,
+                        bool        onstats,
+                        bool        isNodeInJunction,
+                        uint64_t    junctionId)
 {
   NS_LOG_FUNCTION (this << node);
 
-  Ptr<FBNode> fbNode = CreateObject<FBNode>();
+  Ptr<FBNode> fbNode = CreateObject<FBNode> ();
   fbNode->SetNode (node);
   fbNode->SetId (node->GetId ());
   fbNode->SetSocket (source);
@@ -184,7 +191,7 @@ void FBApplication::AddNode (Ptr<Node> node, Ptr<Socket> source, Ptr<Socket> sin
   fbNode->SetReceived (false);
   fbNode->SetSent (false);
   fbNode->SetMeAsVehicle (onstats);
-//	cout << "AddNode id= " << node->GetId() << " onstats= " << onstats << endl;
+  // cout << "AddNode id= " << node->GetId () << " onstats= " << onstats << endl;
 
   fbNode->SetMeInJunction (isNodeInJunction);
   fbNode->SetJunctionId (junctionId);
@@ -201,35 +208,36 @@ void FBApplication::AddNode (Ptr<Node> node, Ptr<Socket> source, Ptr<Socket> sin
 }
 
 
-void FBApplication::PrintStats (std::stringstream &dataStream)
+void
+FBApplication::PrintStats (std::stringstream& dataStream)
 {
 
   NS_LOG_FUNCTION (this);
-//	cout << "cwndAvg " << (m_cwndSum / m_cwndCount) << endl;
-//	cout << "collisions= " << m_collisions << endl;
-  uint32_t cover = 1;           // 'cause we count m_startingNode
+  // cout << "cwndAvg " << (m_cwndSum / m_cwndCount) << endl;
+  // cout << "collisions= " << m_collisions << endl;
+  uint32_t cover         = 1; // 'cause we count m_startingNode
   uint32_t coverVehicles = 1;
   uint32_t circ = 0, circCont = 0;
-//	cout << "PrintStats area " << m_aoi << endl;
-  double radiusMin = m_aoi - m_aoi_error;
-  double radiusMax = m_aoi + m_aoi_error;
+  // cout << "PrintStats area " << m_aoi << endl;
+  double   radiusMin = m_aoi - m_aoi_error;
+  double   radiusMax = m_aoi + m_aoi_error;
 
-  long double time_sum = 0;
-  long double hops_sum = 0;
-  long double slots_sum = 0;
-  int valid_time_samples = 0;
-  long double global_time_sum = 0;
-  int valid_global_time_samples = 0;
+  long double time_sum                  = 0;
+  long double hops_sum                  = 0;
+  long double slots_sum                 = 0;
+  int         valid_time_samples        = 0;
+  long double global_time_sum           = 0;
+  int         valid_global_time_samples = 0;
 
   stringstream receivedOnCircIds;
 
-//	Time when the first alert message was sent
+  // Time when the first alert message was sent
   Time firstMessageSentTime = this->GetFBNode (m_startingNode)->GetSendTimestamp ();
 
   for (uint32_t i = 0; i < m_nNodes; i++)
     {
       Ptr<FBNode> current = m_nodes.at (i);
-      uint32_t nodeId = current->GetId ();
+      uint32_t    nodeId  = current->GetId ();
 
       // Skip the starting node
       if (nodeId == m_startingNode)
@@ -240,7 +248,7 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
       // Update the total cover value
       if (current->GetReceived ())
         {
-//			cout << "cover++" << endl;
+          // cout << "cover++" << endl;
           cover++;
           if (current->AmIaVehicle ())
             {
@@ -251,7 +259,7 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
       // Compute cover on circumference of radius m_aoi
       Ptr<FBNode> startingNode = this->GetFBNode (m_startingNode);
 
-      Vector currentPosition = current->GetPosition ();
+      Vector currentPosition      = current->GetPosition ();
       Vector startingNodePosition = startingNode->GetPosition ();
 
       double distance = ns3::CalculateDistance (currentPosition, startingNodePosition);
@@ -269,15 +277,15 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
               receivedOnCircIds << current->GetId () << "_";
               // Per-hop propagation
               int64_t propTime = current->GetPropagationTime ();
-              if (propTime > 0)      // Only count valid times
+              if (propTime > 0) // Only count valid times
                 {
                   time_sum += propTime;
                   valid_time_samples++;
                 }
-              // Global delay tracks in us the time that the alert msg took to reach the node from
-              // source to circunference
+              // Global delay tracks in us the time that the alert msg took to reach the
+              // node from source to circunference
               int64_t globalDelay = current->GetReceiveTimestamp ().GetMicroSeconds () -
-                firstMessageSentTime.GetMicroSeconds ();
+                                    firstMessageSentTime.GetMicroSeconds ();
               if (globalDelay >= 0)
                 {
                   global_time_sum += globalDelay;
@@ -291,14 +299,13 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
 
               // Update mean time, nums and slots
               // cout << "current get hop= " << current->GetHop () << endl;
-              hops_sum += current->GetHop ();
+              hops_sum  += current->GetHop ();
               slots_sum += current->GetSlot ();
             }
-
         }
     }
 
-  string receivedNodes = StringifyVector (m_receivedNodes);
+  string       receivedNodes = StringifyVector (m_receivedNodes);
   stringstream nodeIds;
 
   for (auto i = m_nodes.begin (); i != m_nodes.end (); ++i)
@@ -312,7 +319,8 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
       //   }
     }
 
-  //	Alert received mean time: average time the alert took to reach the node on the circunference
+  //	Alert received mean time: average time the alert took to reach the node on the
+  // circunference
   double avg_global_delay =
     (valid_global_time_samples > 0) ? (global_time_sum / valid_global_time_samples) : 0;
   //  The time the node took to traverse the last hop
@@ -320,14 +328,15 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
 
   dataStream
     << circCont << "," << cover << "," << circ << "," << avg_global_delay
-    << ","   // Global delay from first message (Alert received mean time)
-    //			<< avg_prop_time << ","     // Last hop propagation time. For the moment it is not printed into file
+    << "," // Global delay from first message (Alert received mean time)
+    // << avg_prop_time
+    // << "," // Last hop propagation time. For the moment it is not printed into file
     << (hops_sum / (double)circ) << "," << (slots_sum / (double)circ)
     << ","
-    //			<< m_nodes[m_nodes.size() - 1]->GetHop() << ","
-    //			<< m_nodes[m_nodes.size() - 1]->GetSlot() << ","
-    //			<< (hops_sum / (double) circ) << ","
-    //			<< (slots_sum / (double) circ) << ","
+    // << m_nodes[m_nodes.size () - 1]->GetHop () << ","
+    // << m_nodes[m_nodes.size () - 1]->GetSlot () << "," << (hops_sum / (double)circ) <<
+    // ","
+    // << (slots_sum / (double)circ) << ","
     << m_sent << "," << m_received;
   NS_LOG_DEBUG ("totalCoverage = " << cover << "/" << m_nNodes);
   cout << "totalCoverage = " << cover << "/" << m_nNodes << endl;
@@ -350,37 +359,40 @@ void FBApplication::PrintStats (std::stringstream &dataStream)
 
   if (m_printCoords)
     {
-      Ptr<FBNode> startingNode = GetFBNode (m_startingNode);
-      string transmissionVector = StringifyVector (m_transmissionVector);
-//		 cout << "FBApplication::PrintStats coords" << endl;
-//		 cout << "receivedNodes" << endl;
-//		 cout << receivedNodes << endl;
-//		 cout << "nodeIds" << endl;
-//		 cout << nodeIds.str() << endl;
-//		 cout << "transmissionMap" << endl;
-//		 cout << StringifyTransmissionMap() << endl;
-//		 cout << "receivedOnCircIds" << endl;
-//		 cout << receivedOnCircIds.str() << endl;
-//		 cout << "transmissionVector" << endl;
-//		 cout << transmissionVector << endl;
+      Ptr<FBNode> startingNode       = GetFBNode (m_startingNode);
+      string      transmissionVector = StringifyVector (m_transmissionVector);
+      // cout << "FBApplication::PrintStats coords" << endl;
+      // cout << "receivedNodes" << endl;
+      // cout << receivedNodes << endl;
+      // cout << "nodeIds" << endl;
+      // cout << nodeIds.str () << endl;
+      // cout << "transmissionMap" << endl;
+      // cout << StringifyTransmissionMap () << endl;
+      // cout << "receivedOnCircIds" << endl;
+      // cout << receivedOnCircIds.str () << endl;
+      // cout << "transmissionVector" << endl;
+      // cout << transmissionVector << endl;
 
-      dataStream << "," << startingNode->GetPosition ().x << "," << startingNode->GetPosition ().y
-                 << "," << m_startingNode << "," << m_vehicleDistance << "," << receivedNodes << ","
-                 << nodeIds.str () << "," << StringifyTransmissionMap () << ","
-                 << receivedOnCircIds.str () << "," << transmissionVector;
+      dataStream << "," << startingNode->GetPosition ().x << ","
+                 << startingNode->GetPosition ().y << "," << m_startingNode << ","
+                 << m_vehicleDistance << "," << receivedNodes << "," << nodeIds.str ()
+                 << "," << StringifyTransmissionMap () << "," << receivedOnCircIds.str ()
+                 << "," << transmissionVector;
     }
   if (m_droneTest)
     {
-      uint32_t maxDistance = 0;
+      uint32_t maxDistance            = 0;
       uint32_t maxDistanceNodeReached = IsMaxDistNodeReached (maxDistance);
-      dataStream << "," << maxDistance << "," << maxDistanceNodeReached << "," << coverVehicles;
+      dataStream << "," << maxDistance << "," << maxDistanceNodeReached << ","
+                 << coverVehicles;
     }
 
 
-//	NS_LOG_UNCOND("aoi = " << m_aoi << "aoi error " << m_aoi_error);
+  // NS_LOG_UNCOND ("aoi = " << m_aoi << "aoi error " << m_aoi_error);
 }
 
-void FBApplication::StartApplication (void)
+void
+FBApplication::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
 
@@ -401,26 +413,28 @@ void FBApplication::StartApplication (void)
           NS_LOG_INFO ("Start Forged Messages Generation Phase.");
           GenerateForgedHelloTraffic ();
         }
-//		GenerateHelloTraffic(1);
+      // GenerateHelloTraffic (1);
       GenerateHelloTraffic (5);
     }
   // Schedule Broadcast Phase
-  Simulator::Schedule (Seconds (m_broadcastPhaseStart),
-                       &FBApplication::StartBroadcastPhase,
-                       this);
+  Simulator::Schedule (
+    Seconds (m_broadcastPhaseStart), &FBApplication::StartBroadcastPhase, this);
 }
 
-void FBApplication::StopApplication (void)
+void
+FBApplication::StopApplication (void)
 {
   NS_LOG_FUNCTION (this);
 }
 
-void FBApplication::GenerateForgedHelloTraffic ()
+void
+FBApplication::GenerateForgedHelloTraffic ()
 {
   cout << m_nNodes << endl;
   uint32_t nAffectedNodes = m_nNodes * ((double)m_forgedCoordRate / 100);
   NS_LOG_INFO ("GeneratedForgedHelloTraffic affected " << nAffectedNodes << " nodes");
-  uint32_t forgedSenderNodeId = m_nNodes;
+
+  uint32_t      forgedSenderNodeId = m_nNodes;
   set<uint32_t> affectedNodes;
   while (affectedNodes.size () < nAffectedNodes)
     {
@@ -428,11 +442,11 @@ void FBApplication::GenerateForgedHelloTraffic ()
       affectedNodes.insert (nodeId);
     }
 
-  for (auto id: affectedNodes)
+  for (auto id : affectedNodes)
     {
       double startingX = m_nodes[id]->UpdatePosition ().x + m_actualRange; // low sev
       double startingY = m_nodes[id]->UpdatePosition ().y;
-//		double startingX = 10000; //high sev
+      // double startingX = 10000; // high sev
       for (uint32_t i = 1; i < 151; i++)
         {
           Vector position = Vector (startingX + i, startingY, 0);
@@ -450,23 +464,24 @@ void FBApplication::GenerateForgedHelloTraffic ()
     }
 }
 
-void FBApplication::GenerateHelloTraffic (uint32_t count)
+void
+FBApplication::GenerateHelloTraffic (uint32_t count)
 {
 
-//	NS_LOG_INFO (this << count);
+  // NS_LOG_INFO (this << count);
   NS_LOG_INFO ("GenerateHelloTraffic" << count);
   NS_LOG_DEBUG ("GenerateHelloTraffic " << count);
   std::vector<int> he;
-  uint32_t hel = (int)m_nNodes / 100 * 50; // 50% of total nodes
+  uint32_t         hel = (int)m_nNodes / 100 * 50; // 50% of total nodes
 
   // uint32_t hel = (int)m_nNodes; // 100% of total nodes
   uint32_t time_factor = 10;
-//	cout << "hel= " << hel << endl;
+  //	cout << "hel= " << hel << endl;
   if (count > 0)
     {
       for (uint32_t i = 0; i < hel; i++)
         {
-//			int pos = rand() % m_nNodes;
+          // int pos = rand () % m_nNodes;
           int pos = m_randomVariable->GetInteger (0, m_nNodes - 1);
           he.push_back (pos);
           Ptr<FBNode> fbNode = m_nodes.at (pos);
@@ -475,24 +490,25 @@ void FBApplication::GenerateHelloTraffic (uint32_t count)
                                           &FBApplication::GenerateHelloMessage,
                                           this,
                                           fbNode);
-          //			Ptr<FBNode> fbNode = m_nodes.at(i);
-          //			Simulator::ScheduleWithContext (fbNode->GetNode()->GetId(),
-          //																			MicroSeconds(i * time_factor),
-          //																			&FBApplication::GenerateHelloMessage, this, fbNode);
+          // Ptr<FBNode> fbNode = m_nodes.at (i);
+          // Simulator::ScheduleWithContext (fbNode->GetNode ()->GetId (),
+          //                                 MicroSeconds (i * time_factor),
+          //                                 &FBApplication::GenerateHelloMessage,
+          //                                 this,
+          //                                 fbNode);
         }
 
       // Other nodes must send Hello messages
       double s = ceil ((hel * time_factor) / 1000000.0);
       // auto start = std::chrono::system_clock::now ();
       // std::time_t start_time = std::chrono::system_clock::to_time_t (start);
-      Simulator::Schedule (Seconds (s),
-                           &FBApplication::GenerateHelloTraffic,
-                           this,
-                           count - 1);
+      Simulator::Schedule (
+        Seconds (s), &FBApplication::GenerateHelloTraffic, this, count - 1);
     }
 }
 
-void FBApplication::StartBroadcastPhase (void)
+void
+FBApplication::StartBroadcastPhase (void)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("Start Broadcast Phase.");
@@ -510,17 +526,18 @@ void FBApplication::StartBroadcastPhase (void)
     }
 }
 
-void FBApplication::GenerateHelloMessage (Ptr<FBNode> fbNode)
+void
+FBApplication::GenerateHelloMessage (Ptr<FBNode> fbNode)
 {
   NS_LOG_FUNCTION (this << fbNode);
-  auto start = std::chrono::system_clock::now ();
+  auto        start      = std::chrono::system_clock::now ();
   std::time_t start_time = std::chrono::system_clock::to_time_t (start);
   NS_LOG_DEBUG ("GenerateHelloMessage (" << fbNode->GetId () << ")."
                                          << "at time= " << std::ctime (&start_time));
   // NS_LOG_DEBUG ("Generate Hello Message (" << fbNode->GetNode ()->GetId () << ").");
 
   // Create a packet with the correct parameters taken from the node
-  Vector position = fbNode->UpdatePosition ();
+  Vector   position = fbNode->UpdatePosition ();
   FBHeader fbHeader;
   fbHeader.SetType (HELLO_MESSAGE);
   fbHeader.SetMaxRange (fbNode->GetCMBR ());
@@ -539,17 +556,17 @@ void FBApplication::GenerateHelloMessage (Ptr<FBNode> fbNode)
   fbNode->Send (packet);
 }
 
-void FBApplication::GenerateAlertMessage (Ptr<FBNode> fbNode)
+void
+FBApplication::GenerateAlertMessage (Ptr<FBNode> fbNode)
 {
   NS_LOG_FUNCTION (this << fbNode);
   NS_LOG_DEBUG ("Generate Alert Message (" << fbNode->GetNode ()->GetId () << ").");
 
   // Create a packet with the correct parameters taken from the node
   uint32_t LMBR, CMBR, maxi;
-  LMBR = fbNode->GetLMBR ();
-  CMBR = fbNode->GetCMBR ();
-  maxi = std::max (LMBR, CMBR);
-
+  LMBR            = fbNode->GetLMBR ();
+  CMBR            = fbNode->GetCMBR ();
+  maxi            = std::max (LMBR, CMBR);
   Vector position = fbNode->UpdatePosition ();
 
   FBHeader fbHeader;
@@ -572,7 +589,7 @@ void FBApplication::GenerateAlertMessage (Ptr<FBNode> fbNode)
   m_sent++;
 
   // Store current time for this sender
-  Time currentTime = Simulator::Now ();
+  Time currentTime                     = Simulator::Now ();
   m_messageSentTimes[fbNode->GetId ()] = currentTime;
 
   // Only the origin node sets the send timestamp
@@ -583,16 +600,17 @@ void FBApplication::GenerateAlertMessage (Ptr<FBNode> fbNode)
   fbNode->SetReceived (true);
 }
 
-void FBApplication::ReceivePacket (Ptr<Socket> socket)
+void
+FBApplication::ReceivePacket (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
 
   // Get the node who received this message and the corresponding FBNode
-  Ptr<Node> node = socket->GetNode ();
+  Ptr<Node>   node   = socket->GetNode ();
   Ptr<FBNode> fbNode = GetFBNode (node);
 
   Ptr<Packet> packet;
-  Address senderAddress;
+  Address     senderAddress;
 
   while ((packet = socket->RecvFrom (senderAddress)))
     {
@@ -605,7 +623,7 @@ void FBApplication::ReceivePacket (Ptr<Socket> socket)
       //   }
       // Get the position of the sender node
       Vector senderPosition = fbHeader.GetPosition ();
-      double distance = ns3::CalculateDistance (currentPosition, senderPosition);
+      double distance       = ns3::CalculateDistance (currentPosition, senderPosition);
       if (m_forgedCoordRate == 0 && distance > m_actualRange)
         {
           continue;
@@ -617,7 +635,7 @@ void FBApplication::ReceivePacket (Ptr<Socket> socket)
 
       // Get the type of the message (Hello or Alert)
       uint32_t messageType = fbHeader.GetType ();
-//
+      //
       if (messageType == HELLO_MESSAGE)
         {
           HandleHelloMessage (fbNode, fbHeader);
@@ -639,63 +657,68 @@ void FBApplication::ReceivePacket (Ptr<Socket> socket)
           // double distanceCurrentToStarter =
           //   ns3::CalculateDistance (currentPosition, starterPosition);
 
-          // If starter - to - sender distance is less than starter - to - current distance,
-          //   then the message is coming from the front and it needs to be menaged,
-          //   otherwise do nothing if (distanceCurrentToStarter > distanceSenderToStarter &&
-          //                            !fbNode->GetReceived ())
-          // {
+          // // If starter - to - sender distance is less than starter - to - current
+          // // distance,
+          // //   then the message is coming from the front and it needs to be menaged,
+          // //   otherwise do nothing
+          // if (distanceCurrentToStarter > distanceSenderToStarter &&
+          //     !fbNode->GetReceived ())
+          //   {
 
-          //   // Store when the current has received the first packet
-          //   fbNode->SetTimestamp (Simulator::Now ());
+          //     // Store when the current has received the first packet
+          //     fbNode->SetTimestamp (Simulator::Now ());
 
-          //   uint32_t sl = fbHeader.GetSlot ();
-          //   fbNode->SetSlot (fbNode->GetSlot () + sl);
-          //   fbNode->SetReceived (true);
+          //     uint32_t sl = fbHeader.GetSlot ();
+          //     fbNode->SetSlot (fbNode->GetSlot () + sl);
+          //     fbNode->SetReceived (true);
 
-          //   uint32_t senderId = fbHeader.GetSenderId ();
-          //   uint32_t receiverId = fbNode->GetId ();
+          //     uint32_t senderId   = fbHeader.GetSenderId ();
+          //     uint32_t receiverId = fbNode->GetId ();
 
-          //   m_receivedNodes.push_back (fbNode->GetId ());
-          //   auto it = m_transmissionList.find (senderId);
-          //   if (it == m_transmissionList.end ())
-          //     {
-          //       //					cout << "senderId = " << senderId << endl;
-          //       m_transmissionList[senderId] = vector<uint32_t> ();
-          //     }
-          //   m_transmissionList[senderId].push_back (receiverId);
-          //   m_transmissionVector.push_back (Edge (senderId, receiverId, phase));
+          //     m_receivedNodes.push_back (fbNode->GetId ());
+          //     auto it = m_transmissionList.find (senderId);
+          //     if (it == m_transmissionList.end ())
+          //       {
+          //         //	cout << "senderId = " << senderId << endl;
+          //         m_transmissionList[senderId] = vector<uint32_t> ();
+          //       }
+          //     m_transmissionList[senderId].push_back (receiverId);
+          //     m_transmissionVector.push_back (Edge (senderId, receiverId, phase));
 
-          //   if (fbNode->GetNum () == 0)
-          //     {
-          //       fbNode->SetNum (phase);
-          //     }
+          //     if (fbNode->GetNum () == 0)
+          //       {
+          //         fbNode->SetNum (phase);
+          //       }
 
-          //   // check if the message is coming fron the front
-          //   if (phase > fbNode->GetPhase ())
-          //     {
-          //       fbNode->SetPhase (phase);
-          //       //					m_transmissionList.AddEdge(KeyableVector(fbHeader.GetPosition()),
-          // /KeyableVector(fbNode->GetPosition()));
-          // HandleAlertMessage (fbNode, fbHeader, distanceSenderToCurrent_uint);
-          //     }
-          // }
+          //     // check if the message is coming fron the front
+          //     if (phase > fbNode->GetPhase ())
+          //       {
+          //         fbNode->SetPhase (phase);
+          //         //
+          //         m_transmissionList.AddEdge (KeyableVector (fbHeader.GetPosition ()),
+          //                                     / KeyableVector (fbNode->GetPosition
+          //                                     ()));
+          //         HandleAlertMessage (fbNode, fbHeader, distanceSenderToCurrent_uint);
+          //       }
+          //   }
           // else
-          // {
-          // }
+          //   {
+          //   }
         }
     }
 }
 
-void FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
+void
+FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 {
   NS_LOG_FUNCTION (this << fbNode << fbHeader);
-  
+
   uint32_t nodeId = fbNode->GetNode ()->GetId ();
   NS_LOG_DEBUG ("Handle a Hello Message (" << nodeId << ").");
 
   // Retrieve CMFR from the packet received and CMBR from the current node
   uint32_t otherCMFR = fbHeader.GetMaxRange ();
-  uint32_t myCMBR = fbNode->GetCMBR ();
+  uint32_t myCMBR    = fbNode->GetCMBR ();
 
   // Retrieve the position of the current node
   Vector currentPosition = fbNode->UpdatePosition ();
@@ -704,8 +727,8 @@ void FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   Vector senderPosition = fbHeader.GetPosition ();
 
   // Compute distance
-  double distance_double = ns3::CalculateDistance (senderPosition, currentPosition);
-  uint32_t distance = std::floor (distance_double);
+  double   distance_double = ns3::CalculateDistance (senderPosition, currentPosition);
+  uint32_t distance        = std::floor (distance_double);
 
   // Update new values
   uint32_t maxi = std::max (std::max (myCMBR, otherCMFR), distance);
@@ -716,18 +739,21 @@ void FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   fbNode->SetLMBR (myCMBR);
 }
 
-void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
+void
+FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 {
-  int32_t phase = fbHeader.GetPhase ();
-  Vector currentPosition = fbNode->UpdatePosition ();
+  int32_t  phase           = fbHeader.GetPhase ();
+  Vector   currentPosition = fbNode->UpdatePosition ();
   // Get the position of the sender node
-  Vector senderPosition = fbHeader.GetPosition ();
-  uint32_t senderId = fbHeader.GetSenderId ();
-  uint32_t receiverId = fbNode->GetId ();
-  NS_LOG_DEBUG ("Packet received by node " << fbNode->GetId () << " from node " << senderId << ".");
+  Vector   senderPosition = fbHeader.GetPosition ();
+  uint32_t senderId       = fbHeader.GetSenderId ();
+  uint32_t receiverId     = fbNode->GetId ();
+  NS_LOG_DEBUG ("Packet received by node " << fbNode->GetId () << " from node "
+                                           << senderId << ".");
 
   // Compute the distance between the sender and me (the node who received the message)
-  double distanceSenderToCurrent = ns3::CalculateDistance (senderPosition, currentPosition);
+  double distanceSenderToCurrent =
+    ns3::CalculateDistance (senderPosition, currentPosition);
   uint32_t distanceSenderToCurrent_uint = std::floor (distanceSenderToCurrent);
   if (distanceSenderToCurrent > m_actualRange + 100)
     {
@@ -737,8 +763,10 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   // Vector starterPosition = fbHeader.GetStarterPosition ();
 
   // Compute the two distances
-  // double distanceSenderToStarter = ns3::CalculateDistance (senderPosition, starterPosition);
-  // double distanceCurrentToStarter = ns3::CalculateDistance (currentPosition, starterPosition);
+  // double distanceSenderToStarter =
+  //   ns3::CalculateDistance (senderPosition, starterPosition);
+  // double distanceCurrentToStarter =
+  //   ns3::CalculateDistance (currentPosition, starterPosition);
 
   // Message coming from the back
 
@@ -746,29 +774,33 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
     {
       NS_LOG_LOGIC ("node " << fbNode->GetId ()
                             << "is inside a junction and has received an alert message");
-      // I am in a junction and I receive a message from the same junction -> I have to defer
-      // transmission
-      if (fbHeader.IsSenderInJunction () && fbNode->GetJunctionId () == fbHeader.GetJunctionId ())
+      // I am in a junction and I receive a message from the same junction -> I have to
+      // defer transmission
+      if (fbHeader.IsSenderInJunction () &&
+          fbNode->GetJunctionId () == fbHeader.GetJunctionId ())
         {
           if (phase > fbNode->GetPhase ())
             {
               fbNode->SetPhase (phase);
-              //				NS_LOG_LOGIC("node " << node->GetId() << "is inside a junction: updates
-              // phase from " << node->GetPhase() << " to " << phase);
+              // NS_LOG_LOGIC ("node " << node->GetId ()
+              //                       << "is inside a junction: updates phase from "
+              //                       << node->GetPhase () << " to " << phase);
             }
         }
     }
   else
     {
-      // I am not in a junction and I receive a message from a node farther than me -> I have to
-      // defer tranmission
-      //		if ((phase > fbNode->GetPhase()) && (distanceSenderToStarter >
-      //distanceCurrentToStarter)) {
+      // I am not in a junction and I receive a message from a node farther than me -> I
+      // have to defer tranmission
+      // if ((phase > fbNode->GetPhase ()) &&
+      //     (distanceSenderToStarter > distanceCurrentToStarter))
+      //   {
       if (phase > fbNode->GetPhase ()) // todo abilitare per urbano
         {
           fbNode->SetPhase (phase);
-          //			NS_LOG_LOGIC("node " << node->GetId() << "is not inside a junction: updates phase
-          //from " << node->GetPhase() << " to " << phase);
+          // NS_LOG_LOGIC ("node " << node->GetId ()
+          //                       << "is not inside a junction: updates phase from "
+          //                       << node->GetPhase () << " to " << phase);
         }
     }
   if (fbNode->GetReceived ())
@@ -790,8 +822,9 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
           Time propTime = receiveTime - sentTime;
           fbNode->SetPropagationTime (propTime.GetMicroSeconds ());
 
-          NS_LOG_DEBUG ("Message from " << senderId << " to " << fbNode->GetId () << " took "
-                                        << propTime.GetMicroSeconds () << " microseconds");
+          NS_LOG_DEBUG ("Message from " << senderId << " to " << fbNode->GetId ()
+                                        << " took " << propTime.GetMicroSeconds ()
+                                        << " microseconds");
         }
       fbNode->SetSlot (fbHeader.GetSlot ());
       fbNode->SetHop (phase + 1);
@@ -811,14 +844,19 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   // If starter-to-sender distance is less than starter-to-current distance,
   // then the message is coming from the front and it needs to be menaged,
   // otherwise do nothing
-  //	if (distanceCurrentToStarter <= distanceSenderToStarter) { //todo togliere
-  //		return;
-  //		NS_LOG_DEBUG("Alert message received by " << fbNode->GetId() << " from node " <<
-  //fbHeader.GetSenderId() << 			" is being considered for forwarding since distanceCurrentToStarter >
-  //distanceSenderToStarter " << 			distanceCurrentToStarter << " > " << distanceSenderToStarter);
-  //	}
+
+  // if (distanceCurrentToStarter <= distanceSenderToStarter)
+  //   { // todo togliere
+  //     return;
+  //     NS_LOG_DEBUG ("Alert message received by "
+  //                   << fbNode->GetId () << " from node " << fbHeader.GetSenderId ()
+  //                   << " is being considered for forwarding since "
+  //                      "distanceCurrentToStarter > distanceSenderToStarter "
+  //                   << distanceCurrentToStarter << " > " << distanceSenderToStarter);
+  //   }
+
   // Compute the size of the contention window
-  uint32_t bmr = fbNode->GetCMBR ();
+  uint32_t bmr  = fbNode->GetCMBR ();
   uint32_t cwnd = ComputeContetionWindow (bmr, distanceSenderToCurrent_uint);
 
   // cout << "cwnd = " << cwnd << endl;
@@ -826,7 +864,7 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   // m_cwndCount++;
   // Compute a random waiting time (1 <= waitingTime <= cwnd)
   uint32_t waitingTime = m_randomVariable->GetInteger (1, cwnd);
-  int32_t errorDelay = ComputeErrorDelay ();
+  int32_t  errorDelay  = ComputeErrorDelay ();
   //		cout << "errorDelay= " << errorDelay << endl;
   if (!m_flooding)
     {
@@ -845,7 +883,8 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
           uint32_t firstTransmissionTime;
           uint32_t secondTransmissionTime;
           firstTransmissionTime = errorDelay > 0 ? waitingTime : waitingTime + errorDelay;
-          secondTransmissionTime = errorDelay < 0 ? waitingTime : waitingTime + errorDelay;
+          secondTransmissionTime =
+            errorDelay < 0 ? waitingTime : waitingTime + errorDelay;
           Simulator::Schedule (MilliSeconds (firstTransmissionTime),
                                &FBApplication::ForwardAlertMessage,
                                this,
@@ -875,7 +914,8 @@ void FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   //	}
 }
 
-void FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime)
+void
+FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime)
 {
   NS_LOG_FUNCTION (this);
 
@@ -900,16 +940,16 @@ void FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t w
 
 void
 FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
-                                    FBHeader oldFBHeader,
-                                    uint32_t waitingTime,
-                                    bool forceSend)
+                                    FBHeader    oldFBHeader,
+                                    uint32_t    waitingTime,
+                                    bool        forceSend)
 {
   NS_LOG_FUNCTION (this << fbNode << oldFBHeader);
   // Get the phase
-  int32_t phase = oldFBHeader.GetPhase ();
-  Vector oldPos = oldFBHeader.GetPosition ();
-  Vector position = fbNode->UpdatePosition ();
-  double distance = ns3::CalculateDistance (position, oldPos);
+  int32_t phase    = oldFBHeader.GetPhase ();
+  Vector  oldPos   = oldFBHeader.GetPosition ();
+  Vector  position = fbNode->UpdatePosition ();
+  double  distance = ns3::CalculateDistance (position, oldPos);
   if (fbNode->GetStopSending ())
     {
       NS_LOG_DEBUG ("node " << fbNode->GetId () << " defers because of StopSending");
@@ -934,17 +974,20 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
       fbNode->SetStopSending (true);
     }
   NS_LOG_DEBUG ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId () << ") after "
-                                             << waitingTime << " at distance= " << distance << ".");
-  // NS_LOG_UNCOND ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId () << "at pos "
-  //                                             << fbNode->GetPosition () << ") after "
-  //                                             << waitingTime << ".");
+                                             << waitingTime
+                                             << " at distance= " << distance << ".");
+
+  // NS_LOG_UNCOND ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId ()
+  //                                             << "at pos " << fbNode->GetPosition ()
+  //                                             << ") after " << waitingTime << ".");
   // Create a packet with the correct parameters taken from the node
+
   uint32_t LMBR, CMBR, maxi;
   LMBR = fbNode->GetLMBR ();
   CMBR = fbNode->GetCMBR ();
   maxi = std::max (LMBR, CMBR);
 
-  //		Vector position = fbNode->UpdatePosition();
+  // Vector position = fbNode->UpdatePosition ();
   Vector starterPosition = oldFBHeader.GetStarterPosition ();
 
   FBHeader fbHeader;
@@ -958,7 +1001,7 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
   fbHeader.SetSenderInJunction (fbNode->AmIInJunction ());
   fbHeader.SetJunctionId (fbNode->GetJunctionId ());
 
-//		cout << "forward alert message senderId = " << fbNode->GetId() << endl;
+  // cout << "forward alert message senderId = " << fbNode->GetId () << endl;
 
   Ptr<Packet> packet = Create<Packet> (m_packetPayload);
   packet->AddHeader (fbHeader);
@@ -975,35 +1018,40 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
   m_sent++;
   // else
   // {
-  //   cout << "deferro distance= " << distance << " waitingTime= " << waitingTime << endl;
+  //   cout << "deferro distance= " << distance << " waitingTime= " << waitingTime <<
+  //   endl;
   // }
 }
 
-void FBApplication::StopNode (Ptr<FBNode> fbNode)
+void
+FBApplication::StopNode (Ptr<FBNode> fbNode)
 {
   NS_LOG_FUNCTION (this);
 
   Ptr<Node> node = fbNode->GetNode ();
 
-  Ptr<ConstantVelocityMobilityModel> mob = node->GetObject<ConstantVelocityMobilityModel>();
+  Ptr<ConstantVelocityMobilityModel> mob =
+    node->GetObject<ConstantVelocityMobilityModel> ();
   mob->SetVelocity (Vector (0, 0, 0));
-
 }
 
-Ptr<FBNode> FBApplication::GetFBNode (Ptr<Node> node)
+Ptr<FBNode>
+FBApplication::GetFBNode (Ptr<Node> node)
 {
   NS_LOG_FUNCTION (this);
 
   if (m_id2id.count (node->GetId ()) == 0)
     {
       // We got a problem: key not found
-      NS_LOG_ERROR ("Error: key for node " << node->GetId () << " not found in fb application.");
+      NS_LOG_ERROR ("Error: key for node " << node->GetId ()
+                                           << " not found in fb application.");
     }
 
   return this->GetFBNode (node->GetId ());
 }
 
-Ptr<FBNode> FBApplication::GetFBNode (uint32_t id)
+Ptr<FBNode>
+FBApplication::GetFBNode (uint32_t id)
 {
   NS_LOG_FUNCTION (this);
 
@@ -1017,24 +1065,25 @@ Ptr<FBNode> FBApplication::GetFBNode (uint32_t id)
   return m_nodes.at (idin);
 }
 
-uint32_t FBApplication::ComputeContetionWindow (uint32_t maxRange, uint32_t distance)
+uint32_t
+FBApplication::ComputeContetionWindow (uint32_t maxRange, uint32_t distance)
 {
   NS_LOG_FUNCTION (this << maxRange << distance);
   double cwnd = 0.0;
   double rapp = 0.0;
-//	cout << "maxRange= " << maxRange << " distance= " << distance << endl;
+  //	cout << "maxRange= " << maxRange << " distance= " << distance << endl;
 
   if (maxRange != 0)
     {
-      rapp = ( ((double)maxRange) - ((double)distance) ) / (double) maxRange;
+      rapp = (((double)maxRange) - ((double)distance)) / (double)maxRange;
     }
   else
     {
       rapp = 0;
     }
-//	cout << "rapp pre= " << rapp << endl;
+  //	cout << "rapp pre= " << rapp << endl;
   rapp = (rapp < 0) ? 0 : rapp;
-//	cout << "rapp post= " << rapp << endl;
+  //	cout << "rapp post= " << rapp << endl;
 
   cwnd = (rapp * (m_cwMax - m_cwMin)) + m_cwMin;
   // cout << "FBApplication computeCW= " << std::floor (cwnd) << endl
@@ -1042,13 +1091,14 @@ uint32_t FBApplication::ComputeContetionWindow (uint32_t maxRange, uint32_t dist
   return std::floor (cwnd);
 }
 
-int32_t FBApplication::ComputeErrorDelay ()
+int32_t
+FBApplication::ComputeErrorDelay ()
 {
   if (m_errorRate == 0)
     {
       return 0;
     }
-  int32_t delay = 0;
+  int32_t  delay   = 0;
   uint32_t percent = m_randomVariable->GetInteger (0, 100);
   if (percent <= m_errorRate)
     {
@@ -1066,47 +1116,52 @@ int32_t FBApplication::ComputeErrorDelay ()
 }
 
 template <typename T>
-string FBApplication::StringifyVector (const vector<T>& v)
+string
+FBApplication::StringifyVector (const vector<T>& v)
 {
   stringstream ss;
-//	cout << "FbApplication::PrintStuff" << m_receivedCoords.size() << " " << m_received << endl;
+  // cout << "FbApplication::PrintStuff" << m_receivedCoords.size () << " " << m_received
+  //      << endl;
   for (auto i = v.begin (); i != v.end (); ++i)
     {
       ss << *i << "_";
     }
-//	cout << "FBApplication::StringifyVector" + ss.str() << endl;
+  // cout << "FBApplication::StringifyVector" + ss.str() << endl;
   return ss.str ();
 }
 
-string FBApplication::StringifyTransmissionMap () const
+string
+FBApplication::StringifyTransmissionMap () const
 {
   stringstream ss;
   for (auto it = m_transmissionList.begin (); it != m_transmissionList.end (); ++it)
     {
       ss << it->first << ":{";
-      for (auto el: it->second)
+      for (auto el : it->second)
         {
           ss << el << ";";
         }
       ss << "}";
     }
-//	cout << "FBApplication::StringifyTransmissionMap" + ss.str() << endl;
+  //	cout << "FBApplication::StringifyTransmissionMap" + ss.str() << endl;
   return ss.str ();
 }
 
-uint32_t FBApplication::IsMaxDistNodeReached (uint32_t& maxDist) const
+uint32_t
+FBApplication::IsMaxDistNodeReached (uint32_t& maxDist) const
 {
   cout << "FBApplication::IsMaxDistNodeReached" << endl;
-  Ptr<FBNode> startingNode =  m_nodes.at (m_startingNode);
-  Vector startingNodePos = startingNode->GetPosition ();
-  uint32_t nodeId = 0;
-  for (auto node: m_nodes)
+  Ptr<FBNode> startingNode    = m_nodes.at (m_startingNode);
+  Vector      startingNodePos = startingNode->GetPosition ();
+  uint32_t    nodeId          = 0;
+  for (auto node : m_nodes)
     {
-      uint32_t dist = round (ns3::CalculateDistance (node->GetPosition (), startingNodePos));
+      uint32_t dist =
+        round (ns3::CalculateDistance (node->GetPosition (), startingNodePos));
       if (dist > maxDist)
         {
           maxDist = dist;
-          nodeId = node->GetId ();
+          nodeId  = node->GetId ();
         }
     }
   return m_nodes.at (nodeId)->GetReceived ();

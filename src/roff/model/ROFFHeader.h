@@ -29,15 +29,15 @@ public:
   //	Constructor
   ROFFHeader ();
 
-  ROFFHeader (uint32_t type,
-              Vector position,
-              uint32_t sender,
-              Vector starterPosition,
+  ROFFHeader (uint32_t                type,
+              Vector                  position,
+              uint32_t                sender,
+              Vector                  starterPosition,
               boost::dynamic_bitset<> esdBitmap,
-              uint32_t phase = 0,
-              uint32_t slot = 0,
-              uint8_t senderInJunction = 0,
-              uint64_t junctionId = 0);
+              uint32_t                phase            = 0,
+              uint32_t                slot             = 0,
+              uint8_t                 senderInJunction = 0,
+              uint64_t                junctionId       = 0);
 
   //	Getters
   const Vector& GetPosition () const;
@@ -114,24 +114,24 @@ private:
 
   double GetESDBitmapRoundedSizeInBytes (uint32_t bitmapSize) const;
 
-  void ConcatBitsets (boost::dynamic_bitset<>& a,
+  void ConcatBitsets (boost::dynamic_bitset<>&       a,
                       const boost::dynamic_bitset<>& b,
-                      uint32_t count = 8) const;
+                      uint32_t                       count = 8) const;
 
   //	============== Generic data ================
   uint32_t m_type;
-  Vector m_position;
+  Vector   m_position;
 
   //	============== Hello message data ================
   uint32_t m_senderId;
 
 
   //	============== Alert message data ================
-  Vector m_starterPosition;
-  uint32_t m_phase;
-  uint32_t m_slot;
-  uint8_t m_senderInJunction;
-  uint64_t m_junctionId;
+  Vector                  m_starterPosition;
+  uint32_t                m_phase;
+  uint32_t                m_slot;
+  uint8_t                 m_senderInJunction;
+  uint64_t                m_junctionId;
   boost::dynamic_bitset<> m_esdBitmap;
 };
 } // namespace ns3

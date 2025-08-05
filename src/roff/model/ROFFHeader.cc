@@ -31,15 +31,15 @@ ROFFHeader::ROFFHeader () :
 {
 }
 
-ROFFHeader::ROFFHeader (uint32_t type,
-                        Vector position,
-                        uint32_t sender,
-                        Vector starterPosition,
+ROFFHeader::ROFFHeader (uint32_t                type,
+                        Vector                  position,
+                        uint32_t                sender,
+                        Vector                  starterPosition,
                         boost::dynamic_bitset<> esdBitmap,
-                        uint32_t phase,
-                        uint32_t slot,
-                        uint8_t senderInJunction,
-                        uint64_t junctionId) :
+                        uint32_t                phase,
+                        uint32_t                slot,
+                        uint8_t                 senderInJunction,
+                        uint64_t                junctionId) :
   m_type (type),
   m_position (position),
   m_senderId (sender),
@@ -191,22 +191,21 @@ uint32_t
 ROFFHeader::GetSerializedSize () const
 {
   uint32_t bitmapSize = GetESDBitmapRoundedSizeInBytes (m_esdBitmap.size ());
-  //		cout << "ROFFHeader::GetSerializedSize bitmapSize = " << bitmapSize << endl;
+  // cout << "ROFFHeader::GetSerializedSize bitmapSize = " << bitmapSize << endl;
   uint32_t serializedSize = 4 * 4   // m_type, m_senderId, m_phase, m_slot
                             + 8 * 6 // m_position, m_starterPosition
                             + 1     // m_senderInJunction
                             + 8     // m_junctionId
                             + 4     // m_esdBitmap.size
                             + bitmapSize;
-  //		cout << "ROFFHeader::GetSerializedSize serializedSize = " << serializedSize <<
-  //endl;
+  // cout << "ROFFHeader::GetSerializedSize serializedSize = " << serializedSize << endl;
   return serializedSize;
 }
 
 void
 ROFFHeader::WriteDouble (Buffer::Iterator* iter, double d) const
 {
-  const double* buf = &(d);
+  const double*  buf  = &(d);
   const uint8_t* buf2 = reinterpret_cast<const uint8_t*> (buf);
   iter->Write (buf2, 8);
 }
@@ -220,7 +219,7 @@ ROFFHeader::WriteESDBitmap (Buffer::Iterator* iter) const
     {
       return;
     }
-  //		cout << "ROFFHeader::WriteESDBitmap original " << m_esdBitmap << endl;
+  // cout << "ROFFHeader::WriteESDBitmap original " << m_esdBitmap << endl;
   boost::dynamic_bitset<> esdBitmapToExtend (m_esdBitmap);
   if (size % 8 != 0)
     {
@@ -233,63 +232,63 @@ ROFFHeader::WriteESDBitmap (Buffer::Iterator* iter) const
             }
         }
     }
-  //				esdBitmapToExtend.to_ulong();
-  //				cout << "ROFFHeader::WriteESDBitmapToExtend after size= " <<
-  //esdBitmapToExtend.size() << 						" " << esdBitmapToExtend << endl;
+  // esdBitmapToExtend.to_ulong ();
+  // cout << "ROFFHeader::WriteESDBitmapToExtend after size= " << esdBitmapToExtend.size
+  // ()
+  //      << " " << esdBitmapToExtend << endl;
   // Writes bitset to buffer chunk by chunk (8 bytes chunk)
-  //
-  //				boost::dynamic_bitset<> chunk;
-  //				chunk.push_back(0);
-  //				chunk.push_back(1);
-  //				chunk.push_back(0);
-  //				chunk.push_back(0);
-  //				chunk.push_back(0);
-  //				chunk.push_back(0);
-  //				chunk.push_back(0);
-  //				chunk.push_back(1);
-  //				cout << "chunk= " << chunk << endl;
 
-  //				unsigned long ulong = chunk.to_ulong();
-  //				cout << "ulong= " << ulong << endl;
-  //				uint8_t byte = ulong;
-  //				std::bitset<8> x(byte);
-  ////				uint8_t byte = static_cast<uint8_t>(ulong);
-  //				cout << "byte= " << x << endl;
+  //   boost::dynamic_bitset<>
+  //     chunk;
+  // chunk.push_back (0);
+  // chunk.push_back (1);
+  // chunk.push_back (0);
+  // chunk.push_back (0);
+  // chunk.push_back (0);
+  // chunk.push_back (0);
+  // chunk.push_back (0);
+  // chunk.push_back (1);
+  // cout << "chunk= " << chunk << endl;
+
+  // unsigned long ulong = chunk.to_ulong ();
+  // cout << "ulong= " << ulong << endl;
+  // uint8_t        byte = ulong;
+  // std::bitset<8> x (byte);
+  // //				uint8_t byte = static_cast<uint8_t>(ulong);
+  // cout << "byte= " << x << endl;
 
 
   for (size_t i = 0; i < esdBitmapToExtend.size (); i += 8)
     {
-      //					cout << "for bitmapToExtend i=" << i << endl;
+      // cout << "for bitmapToExtend i=" << i << endl;
       boost::dynamic_bitset<> chunk (8);
       for (int j = 0; j < 8; j++)
         {
           chunk[j] = esdBitmapToExtend[i + j];
-          //						cout << "esdBitmapToExtend[i+j= " << esdBitmapToExtend[i + j] <<
-          //endl;
+          // cout << "esdBitmapToExtend[i+j= " << esdBitmapToExtend[i + j] << endl;
         }
-      unsigned long ulong = chunk.to_ulong ();
-      //					uint8_t * ptr = reinterpret_cast<uint8_t*>(&ulong);
-      //					cout << "ptr= " << *(ptr+7) << endl;
-      //					boost::dynamic_bitset<> bulong(8, ulong);
-      //					cout << "bulong= " << bulong << endl;
-      uint8_t byte = static_cast<uint8_t> (ulong);
+      unsigned long           ulong = chunk.to_ulong ();
+      // uint8_t*                ptr   = reinterpret_cast<uint8_t*> (&ulong);
+      // cout << "ptr= " << *(ptr + 7) << endl;
+      // boost::dynamic_bitset<> bulong (8, ulong);
+      // cout << "bulong= " << bulong << endl;
+      uint8_t                 byte = static_cast<uint8_t> (ulong);
       boost::dynamic_bitset<> b (8, byte);
       //					cout << "serialize i= " << i << " b= " << b << endl;
       iter->WriteU8 (byte);
     }
 
 
-  //				iter->Write(&esdBitmapToExtend, calcolareSize)
-  //				nb <<= 30;
-  //				cout << "ROFFHeader::WriteESDBitmap after " << nb << endl;
+  // iter->Write (&esdBitmapToExtend, calcolareSize) nb <<= 30;
+  // cout << "ROFFHeader::WriteESDBitmap after " << nb << endl;
 }
 
 void
 ROFFHeader::Serialize (Buffer::Iterator start) const
 {
   NS_LOG_FUNCTION (this);
-  //		cout << "ROFFHeader::Serialize " << endl;
-  //		cout << "ROFFHEADER Serialize bmp= " << m_esdBitmap << endl;
+  // cout << "ROFFHeader::Serialize " << endl;
+  // cout << "ROFFHEADER Serialize bmp= " << m_esdBitmap << endl;
   start.WriteU32 (m_type);
   WriteDouble (&start, m_position.x);
   WriteDouble (&start, m_position.y);
@@ -305,22 +304,22 @@ ROFFHeader::Serialize (Buffer::Iterator start) const
 
   start.WriteU32 (m_esdBitmap.size ());
   WriteESDBitmap (&start);
-  //		WriteDouble(&start, 5);
-  //		WriteDouble(&start, 5);
-  //		WriteDouble(&start, 5);
-  //		WriteDouble(&start, 5);
-  //		WriteDouble(&start, 5);
-  //		start.WriteU16(123);
-  //		stringstream ss;
-  //		cout << sizeof (ss) << endl;
-  //		boost::archive::text_oarchive oa{ss};
-  //		oa << m_esdBitmap;
-  //		cout << sizeof (ss) << endl;
-  //		cout << "ROFFHeader::Serialize " << m_esdBitmap << endl;
-  //		boost::dynamic_bitset<> a;
-  //		boost::archive::text_iarchive ia{ss};
-  //		ia >> a;
-  //		cout << "a dopo deserialize= " << a << endl;
+  // WriteDouble (&start, 5);
+  // WriteDouble (&start, 5);
+  // WriteDouble (&start, 5);
+  // WriteDouble (&start, 5);
+  // WriteDouble (&start, 5);
+  // start.WriteU16 (123);
+  // stringstream ss;
+  // cout << sizeof (ss) << endl;
+  // boost::archive::text_oarchive oa{ ss };
+  // oa << m_esdBitmap;
+  // cout << sizeof (ss) << endl;
+  // cout << "ROFFHeader::Serialize " << m_esdBitmap << endl;
+  // boost::dynamic_bitset<>       a;
+  // boost::archive::text_iarchive ia{ ss };
+  // ia >> a;
+  // cout << "a dopo deserialize= " << a << endl;
 }
 
 double
@@ -334,9 +333,9 @@ ROFFHeader::ReadDouble (Buffer::Iterator* iter) const
 }
 
 void
-ROFFHeader::ConcatBitsets (boost::dynamic_bitset<>& a,
+ROFFHeader::ConcatBitsets (boost::dynamic_bitset<>&       a,
                            const boost::dynamic_bitset<>& b,
-                           uint32_t count) const
+                           uint32_t                       count) const
 {
   for (uint32_t i = 0; i < count; i++)
     {
@@ -347,62 +346,67 @@ ROFFHeader::ConcatBitsets (boost::dynamic_bitset<>& a,
 void
 ROFFHeader::ReadESDBitmap (Buffer::Iterator* iter, uint32_t bitmapSize)
 {
-  //		bitmapSize is a multiple of 8
+  // bitmapSize is a multiple of 8
 
   uint32_t bytesToRead = bitmapSize / 8;
-  //		cout << "ROFFHeader::ReadESDBitmap bitmapSize= " << bitmapSize << " bytesToRead= "
-  //<< bytesToRead << endl;
+
+  // cout << "ROFFHeader::ReadESDBitmap bitmapSize= " << bitmapSize
+  //      << " bytesToRead= " << bytesToRead << endl;
+
   for (uint32_t i = 0; i < bytesToRead; i++)
     {
-      uint8_t value = iter->ReadU8 ();
-      //			iter->ReadU8();
-      //			cout << "value = " << value << endl;
+      uint8_t                 value = iter->ReadU8 ();
+      // iter->ReadU8 ();
+      // cout << "value = " << value << endl;
       boost::dynamic_bitset<> b (8, value);
-      //			cout << "ROFFHeader::readEsdBitmap i= " << i << " esdBitmapBefore " <<
-      //m_esdBitmap;
-      //								<< " b= "<< b << endl;
+
+      // cout << "ROFFHeader::readEsdBitmap i= " << i << " esdBitmapBefore " <<
+      // m_esdBitmap
+      //      << " b= " << b << endl;
+
       ConcatBitsets (m_esdBitmap, b);
 
-      //			cout << "ROFFHeader::readEsdBitmap after= << " << m_esdBitmap << endl;
-      //			cout << "i = " << value << endl;
+      // cout << "ROFFHeader::readEsdBitmap after= << " << m_esdBitmap << endl;
+      // cout << "i = " << value << endl;
     }
 
   if (bitmapSize % 8 != 0)
     {
-      uint8_t value = iter->ReadU8 ();
+      uint8_t                 value = iter->ReadU8 ();
       boost::dynamic_bitset<> b (8, value);
-      uint32_t bitsToCopy = bitmapSize % 8;
+      uint32_t                bitsToCopy = bitmapSize % 8;
       ConcatBitsets (m_esdBitmap, b, bitsToCopy);
     }
 
-  //		cout << "ROFFHeader::readEsdBitmap after all read= << " << m_esdBitmap << endl;
+  // cout << "ROFFHeader::readEsdBitmap after all read= << " << m_esdBitmap << endl;
 }
 
 uint32_t
 ROFFHeader::Deserialize (Buffer::Iterator start)
 {
   NS_LOG_FUNCTION (this);
-  //		cout << "ROFFHeader::Deserialize= " << start.GetSize() << endl;
-  m_type = start.ReadU32 ();
-  double x = ReadDouble (&start);
-  double y = ReadDouble (&start);
-  double z = ReadDouble (&start);
-  m_position = Vector (x, y, z);
-  m_senderId = start.ReadU32 ();
-  double x1 = ReadDouble (&start);
-  double y1 = ReadDouble (&start);
-  double z1 = ReadDouble (&start);
+  // cout << "ROFFHeader::Deserialize= " << start.GetSize () << endl;
+  m_type            = start.ReadU32 ();
+  double x          = ReadDouble (&start);
+  double y          = ReadDouble (&start);
+  double z          = ReadDouble (&start);
+  m_position        = Vector (x, y, z);
+  m_senderId        = start.ReadU32 ();
+  double x1         = ReadDouble (&start);
+  double y1         = ReadDouble (&start);
+  double z1         = ReadDouble (&start);
   m_starterPosition = Vector (x1, y1, z1);
 
-  m_phase = start.ReadU32 ();
-  m_slot = start.ReadU32 ();
-  m_senderInJunction = start.ReadU8 ();
-  m_junctionId = start.ReadU64 ();
+  m_phase                = start.ReadU32 ();
+  m_slot                 = start.ReadU32 ();
+  m_senderInJunction     = start.ReadU8 ();
+  m_junctionId           = start.ReadU64 ();
   uint32_t esdBitmapSize = start.ReadU32 ();
   ReadESDBitmap (&start, esdBitmapSize);
-  //		cout << "Deserialize m_type = " << m_type << " m_senderId " << m_senderId <<
-  //"coord= "
-  //				<< m_position << endl;
+
+  // cout << "Deserialize m_type = " << m_type << " m_senderId " << m_senderId
+  //      << "coord= " << m_position << endl;
+
   return GetSerializedSize ();
 }
 

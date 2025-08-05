@@ -1,9 +1,9 @@
 #ifndef TRANSMISSIONLIST_H
 #define TRANSMISSIONLIST_H
 
-#include <vector>
-#include <map>
 #include "KeyableVector.h"
+#include <map>
+#include <vector>
 
 using namespace std;
 

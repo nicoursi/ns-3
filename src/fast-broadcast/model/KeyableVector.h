@@ -15,7 +15,7 @@ public:
   KeyableVector (Vector v);
   bool operator< (const KeyableVector& v) const;
   bool operator== (const KeyableVector& v) const;
-  //	bool operator !=(const KeyableVector& v) const;
+  // bool operator!= (const KeyableVector& v) const;
 };
 } // namespace ns3
 

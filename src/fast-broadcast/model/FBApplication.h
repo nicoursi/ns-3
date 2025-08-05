@@ -35,7 +35,7 @@ using namespace std;
 namespace ns3
 {
 
-static const uint32_t PROTOCOL_FB = 0;
+static const uint32_t PROTOCOL_FB         = 0;
 static const uint32_t PROTOCOL_STATIC_100 = 100;
 static const uint32_t PROTOCOL_STATIC_300 = 300;
 static const uint32_t PROTOCOL_STATIC_500 = 500;
@@ -80,7 +80,7 @@ public:
                         uint32_t actualRange,
                         uint32_t aoi,
                         uint32_t aoi_error,
-                        bool flooding,
+                        bool     flooding,
                         uint32_t cwMin,
                         uint32_t cwMax,
                         uint32_t printCoords,
@@ -99,12 +99,12 @@ public:
    * \param intersectionId id of the intersection the node is inside, 0 if none
    * \return none
    */
-  void AddNode (Ptr<Node> node,
+  void AddNode (Ptr<Node>   node,
                 Ptr<Socket> source,
                 Ptr<Socket> sink,
-                bool onstats,
-                bool isNodeInJunction,
-                uint64_t junctionId = 0);
+                bool        onstats,
+                bool        isNodeInJunction,
+                uint64_t    junctionId = 0);
 
   /**
    * \brief Print value of some useful field
@@ -207,9 +207,9 @@ private:
    * \return none
    */
   void ForwardAlertMessage (Ptr<FBNode> fbNode,
-                            FBHeader oldFBHeader,
-                            uint32_t waitingTime,
-                            bool forceSend);
+                            FBHeader    oldFBHeader,
+                            uint32_t    waitingTime,
+                            bool        forceSend);
 
   /**
    * \brief Stop a node
@@ -263,15 +263,15 @@ private:
 
 private:
   std::map<uint32_t, Time> m_messageSentTimes; //  map for tracking message sent times
-  uint32_t m_nNodes;                           // number of nodes
-  vector<Ptr<FBNode>> m_nodes;                 // nodes that run this application
-  map<uint32_t, uint32_t> m_id2id;             // map node id with index in m_nodes
-  uint32_t m_startingNode; // index of the node that will generate the Alert Message
-  bool m_staticProtocol;   // true if static protocol is used
+  uint32_t                 m_nNodes;           // number of nodes
+  vector<Ptr<FBNode>>      m_nodes;            // nodes that run this application
+  map<uint32_t, uint32_t>  m_id2id;            // map node id with index in m_nodes
+  uint32_t m_startingNode;   // index of the node that will generate the Alert Message
+  bool     m_staticProtocol; // true if static protocol is used
   uint32_t m_broadcastPhaseStart; // broadcast phase start time (seconds)
   uint32_t m_cwMin;               // min size of the contention window (in slot)
   uint32_t m_cwMax;               // max size of the contention window (in slot)
-  bool m_flooding;                // used for control the flooding of the Alert messages
+  bool     m_flooding;            // used for control the flooding of the Alert messages
   uint32_t m_actualRange;         // real transmission range
   uint32_t m_estimatedRange;      // range of transmission to be estimated
   uint32_t m_aoi;                 // radius of the area of interest (meters)
@@ -286,19 +286,19 @@ private:
   Ptr<UniformRandomVariable> m_randomVariable;
   uint32_t
     m_forgedCoordRate; // % of nodes which receive forged hello messages with fake coords
-  uint32_t m_droneTest;
-  uint32_t m_collisions;            // number of collisions
-  vector<uint32_t> m_receivedNodes; // ids of nodes which have received alert messages,
-                                    // duplicates allowed
-  uint32_t m_printCoords;           // 1 to print coordinates, 0 otherwise
-  uint32_t m_vehicleDistance;       // distance between vehicles
+  uint32_t         m_droneTest;
+  uint32_t         m_collisions;      // number of collisions
+  vector<uint32_t> m_receivedNodes;   // ids of nodes which have received alert messages,
+                                      // duplicates allowed
+  uint32_t         m_printCoords;     // 1 to print coordinates, 0 otherwise
+  uint32_t         m_vehicleDistance; // distance between vehicles
   map<uint32_t, vector<uint32_t>>
-    m_transmissionList;              // list to discover path of alert messages
+               m_transmissionList;   // list to discover path of alert messages
   vector<Edge> m_transmissionVector; // vector to discover paths of alert messages (single
                                      // broadcasts ordered by time of reception)
 
-  //	TransmissionList						m_transmissionList; //list to discover path of alert
-  //messages 	int													counter = 0;
+  // TransmissionList m_transmissionList; // list to discover path of alert
+  // messages int     counter = 0;
 };
 
 } // namespace ns3

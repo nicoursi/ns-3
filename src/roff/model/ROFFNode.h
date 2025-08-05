@@ -33,11 +33,11 @@ public:
   ROFFNode ();
 
 
-  ROFFNode (Ptr<Node> node,
+  ROFFNode (Ptr<Node>   node,
             Ptr<Socket> socket,
-            bool isNodeInJunction = false,
-            uint64_t junctionId = 0,
-            bool amIaVehicle = true);
+            bool        isNodeInJunction = false,
+            uint64_t    junctionId       = 0,
+            bool        amIaVehicle      = true);
 
   //	Getters
   Ptr<Node> GetNode () const;
@@ -124,8 +124,8 @@ public:
   boost::dynamic_bitset<> GetESDBitmap (uint32_t distanceRange) const;
 
   Vector GetCoordsOfVehicleInRange (PositionRankingKey range,
-                                    Vector senderCoords,
-                                    int32_t& dist) const;
+                                    Vector             senderCoords,
+                                    int32_t&           dist) const;
 
   bool IsNodeWinnerInContention (uint32_t dist, Vector pos) const;
 
@@ -133,23 +133,23 @@ public:
 
 
 private:
-  Ptr<Node> m_node;     // ns-3 node
-  Ptr<Socket> m_socket; // ns-3 socket
+  Ptr<Node>     m_node;   // ns-3 node
+  Ptr<Socket>   m_socket; // ns-3 socket
   NeighborTable m_neighborTable;
-  bool m_received; // whether the node has received an alert message
-  bool m_sent;     // whether the node has sent an alert message
+  bool          m_received; // whether the node has received an alert message
+  bool          m_sent;     // whether the node has sent an alert message
   bool
     m_scheduled;   // whether the node has already scheduled a forward of an alert message
   int32_t m_phase; // latest phase heard by the node
-  Vector m_position; // position of node
+  Vector  m_position; // position of node
   uint32_t
     m_slot;       // number of slots waited before the node has received the alert message
   uint32_t m_hop; // number of hops before the alert message reached this node
-  Time m_timestamp;      // time of reception of alert message
-  bool m_amIaVehicle;    // used for statistics
-  bool m_amIInJunction;  // whether the node is inside a junction
-  uint64_t m_junctionId; // id of the junction where the node is
-  bool m_stopSending;
+  Time     m_timestamp;     // time of reception of alert message
+  bool     m_amIaVehicle;   // used for statistics
+  bool     m_amIInJunction; // whether the node is inside a junction
+  uint64_t m_junctionId;    // id of the junction where the node is
+  bool     m_stopSending;
 };
 
 } // namespace ns3

@@ -8,15 +8,14 @@
 #ifndef ROFFAPPLICATION_H
 #define ROFFAPPLICATION_H
 
+#include "PositionRankingMap.h"
 #include "ROFFHeader.h"
 #include "ROFFNode.h"
-#include "ns3/vanets-utils-module.h"
 #include "ns3/application.h"
-#include "ns3/network-module.h"
 #include "ns3/core-module.h"
-#include "ns3/network-module.h"
 #include "ns3/mobility-module.h"
-#include "PositionRankingMap.h"
+#include "ns3/network-module.h"
+#include "ns3/vanets-utils-module.h"
 #include <boost/dynamic_bitset.hpp>
 
 namespace ns3
@@ -71,12 +70,12 @@ public:
    * \param onstats if this node is a vehicle
    * \return none
    */
-  void AddNode (Ptr<Node> node,
+  void AddNode (Ptr<Node>   node,
                 Ptr<Socket> source,
                 Ptr<Socket> sink,
-                bool onstats,
-                bool isNodeInJunction,
-                uint64_t junctionId = 0);
+                bool        onstats,
+                bool        isNodeInJunction,
+                uint64_t    junctionId = 0);
 
   /**
    * \brief Print value of some useful field
@@ -168,9 +167,9 @@ private:
    * \return none
    */
   void ForwardAlertMessage (Ptr<ROFFNode> node,
-                            ROFFHeader oldHeader,
-                            uint32_t waitingTime,
-                            bool forceSend);
+                            ROFFHeader    oldHeader,
+                            uint32_t      waitingTime,
+                            bool          forceSend);
 
   /**
    * \brief Stop a node
@@ -187,17 +186,17 @@ private:
    * \return the value of the contention window
    */
 
-  uint32_t ComputeWaitingTime (Ptr<ROFFNode> node,
-                               uint32_t distSenderToNode,
+  uint32_t ComputeWaitingTime (Ptr<ROFFNode>      node,
+                               uint32_t           distSenderToNode,
                                PositionRankingMap rankingMap,
-                               uint32_t priority);
+                               uint32_t           priority);
 
   uint32_t ComputeMinDiff (uint32_t distSenderToNode, uint32_t distSenderToAnotherNode);
 
-  uint32_t ComputeWaitingTimeArmir (Ptr<ROFFNode> node,
-                                    Vector senderCoords,
+  uint32_t ComputeWaitingTimeArmir (Ptr<ROFFNode>      node,
+                                    Vector             senderCoords,
                                     PositionRankingMap rankingMap,
-                                    uint32_t priority);
+                                    uint32_t           priority);
 
   uint32_t ComputeMinDiffArmir (Vector fwdCoords,
                                 Vector lowerPriorityNodeCoords,
@@ -246,14 +245,14 @@ private:
   map<uint32_t, Ptr<ROFFNode>> m_nodes; // nodes that run this application
 
   //	Output data
-  uint32_t m_received;              // number of hello messages sent
-  uint32_t m_sent;                  // // number of alert messages sent
-  uint32_t m_collisions;            // number of collisions
+  uint32_t         m_received;      // number of hello messages sent
+  uint32_t         m_sent;          // // number of alert messages sent
+  uint32_t         m_collisions;    // number of collisions
   vector<uint32_t> m_receivedNodes; // ids of nodes which have received alert messages,
                                     // duplicates allowed
-  uint32_t m_printCoords;           // 1 to print coordinates, 0 otherwise
+  uint32_t         m_printCoords;   // 1 to print coordinates, 0 otherwise
   map<uint32_t, vector<uint32_t>>
-    m_transmissionList;              // list to discover path of alert messages
+               m_transmissionList;   // list to discover path of alert messages
   vector<Edge> m_transmissionVector; // vector to discover paths of alert messages (single
                                      // broadcasts ordered by time of reception)
 };

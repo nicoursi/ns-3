@@ -1,7 +1,7 @@
 #include "command-logger.h"
+#include "ns3/log.h"
 #include <boost/filesystem.hpp>
 #include <fstream>
-#include "ns3/log.h"
 #include <string>
 
 NS_LOG_COMPONENT_DEFINE ("CommandLogger");

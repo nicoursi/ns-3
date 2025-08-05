@@ -213,24 +213,24 @@ FBHeader::Deserialize (Buffer::Iterator start)
 {
   NS_LOG_FUNCTION (this);
   Buffer::Iterator i = start;
-  uint32_t x, y, z;
+  uint32_t         x, y, z;
 
-  x = i.ReadU64 ();
-  y = i.ReadU64 ();
-  z = i.ReadU64 ();
-  m_position = Vector (x, y, z);
-  x = i.ReadU64 ();
-  y = i.ReadU64 ();
-  z = i.ReadU64 ();
+  x                 = i.ReadU64 ();
+  y                 = i.ReadU64 ();
+  z                 = i.ReadU64 ();
+  m_position        = Vector (x, y, z);
+  x                 = i.ReadU64 ();
+  y                 = i.ReadU64 ();
+  z                 = i.ReadU64 ();
   m_starterPosition = Vector (x, y, z);
-  m_maxRange = i.ReadU32 ();
-  m_type = i.ReadU32 ();
-  m_slot = i.ReadU32 ();
-  m_phase = i.ReadU32 ();
+  m_maxRange        = i.ReadU32 ();
+  m_type            = i.ReadU32 ();
+  m_slot            = i.ReadU32 ();
+  m_phase           = i.ReadU32 ();
 
-  m_senderId = i.ReadU32 ();
+  m_senderId         = i.ReadU32 ();
   m_senderInJunction = i.ReadU8 ();
-  m_junctionId = i.ReadU64 ();
+  m_junctionId       = i.ReadU64 ();
 
   return GetSerializedSize ();
 }

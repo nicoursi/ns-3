@@ -212,15 +212,15 @@ public:
   virtual void Print (std::ostream& os) const;
 
 private:
-  Vector m_position;
-  Vector m_starterPosition;
+  Vector   m_position;
+  Vector   m_starterPosition;
   uint32_t m_maxRange;
   uint32_t m_type;
   uint32_t m_slot;
   uint32_t m_phase;
 
   uint32_t m_senderId;
-  uint8_t m_senderInJunction;
+  uint8_t  m_senderInJunction;
   uint64_t m_junctionId;
 };
 

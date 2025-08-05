@@ -22,10 +22,10 @@
 
 #include "ns3/core-module.h"
 #include "ns3/log.h"
-#include "ns3/node-list.h"
 #include "ns3/mobility-model.h"
-#include "ns3/socket.h"
+#include "ns3/node-list.h"
 #include "ns3/packet.h"
+#include "ns3/socket.h"
 
 
 namespace ns3
@@ -364,7 +364,7 @@ FBNode::SetSendTimestamp (Time t)
 {
   if (!m_sendTimestampSet)
     {
-      m_sendTimestamp = t;
+      m_sendTimestamp    = t;
       m_sendTimestampSet = true;
     }
 }

@@ -18,10 +18,10 @@
 
 #include "csv-manager.h"
 #include "ns3/log.h"
-#include <sys/time.h>
+#include <fstream>
 #include <iostream>
 #include <random>
-#include <fstream>
+#include <sys/time.h>
 
 namespace ns3
 {
@@ -75,12 +75,12 @@ CSVManager::WriteHeader (std::string header)
 std::string
 CSVManager::GenerateRandomTag ()
 {
-  static const char charset[] = "abcdefghijklmnopqrstuvwxyz"
-                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                "0123456789";
-  std::default_random_engine rng (std::random_device{}());
+  static const char               charset[] = "abcdefghijklmnopqrstuvwxyz"
+                                              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                              "0123456789";
+  std::default_random_engine      rng (std::random_device{}());
   std::uniform_int_distribution<> dist (0, sizeof (charset) - 2);
-  std::string tag;
+  std::string                     tag;
   for (int i = 0; i < 4; ++i)
     {
       tag += charset[dist (rng)];
@@ -102,7 +102,7 @@ CSVManager::EnableAlternativeFilename (boost::filesystem::path path)
   // Create the new filename
   std::string finalPartOfPath =
     "-" + std::to_string (ms) + "-" + GenerateRandomTag () + extension;
-  m_csvFilePath = path;
+  m_csvFilePath  = path;
   m_csvFilePath += finalPartOfPath;
   std::cout << "CSV File Path = " << m_csvFilePath << std::endl;
 }

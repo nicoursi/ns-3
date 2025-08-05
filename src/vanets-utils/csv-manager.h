@@ -20,9 +20,9 @@
 #define CSV_MANAGER_H
 
 #include "ns3/core-module.h"
-#include <string>
-#include <sstream>
 #include <boost/filesystem.hpp>
+#include <sstream>
+#include <string>
 
 namespace ns3
 {
@@ -141,8 +141,8 @@ public:
 
 private:
   boost::filesystem::path m_csvFilePath; //!< Path to the CSV file
-  std::stringstream m_currentRow;        //!< Current row being built
-  unsigned int runId;                    //!< ID of the current run
+  std::stringstream       m_currentRow;  //!< Current row being built
+  unsigned int            runId;         //!< ID of the current run
 };
 
 } // namespace ns3

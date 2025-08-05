@@ -8,8 +8,8 @@
 #ifndef NBTENTRY
 #define NBTENTRY
 
-#include "ns3/vector.h"
 #include "ns3/nstime.h"
+#include "ns3/vector.h"
 
 using namespace std;
 
@@ -32,8 +32,8 @@ public:
   void SetTimeStamp (Time timeStamp);
 
 private:
-  Vector m_position; // node's position
-  Time m_timeStamp;  // last time the entry was updated
+  Vector m_position;  // node's position
+  Time   m_timeStamp; // last time the entry was updated
 };
 } // namespace ns3
 

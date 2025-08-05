@@ -24,9 +24,9 @@
 #include "ns3/core-module.h"
 #include "ns3/node.h"
 #include "ns3/object.h"
-#include "ns3/vector.h"
-#include "ns3/socket.h"
 #include "ns3/packet.h"
+#include "ns3/socket.h"
+#include "ns3/vector.h"
 
 
 namespace ns3
@@ -286,28 +286,28 @@ public:
    */
   void SetReceiveTimestampSet (bool value);
 
-  uint32_t m_id;           // node id
-  Ptr<Node> m_node;        // ns-3 node
-  Ptr<Socket> m_socket;    // ns-3 socket
-  uint32_t m_CMFR;         // Current Maximum Front Range
-  uint32_t m_LMFR;         // Last Maximum Front Range
-  uint32_t m_CMBR;         // Current Maximum Back Range
-  uint32_t m_LMBR;         // Last Maximum Back Range
-  Vector m_position;       // node current position
-  uint32_t m_hop;          // number of hops before the alert message reached this node
-  int32_t m_phase;         // legacy with barichello's code
-  uint32_t m_slot;         // legacy with barichello's code
-  bool m_received;         // legacy with barichello's code
-  bool m_sent;             // legacy with barichello's code
-  Time m_sendTimestamp;    // Timestamp when the node sends the message
-  Time m_receiveTimestamp; // Timestamp when the node receives the message
-  bool m_receiveTimestampSet;
-  bool m_sendTimestampSet;
-  int64_t m_propTimeUs;  // propagation time in microseconds
-  bool m_amIaVehicle;    // used for statistics
-  bool m_amIInJunction;  // whether the node is inside a junction
-  uint64_t m_junctionId; // id of the junction where the node is
-  bool m_stopSending;
+  uint32_t    m_id;       // node id
+  Ptr<Node>   m_node;     // ns-3 node
+  Ptr<Socket> m_socket;   // ns-3 socket
+  uint32_t    m_CMFR;     // Current Maximum Front Range
+  uint32_t    m_LMFR;     // Last Maximum Front Range
+  uint32_t    m_CMBR;     // Current Maximum Back Range
+  uint32_t    m_LMBR;     // Last Maximum Back Range
+  Vector      m_position; // node current position
+  uint32_t    m_hop;      // number of hops before the alert message reached this node
+  int32_t     m_phase;    // legacy with barichello's code
+  uint32_t    m_slot;     // legacy with barichello's code
+  bool        m_received; // legacy with barichello's code
+  bool        m_sent;     // legacy with barichello's code
+  Time        m_sendTimestamp;    // Timestamp when the node sends the message
+  Time        m_receiveTimestamp; // Timestamp when the node receives the message
+  bool        m_receiveTimestampSet;
+  bool        m_sendTimestampSet;
+  int64_t     m_propTimeUs;    // propagation time in microseconds
+  bool        m_amIaVehicle;   // used for statistics
+  bool        m_amIInJunction; // whether the node is inside a junction
+  uint64_t    m_junctionId;    // id of the junction where the node is
+  bool        m_stopSending;
 };
 
 } // namespace ns3

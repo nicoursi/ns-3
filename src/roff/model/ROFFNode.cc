@@ -30,11 +30,11 @@ ROFFNode::ROFFNode () :
   NS_LOG_FUNCTION (this);
 }
 
-ROFFNode::ROFFNode (Ptr<Node> node,
+ROFFNode::ROFFNode (Ptr<Node>   node,
                     Ptr<Socket> socket,
-                    bool isNodeInJunction,
-                    uint64_t junctionId,
-                    bool amIaVehicle) :
+                    bool        isNodeInJunction,
+                    uint64_t    junctionId,
+                    bool        amIaVehicle) :
   m_node (node),
   m_socket (socket),
   m_neighborTable (),
@@ -261,8 +261,8 @@ ROFFNode::GetESDBitmap (uint32_t distanceRange) const
 
 Vector
 ROFFNode::GetCoordsOfVehicleInRange (PositionRankingKey range,
-                                     Vector senderCoords,
-                                     int32_t& dist) const
+                                     Vector             senderCoords,
+                                     int32_t&           dist) const
 {
   return m_neighborTable.GetCoordsOfVehicleInRange (range, senderCoords, dist);
 }

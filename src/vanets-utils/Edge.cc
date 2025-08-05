@@ -7,11 +7,12 @@
 
 #include "Edge.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 
-Edge::Edge (uint32_t source, uint32_t destination, uint32_t phase)
-  : m_source (source),
+Edge::Edge (uint32_t source, uint32_t destination, uint32_t phase) :
+  m_source (source),
   m_destination (destination),
   m_phase (phase)
 {
@@ -59,7 +60,7 @@ Edge::SetPhase (uint32_t phase)
 ostream&
 operator<< (std::ostream& stream, const Edge& edge)
 {
-  //	cout << "ostream Edge" << endl;
+  // cout << "ostream Edge" << endl;
   stream << edge.GetSource () << "-" << edge.GetDestination () << "*" << edge.GetPhase ();
   return stream;
 }

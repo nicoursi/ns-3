@@ -14,27 +14,26 @@ NS_LOG_COMPONENT_DEFINE ("PositionRankingMap");
 
 NS_OBJECT_ENSURE_REGISTERED (PositionRankingMap);
 
-//	PositionRankingMap::PositionRankingMap() {}
+// PositionRankingMap::PositionRankingMap() {}
 
 PositionRankingMap::PositionRankingMap (uint32_t distRange) :
   m_distanceRange (distRange)
 {
 }
 
-PositionRankingMap::PositionRankingMap (uint32_t distRange,
+PositionRankingMap::PositionRankingMap (uint32_t                distRange,
                                         boost::dynamic_bitset<> esdBitmap) :
   m_distanceRange (distRange)
 {
   uint32_t priority = 1;
   for (uint32_t i = 0; i < esdBitmap.size (); i++)
     {
-      //			cout << "PositionRankingMap::PositionRankingMap bmpSize= " <<
-      // esdBitmap.size() << 					" i= " << i << endl;
+      // cout << "PositionRankingMap::PositionRankingMap bmpSize= " << esdBitmap.size ()
+      //      << " i= " << i << endl;
       if (esdBitmap[i] == 1)
         {
           uint32_t index = esdBitmap.size () - i - 1;
-          //				cout << "PositionRankingMap::PositionRankingMap index= " << index <<
-          // endl;
+          // cout << "PositionRankingMap::PositionRankingMap index= " << index << endl;
           AddEntry (index, priority);
           priority++;
         }
@@ -44,11 +43,11 @@ PositionRankingMap::PositionRankingMap (uint32_t distRange,
 void
 PositionRankingMap::AddEntry (uint32_t index, uint32_t priority)
 {
-  uint32_t lowerDistanceLimit = index * m_distanceRange;
-  uint32_t upperDistanceLimit = (index + 1) * m_distanceRange - 1;
+  uint32_t           lowerDistanceLimit = index * m_distanceRange;
+  uint32_t           upperDistanceLimit = (index + 1) * m_distanceRange - 1;
   PositionRankingKey rankingKey (lowerDistanceLimit, upperDistanceLimit);
-  //	cout << "PositionRankingMap::AddEntry lowerDistanceLimit = " << lowerDistanceLimit
-  //<< 			"upperDistanceLimit= " << upperDistanceLimit << endl;
+  // cout << "PositionRankingMap::AddEntry lowerDistanceLimit = " << lowerDistanceLimit
+  //      << "upperDistanceLimit= " << upperDistanceLimit << endl;
   m_positionRanking[rankingKey] = priority;
 }
 
