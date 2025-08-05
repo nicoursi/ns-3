@@ -9,7 +9,7 @@ The following components have been added or modified:
 
 2) Integrated obstacle shadowing model for more realistic signal propagation in presence of buildings.
 
-3) Mobility helper updated with full support for 3D coordinates.
+3) Mobility helper updated with movement disabling support
 
 4) New vanets-utils module providing utility classes shared across different VANET components.
 
