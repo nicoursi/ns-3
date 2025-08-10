@@ -56,7 +56,7 @@ using namespace std;
 NS_LOG_COMPONENT_DEFINE ("roff-test");
 
 /* -----------------------------------------------------------------------------
- *			CLASS AND METHODS PROTOTIPES
+ *			CLASS AND METHODS PROTOTYPES
  * ------------------------------------------------------------------------------
  */
 
@@ -151,6 +151,11 @@ public:
    * \return maxRun
    */
   uint32_t GetMaxRun () const;
+
+  /**
+   * \brief constant value for and unset Transmission power
+   */
+  const double TX_POWER_UNSET = std::numeric_limits<double>::quiet_NaN ();
 
 protected:
   /**
@@ -326,7 +331,7 @@ ROFFVanetExperiment::ROFFVanetExperiment () :
   m_packetSize ("68"), // added
   m_rate ("2048bps"),
   m_phyMode ("DsssRate11Mbps"),
-  m_txp (20),
+  m_txp (TX_POWER_UNSET),
   m_port (9),
   m_actualRange (300),
   m_startingNode (-1),
@@ -412,9 +417,8 @@ ROFFVanetExperiment::ProcessOutputs ()
   m_roffApplication->PrintStats (dataStream);
   if (m_printToFile)
     {
-      g_csvData.AddValue ((int)0); // scenario
+      g_csvData.AddValue (m_txp);
       g_csvData.AddValue ((int)m_actualRange);
-      g_csvData.AddValue ((int)0); // staticProtocol
       g_csvData.AddValue ((int)m_loadBuildings);
       g_csvData.AddValue ((int)m_nNodes);
       g_csvData.AddMultipleValues (dataStream);
@@ -608,30 +612,42 @@ ROFFVanetExperiment::SetupAdhocDevices ()
     }
   wifiPhy.SetChannel (wifiChannel.Create ());
   wifiPhy.SetPcapDataLinkType (YansWifiPhyHelper::DLT_IEEE802_11);
-  if (m_actualRange == 100)
+  // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely
+  // ignored
+  if (std::isnan (m_txp))
     {
-      //		m_txp = -7.0;
-      m_txp = -5.5; // after incremental calibration tests
-    }
-  else if (m_actualRange == 300)
-    {
-      //		m_txp = 4.6;
-      m_txp = 3.8; // after incremental calibration tests
-    }
-  else if (m_actualRange == 500)
-    {
-      //		m_txp = 13.4;
-      m_txp = 10.0; // after incremental calibration tests
-    }
-  else if (m_actualRange == 700)
-    {
+      if (m_actualRange == 100)
+        {
+          // m_txp = -8.4; // first value that sort of works with 500
+          // m_txp = -7.7; // fist value that seems to work with 100m
+          m_txp = -5.2; // + 2.5 after incremental calibration tests
+          // m_txp = -7.0; // original value
+        }
+      else if (m_actualRange == 300)
+        {
+          // m_txp = 0.0; // first value that sort of works with 300
+          // m_txp = 1.1; // fist value that seems to work with 300m
+          m_txp = 4.6; // + 3.5 after incremental calibration tests
+          // m_txp = 4.6; // 11.6 dB gain compared to 100m
+        }
+      else if (m_actualRange == 500)
+        {
+          // m_txp = 6.3;  // first value that sort of works with 500
+          // m_txp = 7.4;  // fist value that seems to work with 500m
+          m_txp = 11.2; // + 3.8 after incremental calibration tests
+          // m_txp = 13.4; // 8.8 dB gain (2.8 dB less than 300m)
+          // m_txp = 16.2; // keeping 11.6 gain
+        }
       // clang-format off
-      // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
-      // decreases by 2.8 dB each step:
-      // (8.8 - (11.6-8.8)) + 13.4
+      else if (m_actualRange == 700) // 6 dB gain   (2.8 dB less than 500m)
+      { 
+        // m_txp = 12.2; // first value that sort of works with 700m
+        m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
+        // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
+                        //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
+        // m_txp = 27.8; // keeping 11.6 gain
+      }
       // clang-format on
-      m_txp =
-        13.3; // fist value that seems to work with 700m and keeps stable after tests
     }
 
   WifiMacHelper wifiMac;
@@ -640,6 +656,7 @@ ROFFVanetExperiment::SetupAdhocDevices ()
                                 StringValue (m_phyMode),
                                 "ControlMode",
                                 StringValue (m_phyMode));
+  cout << "m_txp used is: " << m_txp << "dB" << endl;
   wifiPhy.Set ("TxPowerStart", DoubleValue (m_txp));
   wifiPhy.Set ("TxPowerEnd", DoubleValue (m_txp));
 
@@ -791,11 +808,13 @@ ROFFVanetExperiment::CommandSetup (int argc, char* argv[])
                 "Id of the first node who will start an alert",
                 m_startingNode);
   cmd.AddValue ("actualRange",
-                "Actual transimision range (meters) [100, 300, 500, 700]",
+                "Actual transmission range (meters) [100, 300, 500, 700]",
                 m_actualRange);
-
+  cmd.AddValue ("txPower",
+                "Transmission power, in dB,  used for the actual range provided",
+                m_txp);
   // cmd.AddValue ("protocol",
-  //               "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500",
+  //               "Estimation protocol: 1=FB, 2=C100, 3=C300, 4=C500",
   //               m_staticProtocol);
   // cmd.AddValue ("flooding",
   //               "Enable flooding",
@@ -1164,48 +1183,35 @@ main (int argc, char* argv[])
     {
       string filePath = experiment.CalculateOutFilePath ();
       string additionalPath;
-      string header;
+      string header = "\"Run id\",\"Tx Power\",\"Actual Range\","
+                      "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                      "\"Total coverage\",\"Coverage on circ\","
+                      "\"Alert received mean time\",\"Hops\",\"Slots\","
+                      "\"Messages sent\",\"Messages received\"";
 
       if (experiment.GetPrintCoords ())
         {
           additionalPath = "/simulations/scenario-urbano-con-coord/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\",\"Starting x\","
-                           "\"Starting y\",\"Starting node\",\"Vehicle distance\","
-                           "\"Received node ids\",\"Node ids\",\"Transmission map\","
-                           "\"Received on circ nodes\",\"Transmission vector\"";
+          header         = header + ",\"Starting x\","
+                                    "\"Starting y\",\"Starting node\",\"Vehicle distance\","
+                                    "\"Received node ids\",\"Node ids\",\"Transmission map\","
+                                    "\"Received on circ nodes\",\"Transmission vector\"";
         }
       else if (experiment.GetHighBuildings ())
         {
           additionalPath = "/simulations/scenario-droni-high/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\",\"Max distance\","
-                           "\"Reached maxDist node\",\"Vehicles cover\"";
+          header         = header + ",\"Max distance\","
+                                    "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else if (experiment.GetDroneTest ())
         {
           additionalPath = "/simulations/scenario-droni/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\",\"Max distance\","
-                           "\"Reached maxDist node\",\"Vehicles cover\"";
+          header         = header + ",\"Max distance\","
+                                    "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else
         {
           additionalPath = "/simulations/scenario-urbano/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\"";
         }
 
       // header =

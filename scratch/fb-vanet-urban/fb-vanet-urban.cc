@@ -35,6 +35,7 @@
 #include <fstream>
 #include <iomanip> // for put_time
 #include <iostream>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <sys/time.h>
@@ -58,7 +59,7 @@ using namespace std;
 NS_LOG_COMPONENT_DEFINE ("fb-vanet-urban");
 
 /* -----------------------------------------------------------------------------
- *			CLASS AND METHODS PROTOTIPES
+ *			CLASS AND METHODS PROTOTYPES
  * ------------------------------------------------------------------------------
  */
 
@@ -158,6 +159,11 @@ public:
    * \return maxRun
    */
   uint32_t GetMaxRun () const;
+
+  /**
+   * \brief constant value for and unset Transmission power
+   */
+  const double TX_POWER_UNSET = std::numeric_limits<double>::quiet_NaN ();
 
 protected:
   /**
@@ -334,7 +340,7 @@ FBVanetExperiment::FBVanetExperiment () :
   m_packetSize ("68"), // added
   m_rate ("2048bps"),
   m_phyMode ("DsssRate11Mbps"),
-  m_txp (20),
+  m_txp (TX_POWER_UNSET),
   m_port (9),
   m_actualRange (300),
   m_startingNode (-1),
@@ -420,9 +426,8 @@ FBVanetExperiment::ProcessOutputs ()
   m_fbApplication->PrintStats (dataStream);
   if (m_printToFile)
     {
-      g_csvData.AddValue ((int)m_scenario);
+      g_csvData.AddValue (m_txp);
       g_csvData.AddValue ((int)m_actualRange);
-      g_csvData.AddValue ((int)m_staticProtocol);
       g_csvData.AddValue ((int)m_loadBuildings);
       g_csvData.AddValue ((int)m_nNodes);
       g_csvData.AddMultipleValues (dataStream);
@@ -665,37 +670,40 @@ FBVanetExperiment::SetupAdhocDevices ()
 
   // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely
   // ignored
-  if (m_actualRange == 100)
+  if (std::isnan (m_txp))
     {
-      // m_txp = -8.4; // first value that sort of works with 500
-      // m_txp = -7.7; // fist value that seems to work with 100m
-      m_txp = -5.2; // + 2.5 after incremental calibration tests
-      // m_txp = -7.0; // original value
-    }
-  else if (m_actualRange == 300)
-    {
-      // m_txp = 0.0; // first value that sort of works with 300
-      // m_txp = 1.1; // fist value that seems to work with 300m
-      m_txp = 4.6; // + 3.5 after incremental calibration tests
-      // m_txp = 4.6; // 11.6 dB gain compared to 100m
-    }
-  else if (m_actualRange == 500)
-    {
-      // m_txp = 6.3;  // first value that sort of works with 500
-      // m_txp = 7.4;  // fist value that seems to work with 500m
-      m_txp = 11.2; // + 3.8 after incremental calibration tests
-      // m_txp = 13.4; // 8.8 dB gain (2.8 dB less than 300m)
-      // m_txp = 16.2; // keeping 11.6 gain
-    }
-  // clang-format off
-  else if (m_actualRange == 700) // 6 dB gain   (2.8 dB less than 500m)
-    { 
-      // m_txp = 12.2; // first value that sort of works with 700m
-      m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
-      // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
-                      //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
-      // m_txp = 27.8; // keeping 11.6 gain
-    }
+      if (m_actualRange == 100)
+        {
+          // m_txp = -8.4; // first value that sort of works with 500
+          // m_txp = -7.7; // fist value that seems to work with 100m
+          m_txp = -5.2; // + 2.5 after incremental calibration tests
+          // m_txp = -7.0; // original value
+        }
+      else if (m_actualRange == 300)
+        {
+          // m_txp = 0.0; // first value that sort of works with 300
+          // m_txp = 1.1; // fist value that seems to work with 300m
+          m_txp = 4.6; // + 3.5 after incremental calibration tests
+          // m_txp = 4.6; // 11.6 dB gain compared to 100m
+        }
+      else if (m_actualRange == 500)
+        {
+          // m_txp = 6.3;  // first value that sort of works with 500
+          // m_txp = 7.4;  // fist value that seems to work with 500m
+          m_txp = 11.2; // + 3.8 after incremental calibration tests
+          // m_txp = 13.4; // 8.8 dB gain (2.8 dB less than 300m)
+          // m_txp = 16.2; // keeping 11.6 gain
+        }
+      // clang-format off
+      else if (m_actualRange == 700) // 6 dB gain   (2.8 dB less than 500m)
+      { 
+        // m_txp = 12.2; // first value that sort of works with 700m
+        m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
+        // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
+                        //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
+        // m_txp = 27.8; // keeping 11.6 gain
+      }
+}
   // clang-format on
 
   WifiMacHelper wifiMac;
@@ -704,6 +712,8 @@ FBVanetExperiment::SetupAdhocDevices ()
                                 StringValue (m_phyMode),
                                 "ControlMode",
                                 StringValue (m_phyMode));
+
+  cout << "m_txp used is: " << m_txp << "dB" << endl;
   wifiPhy.Set ("TxPowerStart", DoubleValue (m_txp));
   wifiPhy.Set ("TxPowerEnd", DoubleValue (m_txp));
 
@@ -975,60 +985,41 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
                 "Maximum number of simulation runs",
                 m_maxRun);
   cmd.AddValue ("startingNode",
-                "Id of the first node who will start an aler",
+                "Id of the first node who will start an alert",
                 m_startingNode);
   cmd.AddValue ("actualRange",
-                "Actual transimision range (meters)",
-                m_actualRange);
+                "Actual transmission range (meters)",
+                m_actualRange);  
+  cmd.AddValue ("txPower",
+                "Transmission power, in dB,  used for the actual range provided",
+                m_txp); 
   cmd.AddValue ("protocol",
-                "Estimantion protocol: 1=FB, 2=C100, 3=C300, 4=C500 5=C700",
+                "Estimation protocol: 1=FB, 2=C100, 3=C300, 4=C500 5=C700",
                 m_staticProtocol);
-  cmd.AddValue ("flooding",
-                "Enable flooding",
-                m_flooding);
+  cmd.AddValue ("flooding", "Enable flooding", m_flooding);
   cmd.AddValue ("alertGeneration",
                 "Time at which the first Alert Message should be generated.",
                 m_alertGeneration);
-  cmd.AddValue ("area",
-                "Radius of the area of interest",
-                m_areaOfInterest);
-  cmd.AddValue ("vehicleDistance",
-                "Distance between vehicles",
-                m_vehicleDistance);
+  cmd.AddValue ("area", "Radius of the area of interest", m_areaOfInterest);
+  cmd.AddValue ("vehicleDistance", "Distance between vehicles", m_vehicleDistance);
   //	cmd.AddValue ("scenario",
   //                "1=Padova, 2=Los Angeles",
   //                m_scenario);
-  cmd.AddValue ("buildings",
-                "Load building (obstacles)",
-                m_loadBuildings);
-  cmd.AddValue ("poly",
-                "Buildings trace file (poly format)",
-                m_bldgFile);
-  cmd.AddValue ("trace",
-                "Vehicles trace file (ns2mobility format)",
-                m_traceFile);
-  cmd.AddValue ("junctions",
-                "Junction file",
-                m_junctionFile);
-  cmd.AddValue ("totalTime",
-                "Simulation end time",
-                m_TotalSimTime);
-  cmd.AddValue ("cwMin",
-                "Minimum contention window",
-                m_cwMin);
-  cmd.AddValue ("cwMax",
-                "Maximum contention window",
-                m_cwMax);
+  cmd.AddValue ("buildings", "Load building (obstacles)", m_loadBuildings);
+  cmd.AddValue ("poly", "Buildings trace file (poly format)", m_bldgFile);
+  cmd.AddValue ("trace", "Vehicles trace file (ns2mobility format)", m_traceFile);
+  cmd.AddValue ("junctions", "Junction file", m_junctionFile);
+  cmd.AddValue ("totalTime", "Simulation end time", m_TotalSimTime);
+  cmd.AddValue ("cwMin", "Minimum contention window", m_cwMin);
+  cmd.AddValue ("cwMax", "Maximum contention window", m_cwMax);
   cmd.AddValue ("mapBasePath",
                 "Base path of map required for simulation "
                 "(e.g. ../maps/Padova",
                 m_mapBasePath);
-  cmd.AddValue ("printToFile",
-                "Print data to file or not: 0 not print, 1 print ",
-                m_printToFile);
-  cmd.AddValue ("printCoords",
-                "Print coords to file or not: 0 not print, 1 print ",
-                m_printCoords);
+  cmd.AddValue (
+    "printToFile", "Print data to file or not: 0 not print, 1 print ", m_printToFile);
+  cmd.AddValue (
+    "printCoords", "Print coords to file or not: 0 not print, 1 print ", m_printCoords);
   cmd.AddValue ("createObstacleShadowingLossFile",
                 "Create file which saves obstacle losses (dBm) keyed by "
                 "senderCoord, receiverCoord : 0 not create, 1 create ",
@@ -1047,15 +1038,15 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
                 "Probability to incur in an error in transmission schedule"
                 "(sending 1 slot earlier or later",
                 m_errorRate);
-  cmd.AddValue ("forgedCoordTest",
-                "Whether to run the forged hello messages attack test 0=disabled, 1=enabled",
-                m_forgedCoordTest);
+  cmd.AddValue (
+    "forgedCoordTest",
+    "Whether to run the forged hello messages attack test 0=disabled, 1=enabled",
+    m_forgedCoordTest);
   cmd.AddValue ("forgedCoordRate",
                 "Percentage of affected vehicle by forged hello messages attack",
                 m_forgedCoordRate);
-  cmd.AddValue ("nVehicles",
-                "Number of vehicles (to be used in drones+vehicles scenario",
-                m_nVeh);
+  cmd.AddValue (
+    "nVehicles", "Number of vehicles (to be used in drones+vehicles scenario", m_nVeh);
   cmd.AddValue ("droneTest",
                 "Whether to read drones from ns2mobilityFile and run test with drones",
                 m_droneTest);
@@ -1229,48 +1220,35 @@ main (int argc, char* argv[])
     {
       string filePath = experiment.CalculateOutFilePath ();
       string additionalPath;
-      string header;
+      string header = "\"Run id\",\"Tx Power\",\"Actual Range\","
+                      "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                      "\"Total coverage\",\"Coverage on circ\","
+                      "\"Alert received mean time\",\"Hops\",\"Slots\","
+                      "\"Messages sent\",\"Messages received\"";
 
       if (experiment.GetPrintCoords ())
         {
           additionalPath = "/simulations/scenario-urbano-con-coord/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\",\"Starting x\","
-                           "\"Starting y\",\"Starting node\",\"Vehicle distance\","
-                           "\"Received node ids\",\"Node ids\",\"Transmission map\","
-                           "\"Received on circ nodes\",\"Transmission vector\"";
+          header         = header + ",\"Starting x\","
+                                    "\"Starting y\",\"Starting node\",\"Vehicle distance\","
+                                    "\"Received node ids\",\"Node ids\",\"Transmission map\","
+                                    "\"Received on circ nodes\",\"Transmission vector\"";
         }
       else if (experiment.GetHighBuildings ())
         {
           additionalPath = "/simulations/scenario-droni-high/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\",\"Max distance\","
-                           "\"Reached maxDist node\",\"Vehicles cover\"";
+          header         = header + ",\"Max distance\","
+                                    "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else if (experiment.GetDroneTest ())
         {
           additionalPath = "/simulations/scenario-droni/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\",\"Max distance\","
-                           "\"Reached maxDist node\",\"Vehicles cover\"";
+          header         = header + ",\"Max distance\","
+                                    "\"Reached maxDist node\",\"Vehicles cover\"";
         }
       else
         {
           additionalPath = "/simulations/scenario-urbano/";
-          header         = "\"id\",\"Scenario\",\"Actual Range\",\"Protocol\","
-                           "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                           "\"Total coverage\",\"Coverage on circ\","
-                           "\"Alert received mean time\",\"Hops\",\"Slots\","
-                           "\"Messages sent\",\"Messages received\"";
         }
       boost::filesystem::path path = boost::filesystem::current_path ().parent_path () /=
         additionalPath;
