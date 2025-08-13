@@ -238,7 +238,7 @@ private:
    * \param distance distance between nodes (meters)
    * \return the value of the contention window
    */
-  uint32_t ComputeContetionWindow (uint32_t maxRange, uint32_t distance);
+  uint32_t ComputeContentionWindow (uint32_t maxRange, uint32_t distance);
 
   int32_t ComputeErrorDelay ();
 

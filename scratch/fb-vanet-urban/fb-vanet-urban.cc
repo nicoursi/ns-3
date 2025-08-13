@@ -52,6 +52,7 @@
 #include "ns3/node-list.h"
 #include "ns3/topology.h"
 #include "ns3/wifi-module.h"
+#include <stdexcept>
 
 using namespace ns3;
 using namespace std;
@@ -280,6 +281,18 @@ private:
    */
   static void
   CourseChange (std::ostream* os, std::string foo, Ptr<const MobilityModel> mobility);
+
+  /**
+   * \brief Get the default transmission power for a given range
+   *
+   * NOTE: m_txp has an impact only when m_propagationLoss == 1,
+   * otherwise it will be completely ignored
+   *
+   * \param actualRange The desired communication range in meters
+   * \return double The transmission power in dBm
+   * \throws std::invalid_argument if actualRange is not supported
+   */
+  double GetDefaultTxPower (double actualRange);
 
   Ptr<FBApplication>           m_fbApplication;
   uint32_t                     m_nNodes;
@@ -618,6 +631,68 @@ FBVanetExperiment::ConfigureMobility ()
                    MakeBoundCallback (&FBVanetExperiment::CourseChange, &m_os));
 }
 
+double
+FBVanetExperiment::GetDefaultTxPower (double actualRange)
+{
+  double txp;
+
+  switch (static_cast<int> (actualRange))
+    {
+      case 100:
+        {
+          // Calibration history for 100m range:
+          // -7.0: original value
+          // -8.4: first value working but very unstable with 100m
+          // -7.7: first value that seems to work with 100m
+          // -5.2: current value --> + 2.5 after incremental calibration tests
+          txp = -5.2;
+        }
+        break;
+
+      case 300:
+        {
+          // Calibration history for 300m range:
+          // 4.6: original value (11.6 dB gain compared to 100m
+          // 0.0: first value working but very unstable with 300m
+          // 1.1: first value that seems to work with 300m
+          // 4.6: current value --> + 3.5 after incremental calibration tests, same as
+          //  original
+          txp = 4.6;
+        }
+        break;
+
+      case 500:
+        {
+          // Calibration history for 500m range:
+          // 13.4: original value (8.8 dB gain - 2.8 dB less than 300m)
+          // 6.3: first value working but very unstable with 500m
+          // 7.4: first value that seems to work with 500m
+          // 11.2: current value --> + 3.8 after incremental calibration tests
+          txp = 11.2;
+        }
+        break;
+
+      case 700:
+        {
+          // Calibration history for 700m range:
+          // 19.4: original value (13.4 + 6.0: Extrapolated from pattern where power gain
+          //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
+          // 12.2: first value working but very unstable with 700m
+          // 13.3: first value that seems to work with 700m and kept stable after
+          // 13.3: current value --> + 0 after incremental calibration tests
+          txp = 13.3;
+        }
+        break;
+
+      default:
+        throw std::invalid_argument (
+          "Unsupported range: " + std::to_string (actualRange) +
+          ". Supported values are 100, 300, 500, 700 meters.");
+    }
+
+  return txp;
+}
+
 void
 FBVanetExperiment::SetupAdhocDevices ()
 {
@@ -668,44 +743,6 @@ FBVanetExperiment::SetupAdhocDevices ()
   wifiPhy.SetChannel (wifiChannel.Create ());
   wifiPhy.SetPcapDataLinkType (YansWifiPhyHelper::DLT_IEEE802_11);
 
-  // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely
-  // ignored
-  if (std::isnan (m_txp))
-    {
-      if (m_actualRange == 100)
-        {
-          // m_txp = -8.4; // first value that sort of works with 500
-          // m_txp = -7.7; // fist value that seems to work with 100m
-          m_txp = -5.2; // + 2.5 after incremental calibration tests
-          // m_txp = -7.0; // original value
-        }
-      else if (m_actualRange == 300)
-        {
-          // m_txp = 0.0; // first value that sort of works with 300
-          // m_txp = 1.1; // fist value that seems to work with 300m
-          m_txp = 4.6; // + 3.5 after incremental calibration tests
-          // m_txp = 4.6; // 11.6 dB gain compared to 100m
-        }
-      else if (m_actualRange == 500)
-        {
-          // m_txp = 6.3;  // first value that sort of works with 500
-          // m_txp = 7.4;  // fist value that seems to work with 500m
-          m_txp = 11.2; // + 3.8 after incremental calibration tests
-          // m_txp = 13.4; // 8.8 dB gain (2.8 dB less than 300m)
-          // m_txp = 16.2; // keeping 11.6 gain
-        }
-      // clang-format off
-      else if (m_actualRange == 700) // 6 dB gain   (2.8 dB less than 500m)
-      { 
-        // m_txp = 12.2; // first value that sort of works with 700m
-        m_txp = 13.3; // fist value that seems to work with 700m and keeps stable after tests
-        // m_txp = 19.4; // 13.4 + 6.0: Extrapolated from pattern where power gain
-                        //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
-        // m_txp = 27.8; // keeping 11.6 gain
-      }
-}
-  // clang-format on
-
   WifiMacHelper wifiMac;
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
                                 "DataMode",
@@ -713,7 +750,9 @@ FBVanetExperiment::SetupAdhocDevices ()
                                 "ControlMode",
                                 StringValue (m_phyMode));
 
-  cout << "m_txp used is: " << m_txp << "dB" << endl;
+  // m_txp has an impact only with m_propagationLoss == 1, otherwise will be completely
+  // ignored
+  cout << "m_txp used is: " << m_txp << " dB" << endl;
   wifiPhy.Set ("TxPowerStart", DoubleValue (m_txp));
   wifiPhy.Set ("TxPowerEnd", DoubleValue (m_txp));
 
@@ -1055,14 +1094,18 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
                 m_highBuildings);
 
   // clang-format on
+  cmd.Parse (argc, argv);
+  // If m_txp is not parsed than assign default values based of actual range
+  if (std::isnan (m_txp))
+    {
+      m_txp = GetDefaultTxPower (m_actualRange);
+    }
 
   // only one of these tests is possible at a given time
   if (m_forgedCoordTest)
     {
       m_errorRate = 0;
     }
-
-  cmd.Parse (argc, argv);
 }
 
 void

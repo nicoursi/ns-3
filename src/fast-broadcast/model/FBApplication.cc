@@ -215,19 +215,27 @@ FBApplication::PrintStats (std::stringstream& dataStream)
   NS_LOG_FUNCTION (this);
   // cout << "cwndAvg " << (m_cwndSum / m_cwndCount) << endl;
   // cout << "collisions= " << m_collisions << endl;
-  uint32_t cover         = 1; // 'cause we count m_startingNode
+  uint32_t totalCoverage = 1; // 'cause we count m_startingNode
   uint32_t coverVehicles = 1;
-  uint32_t circ = 0, circCont = 0;
+
+  /**
+   * Number of nodes on the circumference that received the alert message
+   */
+  uint32_t coverageOnCirc = 0;
+  /**
+   * Number of nodes on the circumference
+   */
+  uint32_t nodesOnCirc = 0;
   // cout << "PrintStats area " << m_aoi << endl;
   double   radiusMin = m_aoi - m_aoi_error;
   double   radiusMax = m_aoi + m_aoi_error;
 
-  long double time_sum                  = 0;
-  long double hops_sum                  = 0;
-  long double slots_sum                 = 0;
-  int         valid_time_samples        = 0;
-  long double global_time_sum           = 0;
-  int         valid_global_time_samples = 0;
+  long double timeSum                = 0;
+  long double hopsSum                = 0;
+  long double slotsSum               = 0;
+  int         validTimeSamples       = 0;
+  long double globalTimeSum          = 0;
+  int         validGlobalTimeSamples = 0;
 
   stringstream receivedOnCircIds;
 
@@ -245,11 +253,11 @@ FBApplication::PrintStats (std::stringstream& dataStream)
           continue;
         }
 
-      // Update the total cover value
+      // Update the total coverage value
       if (current->GetReceived ())
         {
           // cout << "cover++" << endl;
-          cover++;
+          totalCoverage++;
           if (current->AmIaVehicle ())
             {
               coverVehicles++;
@@ -268,28 +276,28 @@ FBApplication::PrintStats (std::stringstream& dataStream)
       if ((distance >= radiusMin) && (distance <= radiusMax))
         {
           // Update the number of vehicles in the circumference
-          circCont++;
+          nodesOnCirc++;
 
           // Update the cover value
           if (current->GetReceived ())
             {
-              circ++;
+              coverageOnCirc++;
               receivedOnCircIds << current->GetId () << "_";
               // Per-hop propagation
               int64_t propTime = current->GetPropagationTime ();
               if (propTime > 0) // Only count valid times
                 {
-                  time_sum += propTime;
-                  valid_time_samples++;
+                  timeSum += propTime;
+                  validTimeSamples++;
                 }
               // Global delay tracks in us the time that the alert msg took to reach the
-              // node from source to circunference
+              // node from source to circumference
               int64_t globalDelay = current->GetReceiveTimestamp ().GetMicroSeconds () -
                                     firstMessageSentTime.GetMicroSeconds ();
               if (globalDelay >= 0)
                 {
-                  global_time_sum += globalDelay;
-                  valid_global_time_samples++;
+                  globalTimeSum += globalDelay;
+                  validGlobalTimeSamples++;
                 }
               else
                 {
@@ -299,8 +307,8 @@ FBApplication::PrintStats (std::stringstream& dataStream)
 
               // Update mean time, nums and slots
               // cout << "current get hop= " << current->GetHop () << endl;
-              hops_sum  += current->GetHop ();
-              slots_sum += current->GetSlot ();
+              hopsSum  += current->GetHop ();
+              slotsSum += current->GetSlot ();
             }
         }
     }
@@ -320,32 +328,26 @@ FBApplication::PrintStats (std::stringstream& dataStream)
     }
 
   //	Alert received mean time: average time the alert took to reach the node on the
-  // circunference
-  double avg_global_delay =
-    (valid_global_time_samples > 0) ? (global_time_sum / valid_global_time_samples) : 0;
+  // circumference
+  double avgGlobalDelay =
+    (validGlobalTimeSamples > 0) ? (globalTimeSum / validGlobalTimeSamples) : 0;
   //  The time the node took to traverse the last hop
-  double avg_prop_time = (valid_time_samples > 0) ? (time_sum / valid_time_samples) : 0;
+  double avgPropTime = (validTimeSamples > 0) ? (timeSum / validTimeSamples) : 0;
+  double avgHops     = hopsSum / (double)coverageOnCirc;
+  double avgSlots    = slotsSum / (double)coverageOnCirc;
+  // These will go into csv file
+  dataStream << nodesOnCirc << "," << totalCoverage << "," << coverageOnCirc << ","
+             << avgGlobalDelay << "," << avgHops << "," << avgSlots << "," << m_sent
+             << "," << m_received;
 
-  dataStream
-    << circCont << "," << cover << "," << circ << "," << avg_global_delay
-    << "," // Global delay from first message (Alert received mean time)
-    // << avg_prop_time
-    // << "," // Last hop propagation time. For the moment it is not printed into file
-    << (hops_sum / (double)circ) << "," << (slots_sum / (double)circ)
-    << ","
-    // << m_nodes[m_nodes.size () - 1]->GetHop () << ","
-    // << m_nodes[m_nodes.size () - 1]->GetSlot () << "," << (hops_sum / (double)circ) <<
-    // ","
-    // << (slots_sum / (double)circ) << ","
-    << m_sent << "," << m_received;
-  NS_LOG_DEBUG ("totalCoverage = " << cover << "/" << m_nNodes);
-  cout << "totalCoverage = " << cover << "/" << m_nNodes << endl;
-  cout << "coverageOnCirc = " << circ << "/" << circCont << endl;
+  NS_LOG_DEBUG ("totalCoverage = " << totalCoverage << "/" << m_nNodes);
+  cout << "totalCoverage = " << totalCoverage << "/" << m_nNodes << endl;
+  cout << "coverageOnCirc = " << coverageOnCirc << "/" << nodesOnCirc << endl;
   cout << "m_sent = " << m_sent << endl;
-  cout << "hops= " << (hops_sum / (double)circ) << endl;
-  cout << "slots= " << (slots_sum / (double)circ) << endl;
-  cout << "Alert received mean time = " << avg_global_delay << endl;
-  cout << "Per-hop propagation time = " << avg_prop_time << endl;
+  cout << "hops= " << avgHops << endl;
+  cout << "slots= " << avgSlots << endl;
+  cout << "Alert received mean time = " << avgGlobalDelay << endl;
+  cout << "Per-hop propagation time = " << avgPropTime << endl;
   cout << "First message sent time (firstMessageSentTime): "
        << firstMessageSentTime.GetMicroSeconds () << " µs" << std::endl;
   cout << "Starting node timestamp (GetSendTimestamp): "
@@ -354,8 +356,8 @@ FBApplication::PrintStats (std::stringstream& dataStream)
   cout << "m_startingNode = " << m_startingNode << endl;
 
 
-  // cout << "hopssum= " << hops_sum << " circ= " << circ
-  //      << " hops= " << (hops_sum / (double)circ) << endl;
+  // cout << "hops sum= " << hopsSum << " circ= " << circ
+  //      << " hops= " << (hopsSum / (double)circ) << endl;
 
   if (m_printCoords)
     {
@@ -659,7 +661,7 @@ FBApplication::ReceivePacket (Ptr<Socket> socket)
 
           // // If starter - to - sender distance is less than starter - to - current
           // // distance,
-          // //   then the message is coming from the front and it needs to be menaged,
+          // //   then the message is coming from the front and it needs to be managed,
           // //   otherwise do nothing
           // if (distanceCurrentToStarter > distanceSenderToStarter &&
           //     !fbNode->GetReceived ())
@@ -690,7 +692,7 @@ FBApplication::ReceivePacket (Ptr<Socket> socket)
           //         fbNode->SetNum (phase);
           //       }
 
-          //     // check if the message is coming fron the front
+          //     // check if the message is coming from the front
           //     if (phase > fbNode->GetPhase ())
           //       {
           //         fbNode->SetPhase (phase);
@@ -842,7 +844,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
     }
 
   // If starter-to-sender distance is less than starter-to-current distance,
-  // then the message is coming from the front and it needs to be menaged,
+  // then the message is coming from the front and it needs to be managed,
   // otherwise do nothing
 
   // if (distanceCurrentToStarter <= distanceSenderToStarter)
@@ -857,7 +859,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 
   // Compute the size of the contention window
   uint32_t bmr  = fbNode->GetCMBR ();
-  uint32_t cwnd = ComputeContetionWindow (bmr, distanceSenderToCurrent_uint);
+  uint32_t cwnd = ComputeContentionWindow (bmr, distanceSenderToCurrent_uint);
 
   // cout << "cwnd = " << cwnd << endl;
   // m_cwndSum += cwnd;
@@ -1018,7 +1020,7 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
   m_sent++;
   // else
   // {
-  //   cout << "deferro distance= " << distance << " waitingTime= " << waitingTime <<
+  //   cout << "de Ferro distance= " << distance << " waitingTime= " << waitingTime <<
   //   endl;
   // }
 }
@@ -1066,26 +1068,26 @@ FBApplication::GetFBNode (uint32_t id)
 }
 
 uint32_t
-FBApplication::ComputeContetionWindow (uint32_t maxRange, uint32_t distance)
+FBApplication::ComputeContentionWindow (uint32_t maxRange, uint32_t distance)
 {
   NS_LOG_FUNCTION (this << maxRange << distance);
-  double cwnd = 0.0;
-  double rapp = 0.0;
+  double cwnd            = 0.0;
+  double proximityFactor = 0.0;
   //	cout << "maxRange= " << maxRange << " distance= " << distance << endl;
 
   if (maxRange != 0)
     {
-      rapp = (((double)maxRange) - ((double)distance)) / (double)maxRange;
+      proximityFactor = (((double)maxRange) - ((double)distance)) / (double)maxRange;
     }
   else
     {
-      rapp = 0;
+      proximityFactor = 0;
     }
-  //	cout << "rapp pre= " << rapp << endl;
-  rapp = (rapp < 0) ? 0 : rapp;
-  //	cout << "rapp post= " << rapp << endl;
+  //	cout << "proximityFactor pre= " << proximityFactor << endl;
+  proximityFactor = (proximityFactor < 0) ? 0 : proximityFactor;
+  //	cout << "proximityFactor post= " << proximityFactor << endl;
 
-  cwnd = (rapp * (m_cwMax - m_cwMin)) + m_cwMin;
+  cwnd = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
   // cout << "FBApplication computeCW= " << std::floor (cwnd) << endl
   //      << " con maxRange= " << maxRange << " e distance= " << distance << endl;
   return std::floor (cwnd);
