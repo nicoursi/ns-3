@@ -107,7 +107,7 @@ public:
                 uint64_t    junctionId = 0);
 
   /**
-   * \brief Print value of some useful field
+   * \brief Create a datastream with metrics to be later on exported in a csv file
    * \param dataStream output data
    * \return none
    */
@@ -275,10 +275,12 @@ private:
   uint32_t m_actualRange;         // real transmission range
   uint32_t m_estimatedRange;      // range of transmission to be estimated
   uint32_t m_aoi;                 // radius of the area of interest (meters)
-  uint32_t m_aoi_error;           // meters +/- with respect to the radius
-  uint32_t m_packetPayload;       // size of the packet payload
-  uint32_t m_received;            // number of hello messages sent
-  uint32_t m_sent;                // number of alert messages sent
+  uint32_t m_aoi_error; // meters +/- with respect to the radius, it is usually the node
+                        // distancing
+  uint32_t m_packetPayload; // size of the packet payload
+  uint32_t m_received; // number of nodes tha received the alert message excluding the
+                       // source node
+  uint32_t m_sent;     // number of alert messages sent (forwarded)
   uint32_t m_cwndSum;
   uint32_t m_cwndCount;
   uint32_t m_errorRate; // probability to incur in an error in transmission schedule

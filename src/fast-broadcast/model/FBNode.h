@@ -90,7 +90,7 @@ public:
   int32_t GetPhase (void) const;
 
   /**
-   * \returns the slot of the node
+   * \returns the cumulative backoff delay in milliseconds.
    */
   uint32_t GetSlot (void) const;
 
@@ -219,7 +219,7 @@ public:
   void SetPhase (int32_t value);
 
   /**
-   * \brief set the slot
+   * \brief set the cumulative backoff delay in milliseconds.
    * \param value new value of slot
    */
   void SetSlot (uint32_t value);
@@ -295,19 +295,47 @@ public:
   uint32_t    m_LMBR;     // Last Maximum Back Range
   Vector      m_position; // node current position
   uint32_t    m_hop;      // number of hops before the alert message reached this node
-  int32_t     m_phase;    // legacy with barichello's code
-  uint32_t    m_slot;     // legacy with barichello's code
-  bool        m_received; // legacy with barichello's code
-  bool        m_sent;     // legacy with barichello's code
-  Time        m_sendTimestamp;    // Timestamp when the node sends the message
-  Time        m_receiveTimestamp; // Timestamp when the node receives the message
-  bool        m_receiveTimestampSet;
-  bool        m_sendTimestampSet;
-  int64_t     m_propTimeUs;    // propagation time in microseconds
-  bool        m_amIaVehicle;   // used for statistics
-  bool        m_amIInJunction; // whether the node is inside a junction
-  uint64_t    m_junctionId;    // id of the junction where the node is
-  bool        m_stopSending;
+  /**
+   * \brief Logical phase of the message at this node.
+   *
+   * Used to control forwarding order in the alert message flooding protocol.
+   * When a node receives a message, it compares its own phase with the
+   * incoming message's phase to decide whether to defer forwarding.
+   */
+  int32_t     m_phase;
+
+  /**
+   * \brief Cumulative backoff delay (in milliseconds) for this message.
+   *
+   * Each time the node schedules a message forward, the waiting time
+   * is added to this value. Used to track total propagation delay
+   * and for statistics purposes. Despite the original name "slot," it
+   * represents elapsed milliseconds, not a TDMA slot number.
+   */
+  uint32_t m_slot;
+
+  /**
+   * \brief Flag indicating whether the node has already received the message.
+   *
+   * Prevents duplicate processing and redundant forwarding.
+   */
+  bool m_received;
+
+  /**
+   * \brief Flag indicating whether the node has already forwarded the message.
+   *
+   * Prevents multiple forwards of the same message.
+   */
+  bool     m_sent;
+  Time     m_sendTimestamp;    // Timestamp when the node sends the message
+  Time     m_receiveTimestamp; // Timestamp when the node receives the message
+  bool     m_receiveTimestampSet;
+  bool     m_sendTimestampSet;
+  int64_t  m_propTimeUs;    // propagation time in microseconds
+  bool     m_amIaVehicle;   // used for statistics
+  bool     m_amIInJunction; // whether the node is inside a junction
+  uint64_t m_junctionId;    // id of the junction where the node is
+  bool     m_stopSending;
 };
 
 } // namespace ns3

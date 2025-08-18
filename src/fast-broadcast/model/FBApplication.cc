@@ -215,8 +215,9 @@ FBApplication::PrintStats (std::stringstream& dataStream)
   NS_LOG_FUNCTION (this);
   // cout << "cwndAvg " << (m_cwndSum / m_cwndCount) << endl;
   // cout << "collisions= " << m_collisions << endl;
-  uint32_t totalCoverage = 1; // 'cause we count m_startingNode
-  uint32_t coverVehicles = 1;
+  uint32_t totalCoverage = 1; // All nodes reached by the alert, included the source node
+  uint32_t coverVehicles = 1; // All vehicles reached bu the alert message, included the
+                              // one that originated the alert
 
   /**
    * Number of nodes on the circumference that received the alert message
