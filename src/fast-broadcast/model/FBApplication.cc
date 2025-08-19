@@ -730,9 +730,12 @@ FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   Vector senderPosition = fbHeader.GetPosition ();
 
   // Compute distance
-  double   distance_double = ns3::CalculateDistance (senderPosition, currentPosition);
-  uint32_t distance        = std::floor (distance_double);
+  double distance_double = ns3::CalculateDistance (senderPosition, currentPosition);
+  // cout << "HandleHelloMessage detected distance: " << distance_double << endl;
 
+  uint32_t distance = std::floor (distance_double);
+
+  // cout << "Floored distance: " << distance << endl;
   // Update new values
   uint32_t maxi = std::max (std::max (myCMBR, otherCMFR), distance);
 
@@ -862,18 +865,38 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   uint32_t bmr  = fbNode->GetCMBR ();
   uint32_t cwnd = ComputeContentionWindow (bmr, distanceSenderToCurrent_uint);
 
-  // cout << "cwnd = " << cwnd << endl;
-  // m_cwndSum += cwnd;
-  // m_cwndCount++;
-  // Compute a random waiting time (1 <= waitingTime <= cwnd)
-  uint32_t waitingTime = m_randomVariable->GetInteger (1, cwnd);
-  int32_t  errorDelay  = ComputeErrorDelay ();
+
+  // We randomize cwnd with a spread so that the waiting time is loyal to the wanted value
+  uint32_t waitingTime; // ms
+
+  constexpr uint64_t PERCENT = 10;
+  uint64_t cwndUs = static_cast<uint64_t> (cwnd) * 1000; // convert cwnd from ms to µs
+  // uint64_t spreadUs = 1000;
+  uint64_t spreadUs = 960;
+
+
+  // Compute minimum wait in microseconds
+  uint32_t minWaitUs = (spreadUs > cwndUs) ? 0 : cwndUs - spreadUs;
+
+  // Pick random waiting time in microseconds
+  // uint32_t waitingTimeUs = m_randomVariable->GetInteger (minWaitUs, cwndUs + spreadUs);
+  uint32_t waitingTimeUs = m_randomVariable->GetInteger (cwndUs, cwndUs + spreadUs);
+
+
+  // converting back to milliseconds
+  waitingTime = uint32_t (waitingTimeUs / 1000);
+
+  // cout << "cwnd from ComputeContentionWindow is: " << cwnd << endl;
+  // cout << "waiting time in microseconds: " << waitingTimeUs << endl;
+  // cout << "waiting time in milliseconds: " << waitingTime << endl;
+
+  int32_t errorDelay = ComputeErrorDelay ();
   //		cout << "errorDelay= " << errorDelay << endl;
   if (!m_flooding)
     {
       if (errorDelay == 0)
         {
-          Simulator::Schedule (MilliSeconds (waitingTime),
+          Simulator::Schedule (MicroSeconds (waitingTimeUs),
                                &FBApplication::ForwardAlertMessage,
                                this,
                                fbNode,
@@ -881,7 +904,8 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                waitingTime,
                                false);
         }
-      else
+      else // Todo: convert scheduler calls to MicroSeconds and possibly use only
+           // waitingTimeUs and convert slots to milliseconds when printing stats
         {
           uint32_t firstTransmissionTime;
           uint32_t secondTransmissionTime;
@@ -1074,7 +1098,8 @@ FBApplication::ComputeContentionWindow (uint32_t maxRange, uint32_t distance)
   NS_LOG_FUNCTION (this << maxRange << distance);
   double cwnd            = 0.0;
   double proximityFactor = 0.0;
-  //	cout << "maxRange= " << maxRange << " distance= " << distance << endl;
+
+  // cout << "maxRange= " << maxRange << " distance= " << distance << endl;
 
   if (maxRange != 0)
     {
@@ -1084,9 +1109,9 @@ FBApplication::ComputeContentionWindow (uint32_t maxRange, uint32_t distance)
     {
       proximityFactor = 0;
     }
-  //	cout << "proximityFactor pre= " << proximityFactor << endl;
+  // cout << "proximityFactor pre= " << proximityFactor << endl;
   proximityFactor = (proximityFactor < 0) ? 0 : proximityFactor;
-  //	cout << "proximityFactor post= " << proximityFactor << endl;
+  // cout << "proximityFactor post= " << proximityFactor << endl;
 
   cwnd = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
   // cout << "FBApplication computeCW= " << std::floor (cwnd) << endl
