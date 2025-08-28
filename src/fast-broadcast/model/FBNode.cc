@@ -55,7 +55,7 @@ FBNode::FBNode () :
   m_position (Vector (0, 0, 0)),
   m_hop (0),
   m_phase (0),
-  m_slot (0),
+  m_waitingTimeUs (0),
   m_received (false),
   m_sent (false),
   m_sendTimestamp (0),
@@ -140,10 +140,10 @@ FBNode::GetPhase (void) const
 }
 
 uint32_t
-FBNode::GetSlot (void) const
+FBNode::GetWaitingTimeUs (void) const
 {
   NS_LOG_FUNCTION (this);
-  return m_slot;
+  return m_waitingTimeUs;
 }
 
 bool
@@ -298,10 +298,10 @@ FBNode::SetPhase (int32_t value)
 }
 
 void
-FBNode::SetSlot (uint32_t value)
+FBNode::SetWaitingTimeUs (uint32_t value)
 {
   NS_LOG_FUNCTION (this << value);
-  m_slot = value;
+  m_waitingTimeUs = value;
 }
 
 void

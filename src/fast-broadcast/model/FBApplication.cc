@@ -29,6 +29,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/network-module.h"
 #include "src/core/model/log.h"
+#include <cstdint>
 #include <math.h>
 
 
@@ -51,7 +52,8 @@ FBApplication::GetTypeId (void)
   return tid;
 }
 
-FBApplication::FBApplication () :
+FBApplication::FBApplication () : // Todo: remove duplication of default values if also
+                                  // used in fb-vanet-urban,
   m_messageSentTimes (),
   m_nNodes (0),
   m_startingNode (0),
@@ -79,9 +81,6 @@ FBApplication::FBApplication () :
   m_transmissionVector ()
 {
   NS_LOG_FUNCTION (this);
-
-  // Todo: add a parameter for Seed and print it in the csv file
-  RngSeedManager::SetSeed (12345);
 }
 
 FBApplication::~FBApplication ()
@@ -102,7 +101,8 @@ FBApplication::Install (uint32_t protocol,
                         uint32_t vehicleDistance,
                         uint32_t errorRate,
                         uint32_t forgedCoordRate,
-                        uint32_t droneTest)
+                        uint32_t droneTest,
+                        uint32_t slotLength)
 {
 
   if (protocol == PROTOCOL_FB)
@@ -142,6 +142,7 @@ FBApplication::Install (uint32_t protocol,
   m_flooding            = flooding;
   m_cwMin               = cwMin;
   m_cwMax               = cwMax;
+  m_slotLength          = slotLength;
   m_printCoords         = printCoords;
   m_vehicleDistance     = vehicleDistance;
   m_errorRate           = errorRate;
@@ -188,7 +189,7 @@ FBApplication::AddNode (Ptr<Node>   node,
   fbNode->UpdatePosition ();
   fbNode->SetHop (0);
   fbNode->SetPhase (-1);
-  fbNode->SetSlot (0);
+  fbNode->SetWaitingTimeUs (0);
   fbNode->SetReceived (false);
   fbNode->SetSent (false);
   fbNode->SetMeAsVehicle (onstats);
@@ -234,7 +235,7 @@ FBApplication::PrintStats (std::stringstream& dataStream)
 
   long double timeSum                = 0;
   long double hopsSum                = 0;
-  long double slotsSum               = 0;
+  long double waitingTimeSumUs       = 0;
   int         validTimeSamples       = 0;
   long double globalTimeSum          = 0;
   int         validGlobalTimeSamples = 0;
@@ -309,8 +310,8 @@ FBApplication::PrintStats (std::stringstream& dataStream)
 
               // Update mean time, nums and slots
               // cout << "current get hop= " << current->GetHop () << endl;
-              hopsSum  += current->GetHop ();
-              slotsSum += current->GetSlot ();
+              hopsSum          += current->GetHop ();
+              waitingTimeSumUs += current->GetWaitingTimeUs ();
             }
         }
     }
@@ -336,11 +337,14 @@ FBApplication::PrintStats (std::stringstream& dataStream)
   //  The time the node took to traverse the last hop
   double avgPropTime = (validTimeSamples > 0) ? (timeSum / validTimeSamples) : 0;
   double avgHops     = hopsSum / (double)coverageOnCirc;
-  double avgSlots    = slotsSum / (double)coverageOnCirc;
+
+  double avgWaitingTimeSumUs = waitingTimeSumUs / static_cast<double> (coverageOnCirc);
+  double avgSlots            = avgWaitingTimeSumUs / m_slotLength;
+
   // These will go into csv file
   dataStream << nodesOnCirc << "," << totalCoverage << "," << coverageOnCirc << ","
              << avgGlobalDelay << "," << avgHops << "," << avgSlots << "," << m_sent
-             << "," << m_received << "," << m_collisions;
+             << "," << m_received << "," << m_collisions << "," << m_slotLength;
 
   NS_LOG_DEBUG ("totalCoverage = " << totalCoverage << "/" << m_nNodes);
   cout << "totalCoverage = " << totalCoverage << "/" << m_nNodes << endl;
@@ -523,7 +527,7 @@ FBApplication::StartBroadcastPhase (void)
   GenerateAlertMessage (fbNode);
   if (m_errorRate > 0)
     {
-      Simulator::Schedule (MilliSeconds (1),
+      Simulator::Schedule (MicroSeconds (1 * m_slotLength),
                            &FBApplication::GenerateAlertMessage,
                            this,
                            m_nodes.at (m_startingNode));
@@ -578,7 +582,7 @@ FBApplication::GenerateAlertMessage (Ptr<FBNode> fbNode)
   fbHeader.SetStarterPosition (position);
   fbHeader.SetPosition (position);
   fbHeader.SetPhase (0);
-  fbHeader.SetSlot (0);
+  fbHeader.SetWaitingTimeUs (0);
 
   fbHeader.SetSenderId (fbNode->GetId ());
   fbHeader.SetSenderInJunction (fbNode->AmIInJunction ());
@@ -671,8 +675,8 @@ FBApplication::ReceivePacket (Ptr<Socket> socket)
           //     // Store when the current has received the first packet
           //     fbNode->SetTimestamp (Simulator::Now ());
 
-          //     uint32_t sl = fbHeader.GetSlot ();
-          //     fbNode->SetSlot (fbNode->GetSlot () + sl);
+          //     uint32_t sl = fbHeader.GetWaitingTimeUs ();
+          //     fbNode->SetWaitingTimeUs (fbNode->GetWaitingTimeUs () + sl);
           //     fbNode->SetReceived (true);
 
           //     uint32_t senderId   = fbHeader.GetSenderId ();
@@ -830,7 +834,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                         << " took " << propTime.GetMicroSeconds ()
                                         << " microseconds");
         }
-      fbNode->SetSlot (fbHeader.GetSlot ());
+      fbNode->SetWaitingTimeUs (fbHeader.GetWaitingTimeUs ());
       fbNode->SetHop (phase + 1);
       fbNode->SetPhase (phase);
       m_received++;
@@ -860,18 +864,23 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   //   }
 
   // Compute the size of the contention window
-  double   bmr    = fbNode->GetCMBR ();
-  uint32_t cwnd   = ComputeContentionWindow (bmr, distanceSenderToCurrent);
-  uint32_t cwndUs = cwnd * 1000; // convert cwnd from ms to µs
+  double   bmr  = fbNode->GetCMBR ();
+  uint32_t cwnd = ComputeContentionWindow (bmr, distanceSenderToCurrent);
 
-  // We randomize cwnd with a spread so that the waiting time is loyal to the wanted value
-  uint32_t spreadUs = 960;
+  // Compute cwnd in µs based on slot size
+  uint32_t cwndUs = cwnd * m_slotLength;
+  NS_LOG_WARN ("Slot length: " << m_slotLength);
+
+  // Spread as fraction of slot (here ~96%. Though 99% seems to work better, especially on
+  // small contention windows (cwmax-cwnin))
+  uint32_t spreadUs = static_cast<uint32_t> (0.96 * m_slotLength);
 
   // Pick random waiting time in microseconds
   uint32_t maxCwndUs     = cwndUs + spreadUs;
   uint32_t waitingTimeUs = m_randomVariable->GetInteger (cwndUs, maxCwndUs);
-  NS_LOG_LOGIC ("Cwnd: " << cwndUs << " maxCwndUs: " << maxCwndUs
-                         << " waitingTimeUs: " << waitingTimeUs);
+
+  NS_LOG_WARN ("Cwnd: " << cwndUs << " maxCwndUs: " << maxCwndUs
+                        << " waitingTimeUs: " << waitingTimeUs);
   cout << "(Node: " << receiverId << ") "
        << " Waiting time in microseconds: " << waitingTimeUs << "µs" << endl;
 
@@ -886,11 +895,10 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                this,
                                fbNode,
                                fbHeader,
-                               waitingTimeUs / 1000,
+                               waitingTimeUs,
                                false);
         }
-      else // Todo: convert scheduler calls to MicroSeconds and possibly use only
-           // waitingTimeUs and convert slots to milliseconds when printing stats
+      else
         {
           uint32_t firstTransmissionTime;
           uint32_t secondTransmissionTime;
@@ -921,7 +929,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                            this,
                            fbNode,
                            fbHeader,
-                           waitingTimeUs / 1000, // Todo: Why? Shouldn't it be 0?
+                           waitingTimeUs, // Todo: Why? Shouldn't it be 0?
                            false);
     }
   //	}
@@ -929,9 +937,10 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 
 
 void
-FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime)
+FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTimeUs)
 {
-  // Todo: waitingTime should be microseconds
+  // Todo: waitingTime should be microseconds, and rand should NOT be used. Use
+  // m_randomVariable instead
   NS_LOG_FUNCTION (this);
 
   // // Get the phase
@@ -944,22 +953,20 @@ FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitin
   //     uint32_t rnd2 = (rand () % 20) + 1;
   //     uint32_t rnd3 = (rand () % 20) + 1;
   //     Simulator::Schedule (
-  //       MilliSeconds (10 * (waitingTime + rnd + rnd1 + rnd2 + rnd3) * 200 * 3),
+  //       MicroSeconds (10 * (waitingTimeUs + rnd + rnd1 + rnd2 + rnd3) * 200 * 3),
   //       / &FBApplication::ForwardAlertMessage,
   //       this,
   //       fbNode,
   //       fbHeader,
-  //       waitingTime);
+  //       waitingTimeUs);
   //   }
 }
 
 void
-FBApplication::ForwardAlertMessage (
-  Ptr<FBNode> fbNode,
-  FBHeader    oldFBHeader,
-  uint32_t    waitingTime, // Todo: waitingTime should be in microseconds all the way and
-                           // then converted in millisecond for statistics.
-  bool        forceSend)
+FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
+                                    FBHeader    oldFBHeader,
+                                    uint32_t    waitingTimeUs,
+                                    bool        forceSend)
 {
   NS_LOG_FUNCTION (this << fbNode << oldFBHeader);
   // Get the phase
@@ -992,7 +999,7 @@ FBApplication::ForwardAlertMessage (
     }
   NS_LOG_DEBUG ("Forwarding Alert Message (Node: "
                 << fbNode->GetNode ()->GetId () << "at pos " << fbNode->GetPosition ()
-                << ") after " << waitingTime << "ms at distance= " << distance << ".");
+                << ") after " << waitingTimeUs << "µs at distance= " << distance << ".");
 
   // Create a packet with the correct parameters taken from the node
 
@@ -1010,7 +1017,7 @@ FBApplication::ForwardAlertMessage (
   fbHeader.SetStarterPosition (starterPosition);
   fbHeader.SetPosition (position);
   fbHeader.SetPhase (phase + 1);
-  fbHeader.SetSlot (fbNode->GetSlot () + waitingTime);
+  fbHeader.SetWaitingTimeUs (fbNode->GetWaitingTimeUs () + waitingTimeUs);
   fbHeader.SetSenderId (fbNode->GetId ());
   fbHeader.SetSenderInJunction (fbNode->AmIInJunction ());
   fbHeader.SetJunctionId (fbNode->GetJunctionId ());
@@ -1028,7 +1035,7 @@ FBApplication::ForwardAlertMessage (
   m_sent++;
   // else
   // {
-  //   cout << "de Ferro distance= " << distance << " waitingTime= " << waitingTime <<
+  //   cout << "de Ferro distance= " << distance << " waitingTimeUs= " << waitingTimeUs <<
   //   endl;
   // }
 }
@@ -1091,17 +1098,21 @@ FBApplication::ComputeContentionWindow (double maxRange, double distance)
       proximityFactor = 0;
     }
   NS_LOG_LOGIC ("proximityFactor pre: " << proximityFactor);
+
   proximityFactor = (proximityFactor < 0) ? 0 : proximityFactor;
+
   NS_LOG_LOGIC ("proximityFactor post= " << proximityFactor);
 
-  cwnd = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
-  NS_LOG_DEBUG ("cwnd before rounding: " << cwnd);
-  NS_LOG_WARN ("cwnd after rounding: " << std::round (cwnd) << endl
-                                       << "with maxRange: " << maxRange
-                                       << " and  DISTANCE: " << distance);
+  cwnd                = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
+  int32_t roundedCwnd = static_cast<uint32_t> (std::floor (cwnd));
+
+  NS_LOG_DEBUG ("Contention Window before rounding: " << cwnd);
+  NS_LOG_WARN ("Contention Window after rounding: " << roundedCwnd << endl
+                                                    << " maxRange: " << maxRange
+                                                    << " DISTANCE: " << distance);
 
 
-  return static_cast<uint32_t> (std::floor (cwnd));
+  return roundedCwnd;
 }
 
 int32_t

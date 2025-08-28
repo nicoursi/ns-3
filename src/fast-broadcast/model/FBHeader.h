@@ -69,10 +69,15 @@ public:
   void SetType (uint32_t value);
 
   /**
+<<<<<<< HEAD
    * \brief set the slot of the message
    * \param value slot of the message, in milliseconds
+=======
+   * \brief set the waiting time (back-off) of the message
+   * \param value waiting time (back-off) of the message, in microseconds
+>>>>>>> 492f2fd48 (Slot measurements are now more precise, added support for customizable slot size, added RNG seed as commandline parameter)
    */
-  void SetSlot (uint32_t value);
+  void SetWaitingTimeUs (uint32_t value);
 
   /**
    * \brief set the phase of the message
@@ -120,9 +125,9 @@ public:
   uint32_t GetType (void) const;
 
   /**
-   * \returns the slot of the message
+   * \returns the waiting time (back-off) of the message
    */
-  uint32_t GetSlot (void) const;
+  uint32_t GetWaitingTimeUs (void) const;
 
   /**
    * \returns the phase of the message
@@ -216,7 +221,7 @@ private:
   Vector   m_starterPosition;
   double   m_maxRange;
   uint32_t m_type;
-  uint32_t m_slot;
+  uint32_t m_waitingTimeUs;
   uint32_t m_phase;
 
   uint32_t m_senderId;

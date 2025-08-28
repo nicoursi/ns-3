@@ -92,7 +92,7 @@ public:
   /**
    * \returns the cumulative backoff delay in milliseconds.
    */
-  uint32_t GetSlot (void) const;
+  uint32_t GetWaitingTimeUs (void) const;
 
   /**
    * \returns true if the node has received an alert
@@ -222,7 +222,7 @@ public:
    * \brief set the cumulative backoff delay in milliseconds.
    * \param value new value of slot
    */
-  void SetSlot (uint32_t value);
+  void SetWaitingTimeUs (uint32_t value);
 
   /**
    * \brief set the received field
@@ -305,14 +305,12 @@ public:
   int32_t     m_phase;
 
   /**
-   * \brief Cumulative backoff delay (in milliseconds) for this message.
+   * \brief Cumulative backoff delay (in microseconds) for this message.
    *
    * Each time the node schedules a message forward, the waiting time
-   * is added to this value. Used to track total propagation delay
-   * and for statistics purposes. Despite the original name "slot," it
-   * represents elapsed milliseconds, not a TDMA slot number.
+   * is added to this value. Used to calculate slots average for statistics purposes.
    */
-  uint32_t m_slot;
+  uint32_t m_waitingTimeUs;
 
   /**
    * \brief Flag indicating whether the node has already received the message.

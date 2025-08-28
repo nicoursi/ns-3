@@ -73,6 +73,7 @@ public:
    * slot earlier or later)
    * \param forgedCoordRate % of vehicles affected by forging
    * \param droneTest whether drones are present in the simulation
+   * \param slotLength Slot size in microseconds
    * \return none
    */
   virtual void Install (uint32_t protocol,
@@ -87,7 +88,8 @@ public:
                         uint32_t vehicleDistance,
                         uint32_t errorRate,
                         uint32_t forgedCoordRate,
-                        uint32_t droneTest);
+                        uint32_t droneTest,
+                        uint32_t slotLength);
 
   /**
    * \brief Add a new node to the application and set up protocol parameters
@@ -194,22 +196,22 @@ private:
    * \brief Wait a specific amount of time
    * \param fbNode node that received the message
    * \param fbHeader header received in the message
-   * \param waitingTime randomized contention window value in milliseconds
+   * \param waitingTimeUs randomized backoff value in microseconds
    * \return none
    */
-  void WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime);
+  void WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTimeUs);
 
   /**
    * \brief Forward an Alert message
    * \param fbNode node that received the message
    * \param fbHeader header received in the message
-   * \param waitingTime randomized contention window value in milliseconds
+   * \param waitingTimeUs randomized backoff value in microseconds
    * \param forceSend whether to force forwarding of message due to error in schedule
    * \return none
    */
   void ForwardAlertMessage (Ptr<FBNode> fbNode,
                             FBHeader    oldFBHeader,
-                            uint32_t    waitingTime,
+                            uint32_t    waitingTimeUs,
                             bool        forceSend);
 
   /**
@@ -276,6 +278,7 @@ private:
   uint32_t m_broadcastPhaseStart; // broadcast phase start time (seconds)
   uint32_t m_cwMin;               // min size of the contention window (in slot)
   uint32_t m_cwMax;               // max size of the contention window (in slot)
+  uint32_t m_slotLength;          // slot length in microseconds
   bool     m_flooding;            // used for control the flooding of the Alert messages
   uint32_t m_actualRange;         // real transmission range
   uint32_t m_estimatedRange;      // range of transmission to be estimated

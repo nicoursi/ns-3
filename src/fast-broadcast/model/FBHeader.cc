@@ -73,10 +73,10 @@ FBHeader::SetType (uint32_t value)
 }
 
 void
-FBHeader::SetSlot (uint32_t value)
+FBHeader::SetWaitingTimeUs (uint32_t value)
 {
   NS_LOG_FUNCTION (this);
-  m_slot = value;
+  m_waitingTimeUs = value;
 }
 
 void
@@ -136,10 +136,10 @@ FBHeader::GetType (void) const
 }
 
 uint32_t
-FBHeader::GetSlot (void) const
+FBHeader::GetWaitingTimeUs (void) const
 {
   NS_LOG_FUNCTION (this);
-  return m_slot;
+  return m_waitingTimeUs;
 }
 
 uint32_t
@@ -203,7 +203,7 @@ FBHeader::Serialize (Buffer::Iterator start) const
   i.WriteU64 (m_starterPosition.z);
   i.WriteU32 (static_cast<uint32_t> (std::round (m_maxRange * 1000.0)));
   i.WriteU32 (m_type);
-  i.WriteU32 (m_slot);
+  i.WriteU32 (m_waitingTimeUs);
   i.WriteU32 (m_phase);
 
   i.WriteU32 (m_senderId);
@@ -228,7 +228,7 @@ FBHeader::Deserialize (Buffer::Iterator start)
   m_starterPosition = Vector (x, y, z);
   m_maxRange        = static_cast<double> (i.ReadU32 ()) / 1000.0;
   m_type            = i.ReadU32 ();
-  m_slot            = i.ReadU32 ();
+  m_waitingTimeUs   = i.ReadU32 ();
   m_phase           = i.ReadU32 ();
 
   m_senderId         = i.ReadU32 ();
@@ -246,7 +246,7 @@ FBHeader::Print (std::ostream& os) const
      << "m_starterPosition (" << m_starterPosition << ") "
      << "m_maxRange " << m_maxRange << " "
      << "m_type " << m_maxRange << " "
-     << "m_slot " << m_slot << " "
+     << "m_waitingTimeUs " << m_waitingTimeUs << " "
      << "m_phase " << m_phase << " "
      << "m senderId " << m_senderId << " "
      << "m_senderInJunction " << m_senderInJunction << " "

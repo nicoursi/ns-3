@@ -144,6 +144,11 @@ public:
   uint32_t GetDroneTest () const;
 
   /**
+   * \brief Returns the seed used for generating random numbers
+   * \return uint32_t Returns the seed used for generating random numbers
+   */
+  uint32_t GetSeed () const;
+  /**
    * \brief highBuildings getter
    * \return highBuildings
    */
@@ -318,6 +323,7 @@ private:
   uint32_t                     m_loadBuildings;
   uint32_t                     m_cwMin;
   uint32_t                     m_cwMax;
+  uint32_t                     m_slotLength;
   string                       m_traceFile;
   string                       m_bldgFile;
   string                       m_junctionFile;
@@ -335,6 +341,7 @@ private:
   uint32_t                     m_forgedCoordRate;
   uint32_t                     m_nVeh;
   uint32_t                     m_droneTest;
+  uint32_t                     m_seed;
   int32_t                      m_startRun;
   uint32_t                     m_maxRun;
   uint32_t                     m_highBuildings;
@@ -366,6 +373,7 @@ FBVanetExperiment::FBVanetExperiment () :
   m_loadBuildings (1),
   m_cwMin (32),
   m_cwMax (1024),
+  m_slotLength (1000),
   m_traceFile (""),
   m_bldgFile (""),
   m_junctionFile (""),
@@ -381,13 +389,14 @@ FBVanetExperiment::FBVanetExperiment () :
   m_forgedCoordRate (0),
   m_nVeh (0),
   m_droneTest (0),
+  m_seed (12345),
   m_startRun (-1),
   m_maxRun (1),
   m_highBuildings (0)
 {
 
   // srand (12345);
-  RngSeedManager::SetSeed (12345);
+  // RngSeedManager::SetSeed (12345);
   m_randomVariable = CreateObject<UniformRandomVariable> ();
 }
 
@@ -439,6 +448,7 @@ FBVanetExperiment::ProcessOutputs ()
   m_fbApplication->PrintStats (dataStream);
   if (m_printToFile)
     {
+      g_csvData.AddValue (int (m_seed));
       g_csvData.AddValue (m_txp);
       g_csvData.AddValue ((int)m_actualRange);
       g_csvData.AddValue ((int)m_loadBuildings);
@@ -540,6 +550,12 @@ uint32_t
 FBVanetExperiment::GetDroneTest () const
 {
   return m_droneTest;
+}
+
+uint32_t
+FBVanetExperiment::GetSeed () const
+{
+  return m_seed;
 }
 
 uint32_t
@@ -833,7 +849,8 @@ FBVanetExperiment::ConfigureFBApplication ()
                             m_vehicleDistance,
                             m_errorRate,
                             m_forgedCoordRate,
-                            m_droneTest);
+                            m_droneTest,
+                            m_slotLength);
   m_fbApplication->SetStartTime (Seconds (1));
   m_fbApplication->SetStopTime (Seconds (m_TotalSimTime));
 
@@ -1023,42 +1040,70 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("maxRun",
                 "Maximum number of simulation runs",
                 m_maxRun);
+  cmd.AddValue ("seed",
+                "Seed used for generating random numbers",
+                m_seed);
   cmd.AddValue ("startingNode",
                 "Id of the first node who will start an alert",
                 m_startingNode);
   cmd.AddValue ("actualRange",
                 "Actual transmission range (meters)",
-                m_actualRange);  
+                m_actualRange);
   cmd.AddValue ("txPower",
                 "Transmission power, in dB,  used for the actual range provided",
-                m_txp); 
+                m_txp);
   cmd.AddValue ("protocol",
                 "Estimation protocol: 1=FB, 2=C100, 3=C300, 4=C500 5=C700",
                 m_staticProtocol);
-  cmd.AddValue ("flooding", "Enable flooding", m_flooding);
+  cmd.AddValue ("flooding",
+                "Enable flooding",
+                m_flooding);
   cmd.AddValue ("alertGeneration",
                 "Time at which the first Alert Message should be generated.",
                 m_alertGeneration);
-  cmd.AddValue ("area", "Radius of the area of interest", m_areaOfInterest);
-  cmd.AddValue ("vehicleDistance", "Distance between vehicles", m_vehicleDistance);
+  cmd.AddValue ("area",
+                "Radius of the area of interest",
+                m_areaOfInterest);
+  cmd.AddValue ("vehicleDistance",
+                "Distance between vehicles",
+                m_vehicleDistance);
   //	cmd.AddValue ("scenario",
   //                "1=Padova, 2=Los Angeles",
   //                m_scenario);
-  cmd.AddValue ("buildings", "Load building (obstacles)", m_loadBuildings);
-  cmd.AddValue ("poly", "Buildings trace file (poly format)", m_bldgFile);
-  cmd.AddValue ("trace", "Vehicles trace file (ns2mobility format)", m_traceFile);
-  cmd.AddValue ("junctions", "Junction file", m_junctionFile);
-  cmd.AddValue ("totalTime", "Simulation end time", m_TotalSimTime);
-  cmd.AddValue ("cwMin", "Minimum contention window", m_cwMin);
-  cmd.AddValue ("cwMax", "Maximum contention window", m_cwMax);
+  cmd.AddValue ("buildings",
+                "Load building (obstacles)",
+                m_loadBuildings);
+  cmd.AddValue ("poly",
+                "Buildings trace file (poly format)",
+                m_bldgFile);
+  cmd.AddValue ("trace",
+                "Vehicles trace file (ns2mobility format)",
+                m_traceFile);
+  cmd.AddValue ("junctions",
+                "Junction file",
+                m_junctionFile);
+  cmd.AddValue ("totalTime",
+                "Simulation end time",
+                m_TotalSimTime);
+  cmd.AddValue ("cwMin",
+                "Minimum contention window",
+                m_cwMin);
+  cmd.AddValue ("cwMax",
+                "Maximum contention window",
+                m_cwMax);
+  cmd.AddValue ("slotLength",
+                "Slot size in microseconds",
+                m_slotLength);
   cmd.AddValue ("mapBasePath",
                 "Base path of map required for simulation "
                 "(e.g. ../maps/Padova",
                 m_mapBasePath);
-  cmd.AddValue (
-    "printToFile", "Print data to file or not: 0 not print, 1 print ", m_printToFile);
-  cmd.AddValue (
-    "printCoords", "Print coords to file or not: 0 not print, 1 print ", m_printCoords);
+  cmd.AddValue ("printToFile",
+                "Print data to file or not: 0 not print, 1 print ",
+                m_printToFile);
+  cmd.AddValue ("printCoords",
+                "Print coords to file or not: 0 not print, 1 print ",
+                m_printCoords);
   cmd.AddValue ("createObstacleShadowingLossFile",
                 "Create file which saves obstacle losses (dBm) keyed by "
                 "senderCoord, receiverCoord : 0 not create, 1 create ",
@@ -1243,14 +1288,14 @@ main (int argc, char* argv[])
   cout << "Start main urban" << endl;
 
   NS_LOG_UNCOND ("FB Vanet Experiment URBAN");
-
   // Before launching experiments, calculate output file path: Todo: the output file path
   // logic should probably be out of this class
   FBVanetExperiment experiment;
   // experiment.Configure (argc, argv);
   // experiment.CommandSetup (argc, argv);
   experiment.getAndProcessParameters (argc, argv);
-
+  uint32_t seed = experiment.GetSeed ();
+  RngSeedManager::SetSeed (seed);
   unsigned int maxRun = experiment.GetMaxRun ();
   // unsigned int startRun = RngSeedManager::GetRun();  // Grab from
   // NS_GLOBAL_VALUE=RngRun=X
@@ -1263,11 +1308,12 @@ main (int argc, char* argv[])
     {
       string filePath = experiment.CalculateOutFilePath ();
       string additionalPath;
-      string header = "\"Run id\",\"Tx Power\",\"Actual Range\","
-                      "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-                      "\"Total coverage\",\"Coverage on circ\","
-                      "\"Alert received mean time\",\"Hops\",\"Slots\","
-                      "\"Messages sent\",\"Messages received\",\"Collisions\"";
+      string header =
+        "\"Run id\",\"Seed\",\"Tx Power\",\"Actual Range\","
+        "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+        "\"Total coverage\",\"Coverage on circ\","
+        "\"Alert received mean time\",\"Hops\",\"Slots\","
+        "\"Messages sent\",\"Messages received\",\"Collisions\",\"Slot size in μs\"";
 
       if (experiment.GetPrintCoords ())
         {
@@ -1322,8 +1368,8 @@ main (int argc, char* argv[])
 
       // This loop cannot be removed without changing results per run
       Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-      cout << "Lottery numbers. These should be always the same for any run=" << thisRun
-           << ":" << endl;
+      cout << "Lottery numbers. These should be always the same for any run: " << thisRun
+           << " and seed: " << seed << ":" << endl;
       for (int i = 0; i < 5; ++i)
         {
           // Never delete this line or this for loop
