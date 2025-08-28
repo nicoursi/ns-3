@@ -141,8 +141,9 @@ private:
   void GenerateForgedHelloTraffic ();
 
   /**
-   * \brief Start the estimation phase
-   * \param count count
+   * \brief Start the estimation phase. Half of the nodes, selected randomly, will send a
+   * hello message, This procedure will be repeated for @count times
+   * \param count The number of times the hello messages will be sent.
    * \return none
    */
   void GenerateHelloTraffic (uint32_t count);
@@ -193,7 +194,7 @@ private:
    * \brief Wait a specific amount of time
    * \param fbNode node that received the message
    * \param fbHeader header received in the message
-   * \param waitingTime contention window value
+   * \param waitingTime randomized contention window value in milliseconds
    * \return none
    */
   void WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime);
@@ -202,7 +203,7 @@ private:
    * \brief Forward an Alert message
    * \param fbNode node that received the message
    * \param fbHeader header received in the message
-   * \param waitingTime contention window value
+   * \param waitingTime randomized contention window value in milliseconds
    * \param forceSend whether to force forwarding of message due to error in schedule
    * \return none
    */
@@ -238,8 +239,12 @@ private:
    * \param distance distance between nodes (meters)
    * \return the value of the contention window
    */
-  uint32_t ComputeContentionWindow (uint32_t maxRange, uint32_t distance);
+  uint32_t ComputeContentionWindow (double maxRange, double distance);
 
+  /**
+   * \brief Computes the ErrorDelay in microseconds
+   * \return int32_t ErrorDelay in microseconds
+   */
   int32_t ComputeErrorDelay ();
 
   /**
@@ -259,7 +264,7 @@ private:
    * also calculates maxDist
    * \param maxDist max distance between a node and m_startingNode)
    * \return  whether the most distant node from m_startingNode has been reached	 */
-  uint32_t IsMaxDistNodeReached (uint32_t& maxDist) const;
+  uint32_t IsMaxDistNodeReached (double& maxDist) const;
 
 private:
   std::map<uint32_t, Time> m_messageSentTimes; //  map for tracking message sent times

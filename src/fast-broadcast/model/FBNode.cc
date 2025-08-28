@@ -90,28 +90,28 @@ FBNode::GetNode (void) const
   return m_node;
 }
 
-uint32_t
+double
 FBNode::GetCMFR (void) const
 {
   NS_LOG_FUNCTION (this);
   return m_CMFR;
 }
 
-uint32_t
+double
 FBNode::GetLMFR (void) const
 {
   NS_LOG_FUNCTION (this);
   return m_LMFR;
 }
 
-uint32_t
+double
 FBNode::GetCMBR (void) const
 {
   NS_LOG_FUNCTION (this);
   return m_CMBR;
 }
 
-uint32_t
+double
 FBNode::GetLMBR (void) const
 {
   NS_LOG_FUNCTION (this);
@@ -241,28 +241,28 @@ FBNode::SetSocket (Ptr<Socket> socket)
 }
 
 void
-FBNode::SetCMFR (uint32_t value)
+FBNode::SetCMFR (double value)
 {
   NS_LOG_FUNCTION (this << value);
   m_CMFR = value;
 }
 
 void
-FBNode::SetLMFR (uint32_t value)
+FBNode::SetLMFR (double value)
 {
   NS_LOG_FUNCTION (this << value);
   m_LMFR = value;
 }
 
 void
-FBNode::SetCMBR (uint32_t value)
+FBNode::SetCMBR (double value)
 {
   NS_LOG_FUNCTION (this << value);
   m_CMBR = value;
 }
 
 void
-FBNode::SetLMBR (uint32_t value)
+FBNode::SetLMBR (double value)
 {
   NS_LOG_FUNCTION (this << value);
   m_LMBR = value;

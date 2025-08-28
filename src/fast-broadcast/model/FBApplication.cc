@@ -28,7 +28,7 @@
 #include "ns3/log.h"
 #include "ns3/mobility-module.h"
 #include "ns3/network-module.h"
-#include <chrono>
+#include "src/core/model/log.h"
 #include <math.h>
 
 
@@ -79,7 +79,8 @@ FBApplication::FBApplication () :
   m_transmissionVector ()
 {
   NS_LOG_FUNCTION (this);
-  //	srand(12345);
+
+  // Todo: add a parameter for Seed and print it in the csv file
   RngSeedManager::SetSeed (12345);
 }
 
@@ -214,7 +215,7 @@ FBApplication::PrintStats (std::stringstream& dataStream)
 
   NS_LOG_FUNCTION (this);
   // cout << "cwndAvg " << (m_cwndSum / m_cwndCount) << endl;
-  // cout << "collisions= " << m_collisions << endl;
+  cout << "collisions= " << m_collisions << endl;
   uint32_t totalCoverage = 1; // All nodes reached by the alert, included the source node
   uint32_t coverVehicles = 1; // All vehicles reached bu the alert message, included the
                               // one that originated the alert
@@ -339,7 +340,7 @@ FBApplication::PrintStats (std::stringstream& dataStream)
   // These will go into csv file
   dataStream << nodesOnCirc << "," << totalCoverage << "," << coverageOnCirc << ","
              << avgGlobalDelay << "," << avgHops << "," << avgSlots << "," << m_sent
-             << "," << m_received;
+             << "," << m_received << "," << m_collisions;
 
   NS_LOG_DEBUG ("totalCoverage = " << totalCoverage << "/" << m_nNodes);
   cout << "totalCoverage = " << totalCoverage << "/" << m_nNodes << endl;
@@ -384,7 +385,7 @@ FBApplication::PrintStats (std::stringstream& dataStream)
     }
   if (m_droneTest)
     {
-      uint32_t maxDistance            = 0;
+      double   maxDistance            = 0;
       uint32_t maxDistanceNodeReached = IsMaxDistNodeReached (maxDistance);
       dataStream << "," << maxDistance << "," << maxDistanceNodeReached << ","
                  << coverVehicles;
@@ -533,10 +534,9 @@ void
 FBApplication::GenerateHelloMessage (Ptr<FBNode> fbNode)
 {
   NS_LOG_FUNCTION (this << fbNode);
-  auto        start      = std::chrono::system_clock::now ();
-  std::time_t start_time = std::chrono::system_clock::to_time_t (start);
-  NS_LOG_DEBUG ("GenerateHelloMessage (" << fbNode->GetId () << ")."
-                                         << "at time= " << std::ctime (&start_time));
+  NS_LOG_DEBUG ("GenerateHelloMessage (" << fbNode->GetId () << ") "
+                                         << "at time= " << Simulator::Now ().GetSeconds ()
+                                         << "s");
   // NS_LOG_DEBUG ("Generate Hello Message (" << fbNode->GetNode ()->GetId () << ").");
 
   // Create a packet with the correct parameters taken from the node
@@ -720,8 +720,8 @@ FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   NS_LOG_DEBUG ("Handle a Hello Message (" << nodeId << ").");
 
   // Retrieve CMFR from the packet received and CMBR from the current node
-  uint32_t otherCMFR = fbHeader.GetMaxRange ();
-  uint32_t myCMBR    = fbNode->GetCMBR ();
+  double otherCMFR = fbHeader.GetMaxRange ();
+  double myCMBR    = fbNode->GetCMBR ();
 
   // Retrieve the position of the current node
   Vector currentPosition = fbNode->UpdatePosition ();
@@ -730,15 +730,14 @@ FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   Vector senderPosition = fbHeader.GetPosition ();
 
   // Compute distance
-  double distance_double = ns3::CalculateDistance (senderPosition, currentPosition);
-  // cout << "HandleHelloMessage detected distance: " << distance_double << endl;
+  double distance = ns3::CalculateDistance (senderPosition, currentPosition);
+  NS_LOG_DEBUG ("Detected distance: " << distance);
 
-  uint32_t distance = std::floor (distance_double);
-
-  // cout << "Floored distance: " << distance << endl;
   // Update new values
-  uint32_t maxi = std::max (std::max (myCMBR, otherCMFR), distance);
-
+  double maxi = std::max (std::max (myCMBR, otherCMFR), distance);
+  NS_LOG_DEBUG ("myCMBR " << myCMBR << "m");
+  NS_LOG_DEBUG ("otherCMFR " << otherCMFR << "m");
+  NS_LOG_DEBUG ("Setting CMBR to " << maxi << "m");
   fbNode->SetCMBR (maxi);
 
   // Override the old values
@@ -760,7 +759,6 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   // Compute the distance between the sender and me (the node who received the message)
   double distanceSenderToCurrent =
     ns3::CalculateDistance (senderPosition, currentPosition);
-  uint32_t distanceSenderToCurrent_uint = std::floor (distanceSenderToCurrent);
   if (distanceSenderToCurrent > m_actualRange + 100)
     {
       return;
@@ -862,33 +860,20 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   //   }
 
   // Compute the size of the contention window
-  uint32_t bmr  = fbNode->GetCMBR ();
-  uint32_t cwnd = ComputeContentionWindow (bmr, distanceSenderToCurrent_uint);
-
+  double   bmr    = fbNode->GetCMBR ();
+  uint32_t cwnd   = ComputeContentionWindow (bmr, distanceSenderToCurrent);
+  uint32_t cwndUs = cwnd * 1000; // convert cwnd from ms to µs
 
   // We randomize cwnd with a spread so that the waiting time is loyal to the wanted value
-  uint32_t waitingTime; // ms
-
-  constexpr uint64_t PERCENT = 10;
-  uint64_t cwndUs = static_cast<uint64_t> (cwnd) * 1000; // convert cwnd from ms to µs
-  // uint64_t spreadUs = 1000;
-  uint64_t spreadUs = 960;
-
-
-  // Compute minimum wait in microseconds
-  uint32_t minWaitUs = (spreadUs > cwndUs) ? 0 : cwndUs - spreadUs;
+  uint32_t spreadUs = 960;
 
   // Pick random waiting time in microseconds
-  // uint32_t waitingTimeUs = m_randomVariable->GetInteger (minWaitUs, cwndUs + spreadUs);
-  uint32_t waitingTimeUs = m_randomVariable->GetInteger (cwndUs, cwndUs + spreadUs);
-
-
-  // converting back to milliseconds
-  waitingTime = uint32_t (waitingTimeUs / 1000);
-
-  // cout << "cwnd from ComputeContentionWindow is: " << cwnd << endl;
-  // cout << "waiting time in microseconds: " << waitingTimeUs << endl;
-  // cout << "waiting time in milliseconds: " << waitingTime << endl;
+  uint32_t maxCwndUs     = cwndUs + spreadUs;
+  uint32_t waitingTimeUs = m_randomVariable->GetInteger (cwndUs, maxCwndUs);
+  NS_LOG_LOGIC ("Cwnd: " << cwndUs << " maxCwndUs: " << maxCwndUs
+                         << " waitingTimeUs: " << waitingTimeUs);
+  cout << "(Node: " << receiverId << ") "
+       << " Waiting time in microseconds: " << waitingTimeUs << "µs" << endl;
 
   int32_t errorDelay = ComputeErrorDelay ();
   //		cout << "errorDelay= " << errorDelay << endl;
@@ -901,7 +886,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                this,
                                fbNode,
                                fbHeader,
-                               waitingTime,
+                               waitingTimeUs / 1000,
                                false);
         }
       else // Todo: convert scheduler calls to MicroSeconds and possibly use only
@@ -909,41 +894,44 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
         {
           uint32_t firstTransmissionTime;
           uint32_t secondTransmissionTime;
-          firstTransmissionTime = errorDelay > 0 ? waitingTime : waitingTime + errorDelay;
+          firstTransmissionTime =
+            errorDelay > 0 ? waitingTimeUs : waitingTimeUs + errorDelay;
           secondTransmissionTime =
-            errorDelay < 0 ? waitingTime : waitingTime + errorDelay;
-          Simulator::Schedule (MilliSeconds (firstTransmissionTime),
+            errorDelay < 0 ? waitingTimeUs : waitingTimeUs + errorDelay;
+          Simulator::Schedule (MicroSeconds (firstTransmissionTime),
                                &FBApplication::ForwardAlertMessage,
                                this,
                                fbNode,
                                fbHeader,
-                               firstTransmissionTime,
+                               firstTransmissionTime / 1000,
                                false);
-          Simulator::Schedule (MilliSeconds (secondTransmissionTime),
+          Simulator::Schedule (MicroSeconds (secondTransmissionTime),
                                &FBApplication::ForwardAlertMessage,
                                this,
                                fbNode,
                                fbHeader,
-                               secondTransmissionTime,
+                               secondTransmissionTime / 1000,
                                true);
         }
     }
-  else
+  else // flooding
     {
       Simulator::Schedule (MilliSeconds (0),
                            &FBApplication::ForwardAlertMessage,
                            this,
                            fbNode,
                            fbHeader,
-                           waitingTime,
+                           waitingTimeUs / 1000, // Todo: Why? Shouldn't it be 0?
                            false);
     }
   //	}
 }
 
+
 void
 FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime)
 {
+  // Todo: waitingTime should be microseconds
   NS_LOG_FUNCTION (this);
 
   // // Get the phase
@@ -966,10 +954,12 @@ FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitin
 }
 
 void
-FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
-                                    FBHeader    oldFBHeader,
-                                    uint32_t    waitingTime,
-                                    bool        forceSend)
+FBApplication::ForwardAlertMessage (
+  Ptr<FBNode> fbNode,
+  FBHeader    oldFBHeader,
+  uint32_t    waitingTime, // Todo: waitingTime should be in microseconds all the way and
+                           // then converted in millisecond for statistics.
+  bool        forceSend)
 {
   NS_LOG_FUNCTION (this << fbNode << oldFBHeader);
   // Get the phase
@@ -1000,13 +990,10 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
     {
       fbNode->SetStopSending (true);
     }
-  NS_LOG_DEBUG ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId () << ") after "
-                                             << waitingTime
-                                             << " at distance= " << distance << ".");
+  NS_LOG_DEBUG ("Forwarding Alert Message (Node: "
+                << fbNode->GetNode ()->GetId () << "at pos " << fbNode->GetPosition ()
+                << ") after " << waitingTime << "ms at distance= " << distance << ".");
 
-  // NS_LOG_UNCOND ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId ()
-  //                                             << "at pos " << fbNode->GetPosition ()
-  //                                             << ") after " << waitingTime << ".");
   // Create a packet with the correct parameters taken from the node
 
   uint32_t LMBR, CMBR, maxi;
@@ -1028,12 +1015,8 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
   fbHeader.SetSenderInJunction (fbNode->AmIInJunction ());
   fbHeader.SetJunctionId (fbNode->GetJunctionId ());
 
-  // cout << "forward alert message senderId = " << fbNode->GetId () << endl;
-
   Ptr<Packet> packet = Create<Packet> (m_packetPayload);
   packet->AddHeader (fbHeader);
-
-  // cout << "invio distance = " << distance << " time= " << waitingTime << endl;
 
   // Forward
   fbNode->Send (packet);
@@ -1093,30 +1076,32 @@ FBApplication::GetFBNode (uint32_t id)
 }
 
 uint32_t
-FBApplication::ComputeContentionWindow (uint32_t maxRange, uint32_t distance)
+FBApplication::ComputeContentionWindow (double maxRange, double distance)
 {
   NS_LOG_FUNCTION (this << maxRange << distance);
   double cwnd            = 0.0;
   double proximityFactor = 0.0;
 
-  // cout << "maxRange= " << maxRange << " distance= " << distance << endl;
-
   if (maxRange != 0)
     {
-      proximityFactor = (((double)maxRange) - ((double)distance)) / (double)maxRange;
+      proximityFactor = (maxRange - distance) / maxRange;
     }
   else
     {
       proximityFactor = 0;
     }
-  // cout << "proximityFactor pre= " << proximityFactor << endl;
+  NS_LOG_LOGIC ("proximityFactor pre: " << proximityFactor);
   proximityFactor = (proximityFactor < 0) ? 0 : proximityFactor;
-  // cout << "proximityFactor post= " << proximityFactor << endl;
+  NS_LOG_LOGIC ("proximityFactor post= " << proximityFactor);
 
   cwnd = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
-  // cout << "FBApplication computeCW= " << std::floor (cwnd) << endl
-  //      << " con maxRange= " << maxRange << " e distance= " << distance << endl;
-  return std::floor (cwnd);
+  NS_LOG_DEBUG ("cwnd before rounding: " << cwnd);
+  NS_LOG_WARN ("cwnd after rounding: " << std::round (cwnd) << endl
+                                       << "with maxRange: " << maxRange
+                                       << " and  DISTANCE: " << distance);
+
+
+  return static_cast<uint32_t> (std::floor (cwnd));
 }
 
 int32_t
@@ -1133,11 +1118,11 @@ FBApplication::ComputeErrorDelay ()
       uint32_t plusOrMinusOne = m_randomVariable->GetInteger (0, 1);
       if (plusOrMinusOne == 0)
         {
-          delay = 1;
+          delay = 1000;
         }
       else
         {
-          delay = -1;
+          delay = -1000;
         }
     }
   return delay;
@@ -1176,7 +1161,7 @@ FBApplication::StringifyTransmissionMap () const
 }
 
 uint32_t
-FBApplication::IsMaxDistNodeReached (uint32_t& maxDist) const
+FBApplication::IsMaxDistNodeReached (double& maxDist) const
 {
   cout << "FBApplication::IsMaxDistNodeReached" << endl;
   Ptr<FBNode> startingNode    = m_nodes.at (m_startingNode);
@@ -1184,8 +1169,7 @@ FBApplication::IsMaxDistNodeReached (uint32_t& maxDist) const
   uint32_t    nodeId          = 0;
   for (auto node : m_nodes)
     {
-      uint32_t dist =
-        round (ns3::CalculateDistance (node->GetPosition (), startingNodePos));
+      double dist = ns3::CalculateDistance (node->GetPosition (), startingNodePos);
       if (dist > maxDist)
         {
           maxDist = dist;

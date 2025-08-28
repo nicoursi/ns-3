@@ -20,6 +20,9 @@
 
 #include "FBHeader.h"
 #include "ns3/log.h"
+#include <cmath>
+#include <iostream>
+#include <ostream>
 
 namespace ns3
 {
@@ -56,7 +59,7 @@ FBHeader::SetStarterPosition (Vector pos)
 }
 
 void
-FBHeader::SetMaxRange (uint32_t value)
+FBHeader::SetMaxRange (double value)
 {
   NS_LOG_FUNCTION (this);
   m_maxRange = value;
@@ -118,7 +121,7 @@ FBHeader::GetStarterPosition (void) const
   return m_starterPosition;
 }
 
-uint32_t
+double
 FBHeader::GetMaxRange (void) const
 {
   NS_LOG_FUNCTION (this);
@@ -198,7 +201,7 @@ FBHeader::Serialize (Buffer::Iterator start) const
   i.WriteU64 (m_starterPosition.x);
   i.WriteU64 (m_starterPosition.y);
   i.WriteU64 (m_starterPosition.z);
-  i.WriteU32 (m_maxRange);
+  i.WriteU32 (static_cast<uint32_t> (std::round (m_maxRange * 1000.0)));
   i.WriteU32 (m_type);
   i.WriteU32 (m_slot);
   i.WriteU32 (m_phase);
@@ -223,7 +226,7 @@ FBHeader::Deserialize (Buffer::Iterator start)
   y                 = i.ReadU64 ();
   z                 = i.ReadU64 ();
   m_starterPosition = Vector (x, y, z);
-  m_maxRange        = i.ReadU32 ();
+  m_maxRange        = static_cast<double> (i.ReadU32 ()) / 1000.0;
   m_type            = i.ReadU32 ();
   m_slot            = i.ReadU32 ();
   m_phase           = i.ReadU32 ();

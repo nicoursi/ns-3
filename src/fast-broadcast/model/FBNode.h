@@ -57,22 +57,22 @@ public:
   /**
    * \returns the value of the CMFR field
    */
-  uint32_t GetCMFR (void) const;
+  double GetCMFR (void) const;
 
   /**
    * \returns the value of the LMFR field
    */
-  uint32_t GetLMFR (void) const;
+  double GetLMFR (void) const;
 
   /**
    * \returns the value of the CMBR field
    */
-  uint32_t GetCMBR (void) const;
+  double GetCMBR (void) const;
 
   /**
    * \returns the value of the LMBR field
    */
-  uint32_t GetLMBR (void) const;
+  double GetLMBR (void) const;
 
   /**
    * \returns the position of the node
@@ -180,25 +180,25 @@ public:
    * \brief set the value of the CMFR field
    * \param value new value of CMFR
    */
-  void SetCMFR (uint32_t value);
+  void SetCMFR (double value);
 
   /**
    * \brief set the value of the LMFR field
    * \param value new value of LMFR
    */
-  void SetLMFR (uint32_t value);
+  void SetLMFR (double value);
 
   /**
    * \brief set the value of the CMBR field
    * \param value new value of CMBR
    */
-  void SetCMBR (uint32_t value);
+  void SetCMBR (double value);
 
   /**
    * \brief set the value of the LMBR field
    * \param value new value of LMBR
    */
-  void SetLMBR (uint32_t value);
+  void SetLMBR (double value);
 
   /**
    * \brief update it's (node) current position
@@ -289,10 +289,10 @@ public:
   uint32_t    m_id;       // node id
   Ptr<Node>   m_node;     // ns-3 node
   Ptr<Socket> m_socket;   // ns-3 socket
-  uint32_t    m_CMFR;     // Current Maximum Front Range
-  uint32_t    m_LMFR;     // Last Maximum Front Range
-  uint32_t    m_CMBR;     // Current Maximum Back Range
-  uint32_t    m_LMBR;     // Last Maximum Back Range
+  double      m_CMFR;     // Current Maximum Front Range
+  double      m_LMFR;     // Last Maximum Front Range
+  double      m_CMBR;     // Current Maximum Back Range
+  double      m_LMBR;     // Last Maximum Back Range
   Vector      m_position; // node current position
   uint32_t    m_hop;      // number of hops before the alert message reached this node
   /**

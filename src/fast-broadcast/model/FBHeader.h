@@ -60,7 +60,7 @@ public:
    * \brief set the maximum range
    * \param value maximum range
    */
-  void SetMaxRange (uint32_t value);
+  void SetMaxRange (double value);
 
   /**
    * \brief set the type of the message
@@ -70,7 +70,7 @@ public:
 
   /**
    * \brief set the slot of the message
-   * \param value slot of the message
+   * \param value slot of the message, in milliseconds
    */
   void SetSlot (uint32_t value);
 
@@ -112,7 +112,7 @@ public:
   /**
    * \returns the maximum range
    */
-  uint32_t GetMaxRange (void) const;
+  double GetMaxRange (void) const;
 
   /**
    * \returns the type of the message
@@ -214,7 +214,7 @@ public:
 private:
   Vector   m_position;
   Vector   m_starterPosition;
-  uint32_t m_maxRange;
+  double   m_maxRange;
   uint32_t m_type;
   uint32_t m_slot;
   uint32_t m_phase;
