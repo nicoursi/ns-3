@@ -911,14 +911,14 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                this,
                                fbNode,
                                fbHeader,
-                               firstTransmissionTime / 1000,
+                               firstTransmissionTime,
                                false);
           Simulator::Schedule (MicroSeconds (secondTransmissionTime),
                                &FBApplication::ForwardAlertMessage,
                                this,
                                fbNode,
                                fbHeader,
-                               secondTransmissionTime / 1000,
+                               secondTransmissionTime,
                                true);
         }
     }
@@ -1129,11 +1129,11 @@ FBApplication::ComputeErrorDelay ()
       uint32_t plusOrMinusOne = m_randomVariable->GetInteger (0, 1);
       if (plusOrMinusOne == 0)
         {
-          delay = 1000;
+          delay = m_slotLength;
         }
       else
         {
-          delay = -1000;
+          delay = -m_slotLength;
         }
     }
   return delay;
