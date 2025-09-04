@@ -141,8 +141,9 @@ private:
   void GenerateForgedHelloTraffic ();
 
   /**
-   * \brief Start the estimation phase
-   * \param count count
+   * \brief Start the estimation phase. Half of the nodes, selected randomly, will send a
+   * hello message, This procedure will be repeated for @count times
+   * \param count The number of times the hello messages will be sent.
    * \return none
    */
   void GenerateHelloTraffic (uint32_t count);

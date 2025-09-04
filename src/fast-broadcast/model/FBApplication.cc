@@ -28,7 +28,8 @@
 #include "ns3/log.h"
 #include "ns3/mobility-module.h"
 #include "ns3/network-module.h"
-#include <chrono>
+#include "src/core/model/log.h"
+#include <cstdint>
 #include <math.h>
 
 
@@ -51,7 +52,8 @@ FBApplication::GetTypeId (void)
   return tid;
 }
 
-FBApplication::FBApplication () :
+FBApplication::FBApplication () : // Todo: remove duplication of default values if also
+                                  // used in fb-vanet-urban,
   m_messageSentTimes (),
   m_nNodes (0),
   m_startingNode (0),
@@ -79,8 +81,6 @@ FBApplication::FBApplication () :
   m_transmissionVector ()
 {
   NS_LOG_FUNCTION (this);
-  //	srand(12345);
-  RngSeedManager::SetSeed (12345);
 }
 
 FBApplication::~FBApplication ()
@@ -214,7 +214,7 @@ FBApplication::PrintStats (std::stringstream& dataStream)
 
   NS_LOG_FUNCTION (this);
   // cout << "cwndAvg " << (m_cwndSum / m_cwndCount) << endl;
-  // cout << "collisions= " << m_collisions << endl;
+  cout << "collisions= " << m_collisions << endl;
   uint32_t totalCoverage = 1; // All nodes reached by the alert, included the source node
   uint32_t coverVehicles = 1; // All vehicles reached bu the alert message, included the
                               // one that originated the alert
@@ -339,7 +339,7 @@ FBApplication::PrintStats (std::stringstream& dataStream)
   // These will go into csv file
   dataStream << nodesOnCirc << "," << totalCoverage << "," << coverageOnCirc << ","
              << avgGlobalDelay << "," << avgHops << "," << avgSlots << "," << m_sent
-             << "," << m_received;
+             << "," << m_received << "," << m_collisions;
 
   NS_LOG_DEBUG ("totalCoverage = " << totalCoverage << "/" << m_nNodes);
   cout << "totalCoverage = " << totalCoverage << "/" << m_nNodes << endl;
@@ -533,10 +533,9 @@ void
 FBApplication::GenerateHelloMessage (Ptr<FBNode> fbNode)
 {
   NS_LOG_FUNCTION (this << fbNode);
-  auto        start      = std::chrono::system_clock::now ();
-  std::time_t start_time = std::chrono::system_clock::to_time_t (start);
-  NS_LOG_DEBUG ("GenerateHelloMessage (" << fbNode->GetId () << ")."
-                                         << "at time= " << std::ctime (&start_time));
+  NS_LOG_DEBUG ("GenerateHelloMessage (" << fbNode->GetId () << ") "
+                                         << "at time= " << Simulator::Now ().GetSeconds ()
+                                         << "s");
   // NS_LOG_DEBUG ("Generate Hello Message (" << fbNode->GetNode ()->GetId () << ").");
 
   // Create a packet with the correct parameters taken from the node
@@ -732,10 +731,13 @@ FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   // Compute distance
   double   distance_double = ns3::CalculateDistance (senderPosition, currentPosition);
   uint32_t distance        = std::floor (distance_double);
+  NS_LOG_DEBUG ("Detected distance: " << distance);
 
   // Update new values
   uint32_t maxi = std::max (std::max (myCMBR, otherCMFR), distance);
-
+  NS_LOG_DEBUG ("myCMBR " << myCMBR << "m");
+  NS_LOG_DEBUG ("otherCMFR " << otherCMFR << "m");
+  NS_LOG_DEBUG ("Setting CMBR to " << maxi << "m");
   fbNode->SetCMBR (maxi);
 
   // Override the old values
@@ -745,7 +747,7 @@ FBApplication::HandleHelloMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 void
 FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 {
-  int32_t  phase           = fbHeader.GetPhase ();
+  int32_t  msgPhase        = fbHeader.GetPhase ();
   Vector   currentPosition = fbNode->UpdatePosition ();
   // Get the position of the sender node
   Vector   senderPosition = fbHeader.GetPosition ();
@@ -777,41 +779,47 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
     {
       NS_LOG_LOGIC ("node " << fbNode->GetId ()
                             << "is inside a junction and has received an alert message");
-      // I am in a junction and I receive a message from the same junction -> I have to
-      // defer transmission
+      // I am in a junction and I receive a message from the same junction -> I update the
+      // phase so I won't transmit
       if (fbHeader.IsSenderInJunction () &&
           fbNode->GetJunctionId () == fbHeader.GetJunctionId ())
         {
-          if (phase > fbNode->GetPhase ())
+          if (msgPhase > fbNode->GetPhase ())
             {
-              fbNode->SetPhase (phase);
-              // NS_LOG_LOGIC ("node " << node->GetId ()
-              //                       << "is inside a junction: updates phase from "
-              //                       << node->GetPhase () << " to " << phase);
+              fbNode->SetPhase (msgPhase);
+              NS_LOG_DEBUG ("node " << fbNode->GetId ()
+                                    << "is inside a junction: updates phase from "
+                                    << fbNode->GetPhase () << " to " << msgPhase);
             }
         }
+      // otherwise I do not update the phase so I will transmit when my timer expires
     }
   else
     {
       // I am not in a junction and I receive a message from a node farther than me -> I
-      // have to defer tranmission
-      // if ((phase > fbNode->GetPhase ()) &&
+      // am eligible for tranmission
+      // if ((msgPhase > fbNode->GetPhase ()) &&
       //     (distanceSenderToStarter > distanceCurrentToStarter))
       //   {
-      if (phase > fbNode->GetPhase ()) // todo abilitare per urbano
+
+      //  I am not in a junction, so I update the phase and I will not transmit if some
+      //  other node already did
+      if (msgPhase > fbNode->GetPhase ())
         {
-          fbNode->SetPhase (phase);
-          // NS_LOG_LOGIC ("node " << node->GetId ()
-          //                       << "is not inside a junction: updates phase from "
-          //                       << node->GetPhase () << " to " << phase);
+          fbNode->SetPhase (msgPhase);
+          NS_LOG_LOGIC ("node " << fbNode->GetId ()
+                                << "is not inside a junction: updates phase from "
+                                << fbNode->GetPhase () << " to " << msgPhase);
         }
     }
   if (fbNode->GetReceived ())
     {
+      // Somebody already transmitted the same message, so unless we are the only ones in
+      // a junction we will not transmit again
       return;
     }
 
-  if (!fbNode->GetReceived ())
+  if (!fbNode->GetReceived ()) // Todo: this if condition is redundant and could be removed
     {
       fbNode->SetReceived (true);
       Time receiveTime = Simulator::Now ();
@@ -830,8 +838,8 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                         << " microseconds");
         }
       fbNode->SetSlot (fbHeader.GetSlot ());
-      fbNode->SetHop (phase + 1);
-      fbNode->SetPhase (phase);
+      fbNode->SetHop (msgPhase + 1);
+      fbNode->SetPhase (msgPhase);
       m_received++;
       // save transmission for stats and metrics
       m_receivedNodes.push_back (receiverId);
@@ -841,7 +849,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
           m_transmissionList[senderId] = vector<uint32_t> ();
         }
       m_transmissionList[senderId].push_back (receiverId);
-      m_transmissionVector.push_back (Edge (senderId, receiverId, phase));
+      m_transmissionVector.push_back (Edge (senderId, receiverId, msgPhase));
     }
 
   // If starter-to-sender distance is less than starter-to-current distance,
@@ -904,14 +912,14 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
                                true);
         }
     }
-  else
+  else // flooding
     {
       Simulator::Schedule (MilliSeconds (0),
                            &FBApplication::ForwardAlertMessage,
                            this,
                            fbNode,
                            fbHeader,
-                           waitingTime,
+                           waitingTime, // Todo: Why? Shouldn't it be 0?
                            false);
     }
   //	}
@@ -920,6 +928,7 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
 void
 FBApplication::WaitAgain (Ptr<FBNode> fbNode, FBHeader fbHeader, uint32_t waitingTime)
 {
+  // Todo: rand should NOT be used. Use m_randomVariable instead
   NS_LOG_FUNCTION (this);
 
   // // Get the phase
@@ -948,41 +957,46 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
                                     bool        forceSend)
 {
   NS_LOG_FUNCTION (this << fbNode << oldFBHeader);
-  // Get the phase
-  int32_t phase    = oldFBHeader.GetPhase ();
+  // Phase of the alert message that was received
+  int32_t msgPhase = oldFBHeader.GetPhase ();
   Vector  oldPos   = oldFBHeader.GetPosition ();
   Vector  position = fbNode->UpdatePosition ();
   double  distance = ns3::CalculateDistance (position, oldPos);
   if (fbNode->GetStopSending ())
     {
-      NS_LOG_DEBUG ("node " << fbNode->GetId () << " defers because of StopSending");
+      NS_LOG_DEBUG ("node " << fbNode->GetId ()
+                            << " suppresses  transmission because of StopSending");
       return;
     }
-  if (!(fbNode->GetSent () && forceSend))
+  if (fbNode->GetSent ())
     {
-      if (fbNode->GetSent ())
+      if (!forceSend)
         {
-          NS_LOG_DEBUG ("node " << fbNode->GetId () << " defers because of GetSent");
+          NS_LOG_DEBUG ("node " << fbNode->GetId ()
+                                << " suppresses transmission because of GetSent");
           return;
         }
-      // If I'm not the first to wake up, I must not forward the message
-      if (!m_flooding && fbNode->GetPhase () > phase)
-        {
-          NS_LOG_DEBUG ("node " << fbNode->GetId () << " defers because of phase");
-          return;
-        }
+    }
+
+  // if the node phase is greater than the msgPhase it means other nodes already forwarded
+  // the message
+  else if (!m_flooding && fbNode->GetPhase () > msgPhase)
+    {
+      NS_LOG_DEBUG ("node " << fbNode->GetId ()
+                            << " suppresses transmission because of phase. Node phase: "
+                            << fbNode->GetPhase () << " Message phase: " << msgPhase);
+      return;
     }
   if (forceSend)
     {
       fbNode->SetStopSending (true);
     }
-  NS_LOG_DEBUG ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId () << ") after "
-                                             << waitingTime
-                                             << " at distance= " << distance << ".");
+  NS_LOG_DEBUG ("Forwarding Alert Message (Node: "
+                << fbNode->GetNode ()->GetId () << "at pos " << fbNode->GetPosition ()
+                << ") after " << waitingTime << "slots at distance= " << distance
+                << ". Node phase: " << fbNode->GetPhase ()
+                << " Message phase: " << msgPhase);
 
-  // NS_LOG_UNCOND ("Forwarding Alert Message (" << fbNode->GetNode ()->GetId ()
-  //                                             << "at pos " << fbNode->GetPosition ()
-  //                                             << ") after " << waitingTime << ".");
   // Create a packet with the correct parameters taken from the node
 
   uint32_t LMBR, CMBR, maxi;
@@ -998,18 +1012,14 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
   fbHeader.SetMaxRange (maxi);
   fbHeader.SetStarterPosition (starterPosition);
   fbHeader.SetPosition (position);
-  fbHeader.SetPhase (phase + 1);
   fbHeader.SetSlot (fbNode->GetSlot () + waitingTime);
+  fbHeader.SetPhase (msgPhase + 1);
   fbHeader.SetSenderId (fbNode->GetId ());
   fbHeader.SetSenderInJunction (fbNode->AmIInJunction ());
   fbHeader.SetJunctionId (fbNode->GetJunctionId ());
 
-  // cout << "forward alert message senderId = " << fbNode->GetId () << endl;
-
   Ptr<Packet> packet = Create<Packet> (m_packetPayload);
   packet->AddHeader (fbHeader);
-
-  // cout << "invio distance = " << distance << " time= " << waitingTime << endl;
 
   // Forward
   fbNode->Send (packet);
@@ -1019,11 +1029,6 @@ FBApplication::ForwardAlertMessage (Ptr<FBNode> fbNode,
   m_messageSentTimes[fbNode->GetId ()] = Simulator::Now ();
 
   m_sent++;
-  // else
-  // {
-  //   cout << "de Ferro distance= " << distance << " waitingTime= " << waitingTime <<
-  //   endl;
-  // }
 }
 
 void
@@ -1084,14 +1089,22 @@ FBApplication::ComputeContentionWindow (uint32_t maxRange, uint32_t distance)
     {
       proximityFactor = 0;
     }
-  //	cout << "proximityFactor pre= " << proximityFactor << endl;
-  proximityFactor = (proximityFactor < 0) ? 0 : proximityFactor;
-  //	cout << "proximityFactor post= " << proximityFactor << endl;
+  NS_LOG_LOGIC ("proximityFactor pre: " << proximityFactor);
 
-  cwnd = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
-  // cout << "FBApplication computeCW= " << std::floor (cwnd) << endl
-  //      << " con maxRange= " << maxRange << " e distance= " << distance << endl;
-  return std::floor (cwnd);
+  proximityFactor = (proximityFactor < 0) ? 0 : proximityFactor;
+
+  NS_LOG_LOGIC ("proximityFactor post= " << proximityFactor);
+
+  cwnd                = (proximityFactor * (m_cwMax - m_cwMin)) + m_cwMin;
+  int32_t roundedCwnd = static_cast<uint32_t> (std::floor (cwnd));
+
+  NS_LOG_DEBUG ("Contention Window before rounding: " << cwnd);
+  NS_LOG_WARN ("Contention Window after rounding: " << roundedCwnd << endl
+                                                    << " maxRange: " << maxRange
+                                                    << " DISTANCE: " << distance);
+
+
+  return roundedCwnd;
 }
 
 int32_t
