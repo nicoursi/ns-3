@@ -657,8 +657,8 @@ FBVanetExperiment::GetDefaultTxPower (double actualRange)
           // -7.0: original value
           // -8.4: first value working but very unstable with 100m
           // -7.7: first value that seems to work with 100m
-          // -5.2: current value --> + 2.5 after incremental calibration tests
-          txp = -5.2;
+          // -5.2: calibrated value --> + 2.5 after incremental calibration tests
+          txp = -7.0;
         }
         break;
 
@@ -680,8 +680,8 @@ FBVanetExperiment::GetDefaultTxPower (double actualRange)
           // 13.4: original value (8.8 dB gain - 2.8 dB less than 300m)
           // 6.3: first value working but very unstable with 500m
           // 7.4: first value that seems to work with 500m
-          // 11.2: current value --> + 3.8 after incremental calibration tests
-          txp = 11.2;
+          // 11.2: calibrated value --> + 3.8 after incremental calibration tests
+          txp = 13.4;
         }
         break;
 
@@ -692,8 +692,8 @@ FBVanetExperiment::GetDefaultTxPower (double actualRange)
           //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
           // 12.2: first value working but very unstable with 700m
           // 13.3: first value that seems to work with 700m and kept stable after
-          // 13.3: current value --> + 0 after incremental calibration tests
-          txp = 13.3;
+          // 13.3: calibrated value --> + 0 after incremental calibration tests
+          txp = 19.4;
         }
         break;
 
@@ -1301,12 +1301,11 @@ main (int argc, char* argv[])
     {
       string filePath = experiment.CalculateOutFilePath ();
       string additionalPath;
-      string header =
-        "\"Run id\",\"Seed\",\"Tx Power\",\"Actual Range\","
-        "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
-        "\"Total coverage\",\"Coverage on circ\","
-        "\"Alert received mean time\",\"Hops\",\"Slots\","
-        "\"Messages sent\",\"Messages received\",\"Collisions\"";
+      string header = "\"Run id\",\"Seed\",\"Tx Power\",\"Actual Range\","
+                      "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
+                      "\"Total coverage\",\"Coverage on circ\","
+                      "\"Alert received mean time\",\"Hops\",\"Slots\","
+                      "\"Messages sent\",\"Messages received\",\"Collisions\"";
 
       if (experiment.GetPrintCoords ())
         {
