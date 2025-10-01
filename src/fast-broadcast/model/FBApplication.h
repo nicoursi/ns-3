@@ -35,11 +35,11 @@ using namespace std;
 namespace ns3
 {
 
-static const uint32_t PROTOCOL_FB         = 0;
-static const uint32_t PROTOCOL_STATIC_100 = 100;
-static const uint32_t PROTOCOL_STATIC_300 = 300;
-static const uint32_t PROTOCOL_STATIC_500 = 500;
-static const uint32_t PROTOCOL_STATIC_700 = 700;
+static const uint32_t PROTOCOL_FBV            = 0;
+static const uint32_t PROTOCOL_FBV_STATIC_100 = 100;
+static const uint32_t PROTOCOL_FBV_STATIC_300 = 300;
+static const uint32_t PROTOCOL_FBV_STATIC_500 = 500;
+static const uint32_t PROTOCOL_FBV_STATIC_700 = 700;
 
 /**
  * \ingroup network
@@ -89,7 +89,8 @@ public:
                         uint32_t errorRate,
                         uint32_t forgedCoordRate,
                         uint32_t droneTest,
-                        uint32_t slotLength);
+                        uint32_t slotLength,
+                        uint32_t rnd_granularity);
 
   /**
    * \brief Add a new node to the application and set up protocol parameters
@@ -279,6 +280,7 @@ private:
   uint32_t m_cwMin;               // min size of the contention window (in slot)
   uint32_t m_cwMax;               // max size of the contention window (in slot)
   uint32_t m_slotLength;          // slot length in microseconds
+  uint32_t m_rnd_granularity;     // granularity for sub_slots when randomizing cwnd
   bool     m_flooding;            // used for control the flooding of the Alert messages
   uint32_t m_actualRange;         // real transmission range
   uint32_t m_estimatedRange;      // range of transmission to be estimated

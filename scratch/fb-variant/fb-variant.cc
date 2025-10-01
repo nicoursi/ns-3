@@ -345,6 +345,7 @@ private:
   int32_t                      m_startRun;
   uint32_t                     m_maxRun;
   uint32_t                     m_highBuildings;
+  uint32_t                     m_rnd_granularity;
   std::map<uint32_t, uint64_t> m_nodeIdToJunctionIdMap;
   Ptr<UniformRandomVariable>   m_randomVariable;
 };
@@ -371,7 +372,7 @@ FBVanetExperiment::FBVanetExperiment () :
   m_vehicleDistance (25),
   m_scenario (1),
   m_loadBuildings (1),
-  m_cwMin (32),
+  m_cwMin (1),
   m_cwMax (1024),
   m_slotLength (1000),
   m_traceFile (""),
@@ -392,7 +393,8 @@ FBVanetExperiment::FBVanetExperiment () :
   m_seed (12345),
   m_startRun (-1),
   m_maxRun (1),
-  m_highBuildings (0)
+  m_highBuildings (0),
+  m_rnd_granularity (1)
 {
 
   // srand (12345);
@@ -475,29 +477,29 @@ FBVanetExperiment::CalculateOutFilePath () const
       errorOrForged = "f" + std::to_string (m_forgedCoordRate);
     }
 
-  if (m_staticProtocol == PROTOCOL_FB)
+  if (m_staticProtocol == PROTOCOL_FBV)
     {
 
       // protocol = "Fast-Broadcast[" + std::to_string (m_cwMin) + "-" +
       //             std::to_string (m_cwMax) + "]";
 
-      protocol = "Fast-Broadcast";
+      protocol = "FB-Variant";
     }
-  else if (m_staticProtocol == PROTOCOL_STATIC_100)
+  else if (m_staticProtocol == PROTOCOL_FBV_STATIC_100)
     {
-      protocol = "STATIC-100";
+      protocol = "FBV-STATIC-100";
     }
-  else if (m_staticProtocol == PROTOCOL_STATIC_300)
+  else if (m_staticProtocol == PROTOCOL_FBV_STATIC_300)
     {
-      protocol = "STATIC-300";
+      protocol = "FBV-STATIC-300";
     }
-  else if (m_staticProtocol == PROTOCOL_STATIC_500)
+  else if (m_staticProtocol == PROTOCOL_FBV_STATIC_500)
     {
-      protocol = "STATIC-500";
+      protocol = "FBV-STATIC-500";
     }
-  else if (m_staticProtocol == PROTOCOL_STATIC_700)
+  else if (m_staticProtocol == PROTOCOL_FBV_STATIC_700)
     {
-      protocol = "STATIC-700";
+      protocol = "FBV-STATIC-700";
     }
 
   std::vector<std::string> strings;
@@ -507,11 +509,14 @@ FBVanetExperiment::CalculateOutFilePath () const
   scenarioName             = scenarioName.substr (0, dotPos);
 
   // File name building
-  fileName.append (
-    scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" + actualRange + "/j" +
-    junctions + "/" + "cw[" + std::to_string (m_cwMin) + "-" + std::to_string (m_cwMax) +
-    "]/" + protocol + "/" + scenarioName + "-b" + buildings + "-" + errorOrForged + "-r" +
-    actualRange + "-j" + junctions + "-" + protocol);
+  fileName.append (scenarioName + "/b" + buildings + "/" + errorOrForged + "/r" +
+                   actualRange + "/j" + junctions + "/" + "cw[" +
+                   std::to_string (m_cwMin) + "-" + std::to_string (m_cwMax) + "]/" +
+                   protocol + "/s" + std::to_string (m_slotLength) + "/g" +
+                   std::to_string (m_rnd_granularity) + "/" + scenarioName + "-b" +
+                   buildings + "-" + errorOrForged + "-r" + actualRange + "-j" +
+                   junctions + "-s" + std::to_string (m_slotLength) + "-g" +
+                   std::to_string (m_rnd_granularity) + "-" + protocol);
 
 
   std::cout << "fileName=" << fileName << std::endl;
@@ -586,25 +591,25 @@ FBVanetExperiment::ConfigureDefaults ()
   Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode",
                       StringValue (m_phyMode));
 
-  if (m_staticProtocol == 1)
+  if (m_staticProtocol == 7)
     {
-      m_staticProtocol = PROTOCOL_FB;
+      m_staticProtocol = PROTOCOL_FBV;
     }
-  else if (m_staticProtocol == 2)
+  else if (m_staticProtocol == 8)
     {
-      m_staticProtocol = PROTOCOL_STATIC_100;
+      m_staticProtocol = PROTOCOL_FBV_STATIC_100;
     }
-  else if (m_staticProtocol == 3)
+  else if (m_staticProtocol == 9)
     {
-      m_staticProtocol = PROTOCOL_STATIC_300;
+      m_staticProtocol = PROTOCOL_FBV_STATIC_300;
     }
-  else if (m_staticProtocol == 4)
+  else if (m_staticProtocol == 10)
     {
-      m_staticProtocol = PROTOCOL_STATIC_500;
+      m_staticProtocol = PROTOCOL_FBV_STATIC_500;
     }
-  else if (m_staticProtocol == 5)
+  else if (m_staticProtocol == 11)
     {
-      m_staticProtocol = PROTOCOL_STATIC_700;
+      m_staticProtocol = PROTOCOL_FBV_STATIC_700;
     }
 }
 
@@ -660,8 +665,8 @@ FBVanetExperiment::GetDefaultTxPower (double actualRange)
           // -7.0: original value
           // -8.4: first value working but very unstable with 100m
           // -7.7: first value that seems to work with 100m
-          // -5.2: current value --> + 2.5 after incremental calibration tests
-          txp = -5.2;
+          // -5.2: calibrated value --> + 2.5 after incremental calibration tests
+          txp = -7.0;
         }
         break;
 
@@ -683,11 +688,10 @@ FBVanetExperiment::GetDefaultTxPower (double actualRange)
           // 13.4: original value (8.8 dB gain - 2.8 dB less than 300m)
           // 6.3: first value working but very unstable with 500m
           // 7.4: first value that seems to work with 500m
-          // 11.2: current value --> + 3.8 after incremental calibration tests
-          txp = 11.2;
+          // 11.2: calibrated value --> + 3.8 after incremental calibration tests
+          txp = 13.4;
         }
         break;
-
       case 700:
         {
           // Calibration history for 700m range:
@@ -695,8 +699,8 @@ FBVanetExperiment::GetDefaultTxPower (double actualRange)
           //  decreases by 2.8 dB each step: 13.4 + (8.8 - (11.6 - 8.8))
           // 12.2: first value working but very unstable with 700m
           // 13.3: first value that seems to work with 700m and kept stable after
-          // 13.3: current value --> + 0 after incremental calibration tests
-          txp = 13.3;
+          // 13.3: calibrated value --> + 0 after incremental calibration tests
+          txp = 19.4;
         }
         break;
 
@@ -850,7 +854,8 @@ FBVanetExperiment::ConfigureFBApplication ()
                             m_errorRate,
                             m_forgedCoordRate,
                             m_droneTest,
-                            m_slotLength);
+                            m_slotLength,
+                            m_rnd_granularity);
   m_fbApplication->SetStartTime (Seconds (1));
   m_fbApplication->SetStopTime (Seconds (m_TotalSimTime));
 
@@ -1094,6 +1099,9 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
   cmd.AddValue ("slotLength",
                 "Slot size in microseconds",
                 m_slotLength);
+  cmd.AddValue("rndGranularity",
+               "Sub-slot granularity",
+                m_rnd_granularity);
   cmd.AddValue ("mapBasePath",
                 "Base path of map required for simulation "
                 "(e.g. ../maps/Padova",
@@ -1140,7 +1148,7 @@ FBVanetExperiment::CommandSetup (int argc, char* argv[])
 
   // clang-format on
   cmd.Parse (argc, argv);
-  // If m_txp is not parsed than assign default values based of actual range
+  // If m_txp is not parsed then assign default values based of actual range
   if (std::isnan (m_txp))
     {
       m_txp = GetDefaultTxPower (m_actualRange);

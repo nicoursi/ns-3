@@ -61,6 +61,7 @@ FBApplication::FBApplication () : // Todo: remove duplication of default values 
   m_broadcastPhaseStart (0),
   m_cwMin (32),
   m_cwMax (1024),
+  m_rnd_granularity (1),
   m_flooding (true),
   m_actualRange (300),
   m_estimatedRange (0),
@@ -79,6 +80,7 @@ FBApplication::FBApplication () : // Todo: remove duplication of default values 
   m_vehicleDistance (25),
   m_transmissionList (),
   m_transmissionVector ()
+
 {
   NS_LOG_FUNCTION (this);
 }
@@ -102,32 +104,33 @@ FBApplication::Install (uint32_t protocol,
                         uint32_t errorRate,
                         uint32_t forgedCoordRate,
                         uint32_t droneTest,
-                        uint32_t slotLength)
+                        uint32_t slotLength,
+                        uint32_t rnd_granularity)
 {
 
-  if (protocol == PROTOCOL_FB)
+  if (protocol == PROTOCOL_FBV)
     {
-      m_estimatedRange = PROTOCOL_FB;
+      m_estimatedRange = PROTOCOL_FBV;
       m_staticProtocol = false;
     }
-  else if (protocol == PROTOCOL_STATIC_100)
+  else if (protocol == PROTOCOL_FBV_STATIC_100)
     {
-      m_estimatedRange = PROTOCOL_STATIC_100;
+      m_estimatedRange = PROTOCOL_FBV_STATIC_100;
       m_staticProtocol = true;
     }
-  else if (protocol == PROTOCOL_STATIC_300)
+  else if (protocol == PROTOCOL_FBV_STATIC_300)
     {
-      m_estimatedRange = PROTOCOL_STATIC_300;
+      m_estimatedRange = PROTOCOL_FBV_STATIC_300;
       m_staticProtocol = true;
     }
-  else if (protocol == PROTOCOL_STATIC_500)
+  else if (protocol == PROTOCOL_FBV_STATIC_500)
     {
-      m_estimatedRange = PROTOCOL_STATIC_500;
+      m_estimatedRange = PROTOCOL_FBV_STATIC_500;
       m_staticProtocol = true;
     }
-  else if (protocol == PROTOCOL_STATIC_700)
+  else if (protocol == PROTOCOL_FBV_STATIC_700)
     {
-      m_estimatedRange = PROTOCOL_STATIC_700;
+      m_estimatedRange = PROTOCOL_FBV_STATIC_700;
       m_staticProtocol = true;
     }
   else
@@ -143,6 +146,7 @@ FBApplication::Install (uint32_t protocol,
   m_cwMin               = cwMin;
   m_cwMax               = cwMax;
   m_slotLength          = slotLength;
+  m_rnd_granularity     = rnd_granularity;
   m_printCoords         = printCoords;
   m_vehicleDistance     = vehicleDistance;
   m_errorRate           = errorRate;
@@ -884,6 +888,12 @@ FBApplication::HandleAlertMessage (Ptr<FBNode> fbNode, FBHeader fbHeader)
   // Pick random waiting time in microseconds
   uint32_t maxCwndUs     = cwndUs + spreadUs;
   uint32_t waitingTimeUs = m_randomVariable->GetInteger (cwndUs, maxCwndUs);
+
+  // Apply granularity rounding
+  if (m_rnd_granularity > 1)
+    {
+      waitingTimeUs = (waitingTimeUs / m_rnd_granularity) * m_rnd_granularity;
+    }
 
   NS_LOG_WARN ("Cwnd: " << cwndUs << " maxCwndUs: " << maxCwndUs
                         << " waitingTimeUs: " << waitingTimeUs);
