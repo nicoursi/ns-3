@@ -1227,7 +1227,7 @@ main (int argc, char* argv[])
                       "\"Buildings\",\"Total nodes\",\"Nodes on circ\","
                       "\"Total coverage\",\"Coverage on circ\","
                       "\"Alert received mean time\",\"Hops\",\"Slots\","
-                      "\"Messages sent\",\"Messages received\"";
+                      "\"Messages sent\",\"Messages received\",\"Collisions\"";
 
       if (experiment.GetPrintCoords ())
         {
