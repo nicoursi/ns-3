@@ -62,6 +62,7 @@ public:
                 uint32_t forgedCoordRate,
                 uint32_t droneTest);
 
+  void LogCollision (std::string context, Ptr<const Packet> p);
   /**
    * \brief Add a new node to the application and set up protocol parameters
    * \param node node to add

@@ -54,9 +54,16 @@ ROFFApplication::Install (uint32_t broadcastPhaseStart,
   m_forgedCoordRate     = forgedCoordRate;
   m_droneTest           = droneTest;
   m_randomVariable      = CreateObject<UniformRandomVariable> ();
+  m_collisions          = 0;
   //	NS_LOG_UNCOND("END INSTALL");
+  Config::Connect ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyRxDrop",
+                   MakeCallback (&ROFFApplication::LogCollision, this));
 }
-
+void
+ROFFApplication::LogCollision (std::string context, Ptr<const Packet> p)
+{
+  m_collisions++;
+}
 void
 ROFFApplication::AddNode (Ptr<Node>   node,
                           Ptr<Socket> source,
@@ -83,6 +90,7 @@ ROFFApplication::PrintStats (std::stringstream& dataStream)
   NS_LOG_FUNCTION (this);
   // NS_LOG_INFO ("ROFFApplication::PrintStats " << m_received
   //                                             << " nodes have received the message");
+  cout << "collisions= " << m_collisions << endl;
   uint32_t cover         = 1; // 'cause we count m_startingNode
   uint32_t coverVehicles = 1;
   uint32_t circ = 0, circCont = 0;
@@ -168,7 +176,7 @@ ROFFApplication::PrintStats (std::stringstream& dataStream)
              << ","
              //  << m_nodes[m_nodes.size () - 1]->GetHop () << ","
              //  << m_nodes[m_nodes.size () - 1]->GetSlot () << ","
-             << m_sent << "," << m_received;
+             << m_sent << "," << m_received << "," << m_collisions;
   cout << "totalCoverage= " << cover << "/" << m_nodes.size () << endl;
   cout << "coverageOnCirc= " << circ << "/" << circCont << endl;
   cout << "m_sent=" << m_sent << endl;
