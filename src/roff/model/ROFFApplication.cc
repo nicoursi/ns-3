@@ -64,6 +64,14 @@ ROFFApplication::LogCollision (std::string context, Ptr<const Packet> p)
 {
   m_collisions++;
 }
+
+void
+ROFFApplication::ResetCollisions ()
+{
+  NS_LOG_DEBUG ("Resetting number of collisions. Estimation phase generated "
+                << m_collisions << " collisions");
+  m_collisions = 0;
+}
 void
 ROFFApplication::AddNode (Ptr<Node>   node,
                           Ptr<Socket> source,
@@ -262,7 +270,7 @@ ROFFApplication::GenerateHelloTraffic (uint32_t count)
 {
   NS_LOG_FUNCTION (this);
   //	cout << "generateHelloTraffic" << count << endl;
-  NS_LOG_INFO ("Generate hello traffic " << count);
+  NS_LOG_DEBUG ("Generate hello traffic " << count);
   if (count == 0)
     {
       return;
@@ -350,6 +358,7 @@ ROFFApplication::GenerateAlertMessage (Ptr<ROFFNode> node)
 {
   NS_LOG_FUNCTION (this << node);
   NS_LOG_DEBUG ("ROFFApplication::Generate Alert message");
+  ResetCollisions ();
   m_nodes.at (m_startingNode)->UpdatePosition ();
   // for (auto it = m_nodes.begin (); it != m_nodes.end (); it++)
   //   {
