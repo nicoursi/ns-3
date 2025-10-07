@@ -170,7 +170,13 @@ FBApplication::LogCollision (std::string context, Ptr<const Packet> p)
 {
   m_collisions++;
 }
-
+void
+FBApplication::ResetCollisions ()
+{
+  NS_LOG_DEBUG ("Resetting number of collisions. Estimation phase generated "
+                << m_collisions << " collisions");
+  m_collisions = 0;
+}
 void
 FBApplication::AddNode (Ptr<Node>   node,
                         Ptr<Socket> source,
@@ -572,7 +578,7 @@ FBApplication::GenerateAlertMessage (Ptr<FBNode> fbNode)
 {
   NS_LOG_FUNCTION (this << fbNode);
   NS_LOG_DEBUG ("Generate Alert Message (" << fbNode->GetNode ()->GetId () << ").");
-
+  ResetCollisions ();
   // Create a packet with the correct parameters taken from the node
   uint32_t LMBR, CMBR, maxi;
   LMBR            = fbNode->GetLMBR ();

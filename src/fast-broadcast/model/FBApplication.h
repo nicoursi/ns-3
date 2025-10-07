@@ -117,7 +117,26 @@ public:
   void PrintStats (stringstream& dataStream);
 
 private:
+  /**
+   * \brief Log a packet collision event
+   *
+   * This method is called whenever a packet is dropped due to a collision.
+   * It increments an internal counter used to track the total number
+   * of collision events that occurred during the simulation.
+   *
+   * \param context A string describing the event context
+   * \param p Pointer to the packet involved in the collision
+   */
   void LogCollision (std::string context, Ptr<const Packet> p);
+
+  /**
+   * \brief Reset the counter used to track the total number
+   * of collisions
+   *
+   * This method clears or resets the  collision-counter.
+   *
+   */
+  void ResetCollisions ();
 
   /**
    * \brief Application specific startup code
